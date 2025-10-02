@@ -8,13 +8,13 @@ use sdl3::
 
 
 
-
+type Texts = Option<Vec< (f64, (i32, i32), String, Color) >>;
 pub struct Page<'a>
 {
     pub background_color: Option<Color>,
     pub rects:   Option<Vec< (Color, Rect) >>,
     pub buttons: Option<Vec< (bool, Color, Rect, u16) >>,
-    pub texts:   Option<Vec< (f64, (i32, i32), String, Color) >>,
+    pub texts:   Texts,
     pub images:  Option<Vec< (Texture<'a>, Rect) >>,
 }
 
@@ -30,7 +30,6 @@ const PURPLE_COLOR:     Color = Color::RGB(203, 166, 247);
 const PINK_COLOR:       Color = Color::RGB(243, 139, 168);
 const ORANGE_COLOR:     Color = Color::RGB(250, 179, 135);
 const BLACK_COLOR:      Color = Color::RGB(17,  17,  27);
-
 
 
 

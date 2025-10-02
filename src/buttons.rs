@@ -5,7 +5,6 @@ use crate::pages::COLOR_CHANGE_WHEN_SELECTED;
 
 
 
-pub static mut PAGE_TO_RENDER: u8 = 1;
 pub static mut ALLOW_QUERY: bool = true;
 
 
@@ -42,43 +41,40 @@ impl ChangeColors for (Vec<(bool, Color, Rect, u16)>, Option<usize>)
 
 
 
-pub fn button_action(button_clicked: Option<usize>)
+pub fn button_action(button_clicked: Option<usize>, page_to_render: &mut u8)
 {
-    unsafe 
+    match button_clicked
     {
-        match button_clicked
+        Some(1) =>
         {
-            Some(1) =>
-            {
-                //PAGE 1 BUTTON (PERSISTENT PAGE)
-                if PAGE_TO_RENDER != 3 { PAGE_TO_RENDER = 1; };
-            }
-
-            Some(2) =>
-            {
-                //PAGE 2 BUTTON (PERSISTENT PAGE)
-                if PAGE_TO_RENDER != 3 { PAGE_TO_RENDER = 2; };
-            }
-
-            Some(3) => 
-            {
-                // PAGE 1 BUTTON (PAGE 1)
-                if PAGE_TO_RENDER != 3 { println!("Page1 Button Clicked!!"); };
-            }
-
-            Some(4) => 
-            {
-                //PAGE 2 TO SUBPAGE_PAGE2 BUTTON (PAGE 2)
-                if PAGE_TO_RENDER != 3 { PAGE_TO_RENDER = 3 };
-            }
-                
-            Some(5) => 
-            {
-                //SUBPAGE_PAGE2 TO PAGE 2 BUTTON (PAGE 3)
-                if PAGE_TO_RENDER == 3 { PAGE_TO_RENDER = 2 };
-            }
-            
-            _=> {},
+            //PAGE 1 BUTTON (PERSISTENT PAGE)
+            if *page_to_render != 3 { *page_to_render = 1; };
         }
+
+        Some(2) =>
+        {
+            //PAGE 2 BUTTON (PERSISTENT PAGE)
+            if *page_to_render != 3 { *page_to_render = 2; };
+        }
+
+        Some(3) => 
+        {
+            // PAGE 1 BUTTON (PAGE 1)
+            if *page_to_render != 3 { println!("Page1 Button Clicked!!"); };
+        }
+
+        Some(4) => 
+        {
+            //PAGE 2 TO SUBPAGE_PAGE2 BUTTON (PAGE 2)
+            if *page_to_render != 3 { *page_to_render = 3 };
+        }
+            
+        Some(5) => 
+        {
+            //SUBPAGE_PAGE2 TO PAGE 2 BUTTON (PAGE 3)
+            if *page_to_render == 3 { *page_to_render = 2 };
+        }
+        
+        _=> {},
     }
 }

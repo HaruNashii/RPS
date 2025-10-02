@@ -3,3 +3,4 @@ A very simple and configurable example of an app using only sdl3 in rust
 
 # Todo:
 - *Scroll System*
+- *keyboard input*

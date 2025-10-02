@@ -2,20 +2,22 @@ use sdl3::
 {
     rect::Rect,
     pixels::Color,
-    render::Texture,
 };
 
 
 
 
-type Texts = Option<Vec< (f64, (i32, i32), String, Color) >>;
+type Rects = Option<Vec<(Color, Rect)>>;
+type Buttons = Option<Vec<(bool, Color, Rect, u16)>>;
+type Texts = Option<Vec<(f64, (i32, i32), String, Color)>>;
+type Images<'a> = Option<Vec<((i32, i32), (u32, u32), &'a str)>>;
 pub struct Page<'a>
 {
     pub background_color: Option<Color>,
-    pub rects:   Option<Vec< (Color, Rect) >>,
-    pub buttons: Option<Vec< (bool, Color, Rect, u16) >>,
+    pub rects:   Rects,
+    pub buttons: Buttons,
     pub texts:   Texts,
-    pub images:  Option<Vec< (Texture<'a>, Rect) >>,
+    pub images:  Images<'a>,
 }
 
 
@@ -61,6 +63,12 @@ pub fn persistent_page() -> Page<'static>
         (17.0, (all_buttons[1].2.x + 9, all_buttons[1].2.y + 24), "Page 2".to_string(), TEXT_COLOR),
     ];
 
+    //===================== images =========================
+    let all_images = vec!
+    [
+       ((10, 10), (50, 50), "/home/elizabeth/.cache/page_system/example_1.jpg"),
+    ];
+
     //===================== page creation =========================
     Page 
     {
@@ -68,7 +76,7 @@ pub fn persistent_page() -> Page<'static>
         rects:   Some( all_rects ),
         buttons: Some( all_buttons  ),
         texts:   Some( all_text ),
-        images:  None,
+        images:  Some( all_images ),
     }
 }
 
@@ -81,7 +89,7 @@ pub fn page_1() -> Page<'static>
     //===================== rects =========================
     let all_rects = vec! 
     [
-        //random orange thing, just because i can :)
+        //random orange box, just because i can :)
         (ORANGE_COLOR, Rect::new(900, 600, 200, 200)),
     ];
 
@@ -89,14 +97,15 @@ pub fn page_1() -> Page<'static>
     let all_buttons: Vec<(bool, Color, Rect, u16)> = vec!
     [
         //page 1 button
-        (true, PURPLE_COLOR, Rect::new(200, 105, 940, 40), 3),
+        (true, PURPLE_COLOR, Rect::new(750, 300, 300, 100), 3),
     ];
 
     //===================== texts =========================
     let all_text = vec!
     [
+        (18.0, (825, 550),  "Random Orange Box, Because I Can :)".to_string(), SUBTEXT_COLOR),
         //page 1 button text
-        (25.0, (all_buttons[0].2.x + 70, all_buttons[0].2.y + 5), "page 1 button, yay".to_string(), BLACK_COLOR),
+        (25.0, (all_buttons[0].2.x + 15, all_buttons[0].2.y + 25), "page 1 button, yay".to_string(), BLACK_COLOR),
     ];
 
     //===================== page creation =========================
@@ -162,6 +171,12 @@ pub fn subpage_page2() -> Page<'static>
         (18.0, (all_buttons[0].2.x + 10,  all_buttons[0].2.y + 7),  "<-".to_string(), TEXT_COLOR),
     ];
 
+    //===================== images =========================
+    let all_images = vec!
+    [
+       ((500, 500), (300, 300), "/home/elizabeth/.cache/page_system/example_2.jpg"),
+    ];
+
     //===================== page creation =========================
     Page 
     {
@@ -169,6 +184,6 @@ pub fn subpage_page2() -> Page<'static>
         rects:   None,
         buttons: Some( all_buttons ),
         texts:   Some( all_text ),
-        images:  None,
+        images:  Some( all_images ),
     }
 }

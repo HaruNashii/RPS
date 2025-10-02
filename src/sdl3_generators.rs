@@ -1,3 +1,4 @@
+use std::fs;
 use fontconfig::Fontconfig;
 use sdl3::
 {
@@ -5,6 +6,7 @@ use sdl3::
     pixels::Color,
     render::{Texture, TextureCreator},
     video::WindowContext,
+    image::LoadTexture,
 };
 
 
@@ -33,5 +35,34 @@ impl GenText for ( &Vec<(f64, (i32, i32), String, Color)>, &TextureCreator<Windo
         }
 
         vector_to_send
+    }
+}
+
+
+
+
+
+pub trait GenImage { fn generate_image(&self) -> Vec<(Texture<'_>, Rect)>; }
+impl GenImage for ( &Vec<((i32, i32), (u32, u32), &str)>, &TextureCreator<WindowContext>)
+{
+    fn generate_image(&self) -> Vec<(Texture<'_>, Rect)>
+    {
+        let mut new_vec = Vec::new();
+
+        for text_infos in self.0
+        {
+            if fs::exists(text_infos.2).unwrap()
+            {
+                let texture = self.1.load_texture(text_infos.2).unwrap();
+                let rect = Rect::new(text_infos.0.0, text_infos.0.1, text_infos.1.0, text_infos.1.1);
+                new_vec.push((texture, rect));
+            }
+            else 
+            {
+                println!("Warning!!!!! Image File '{}' Doesn't Exist", text_infos.2);
+            }
+        }
+
+        new_vec
     }
 }

@@ -1,0 +1,15 @@
+[package]
+name = "page_system"
+version = "0.1.0"
+edition = "2024"
+
+[profile.dev]
+incremental = true
+
+[profile.release]
+incremental = false
+
+[dependencies]
+fontconfig = "0.10.0"
+sdl3 = { version = "0.15.1", features = ["build-from-source", "ttf"] }
+

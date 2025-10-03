@@ -26,8 +26,8 @@ fn main()
 {
     let (mut canvas, mut event_pump, texture_creator) = create_window();
     let mut page_to_render: u8 = 1;
-    let mut user_input = vec![String::new(), String::new()];
-    let mut can_get_user_input = vec![false, false];
+    let mut user_input = [String::new(), String::new()];
+    let mut can_get_user_input = [false, false];
 
     loop
     {
@@ -44,7 +44,7 @@ fn main()
                 match page_1.user_input
                 {
                     Some(ref new_user_input) => { user_input[0] = new_user_input.to_string(); },
-                    None => { user_input.clear(); },
+                    None => { user_input[0].clear(); },
                 };
 
                 let (_, button_clicked) = ((Some(&persistent_page.buttons.clone().unwrap()), &page_1.buttons.clone().unwrap()), &mut event_pump, window_scale).handle_mouse_input();
@@ -59,7 +59,7 @@ fn main()
                 match page_2.user_input
                 {
                     Some(ref new_user_input) => { user_input[1] = new_user_input.to_string(); },
-                    None => { user_input.clear(); },
+                    None => { user_input[1].clear(); },
                 };
 
 

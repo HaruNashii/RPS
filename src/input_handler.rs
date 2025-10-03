@@ -72,40 +72,35 @@ impl MouseInput for ((Option<&Vec<(bool, Color, Rect, u16)>>, &Vec<(bool, Color,
 
 
 
-pub trait KeyboardInput { fn handle_keyboard_input(&mut self) -> String; }
-impl KeyboardInput for &mut EventPump
+pub trait KeyboardInput { fn handle_keyboard_input(&mut self) -> (String, bool); }
+impl KeyboardInput for (&mut EventPump, String)
 {
-    fn handle_keyboard_input(&mut self) -> String
+    fn handle_keyboard_input(&mut self) -> (String, bool)
     {   
-        let mut is_on_write_mode: (bool, Option<u16>) = (false, None);
-        let mut user_input = String::new();
+        let mut keep_getting_input = true;
 
-        for event in self.poll_iter() 
+        for event in self.0.poll_iter() 
         {
             match event 
             {
                 Event::TextInput{text, .. } =>
                 {
-                    if is_on_write_mode.0 { user_input.push_str(&text) };
+                    self.1.push_str(&text);
                 }
 
                 Event::KeyDown{keycode: Some(Keycode::Backspace), .. } =>
                 {
-                    if is_on_write_mode.0 && !user_input.is_empty() { user_input.pop(); };
+                    if !self.1.is_empty() { self.1.pop(); };
                 }
 
                 Event::KeyDown{keycode: Some(Keycode::Return), .. } =>
                 {
-                    println!("Return Pressed!!!");
+                    keep_getting_input = false;
                 }
 
                 Event::KeyDown{keycode: Some(Keycode::Escape), .. } => 
                 {
-                    if is_on_write_mode.0
-                    {
-                        user_input.clear();
-                        is_on_write_mode = (false, None);
-                    };
+                    keep_getting_input = false;
                 }
 
                 Event::Quit { .. } => 
@@ -116,7 +111,7 @@ impl KeyboardInput for &mut EventPump
                 _ => {}
             }
         }
-
-        user_input
+    
+        (self.1.clone(), keep_getting_input)
     }
 }

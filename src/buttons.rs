@@ -1,5 +1,5 @@
 use sdl3::{pixels::Color, rect::Rect};
-use crate::pages::COLOR_CHANGE_WHEN_SELECTED;
+use crate::{pages::COLOR_CHANGE_WHEN_SELECTED};
 
 
 
@@ -41,40 +41,49 @@ impl ChangeColors for (Vec<(bool, Color, Rect, u16)>, Option<usize>)
 
 
 
-pub fn button_action(button_clicked: Option<usize>, page_to_render: &mut u8)
+pub fn button_action(button_clicked: Option<usize>, page_to_render: &mut u8, mut can_get_user_input: bool) -> bool
 {
     match button_clicked
     {
         Some(1) =>
         {
             //PAGE 1 BUTTON (PERSISTENT PAGE)
-            if *page_to_render != 3 { *page_to_render = 1; };
+            *page_to_render = 1;
         }
 
         Some(2) =>
         {
             //PAGE 2 BUTTON (PERSISTENT PAGE)
-            if *page_to_render != 3 { *page_to_render = 2; };
+            *page_to_render = 2;
         }
 
         Some(3) => 
         {
             // PAGE 1 BUTTON (PAGE 1)
-            if *page_to_render != 3 { println!("Page1 Button Clicked!!"); };
+            if !can_get_user_input { can_get_user_input = true };
         }
 
         Some(4) => 
         {
             //PAGE 2 TO SUBPAGE_PAGE2 BUTTON (PAGE 2)
-            if *page_to_render != 3 { *page_to_render = 3 };
+            *page_to_render = 3;
         }
             
         Some(5) => 
         {
             //SUBPAGE_PAGE2 TO PAGE 2 BUTTON (PAGE 3)
-            if *page_to_render == 3 { *page_to_render = 2 };
+            *page_to_render = 2;
+        }
+
+        Some(6) =>
+        {
+            // PAGE 2 BUTTON (PAGE 2)
+            println!("button 6 pressed");
+            if !can_get_user_input { can_get_user_input = true };
         }
         
         _=> {},
     }
+
+   can_get_user_input 
 }

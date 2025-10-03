@@ -1,8 +1,9 @@
 use sdl3::
 {
-    rect::Rect,
-    pixels::Color,
+    pixels::Color, rect::Rect, EventPump,
 };
+use crate::input_handler::KeyboardInput;
+
 
 
 
@@ -18,6 +19,7 @@ pub struct Page<'a>
     pub buttons: Buttons,
     pub texts:   Texts,
     pub images:  Images<'a>,
+    pub user_input: Option<String>,
 }
 
 
@@ -77,6 +79,7 @@ pub fn persistent_page() -> Page<'static>
         buttons: Some( all_buttons  ),
         texts:   Some( all_text ),
         images:  Some( all_images ),
+        user_input: None,
     }
 }
 
@@ -84,8 +87,16 @@ pub fn persistent_page() -> Page<'static>
 
 
 
-pub fn page_1() -> Page<'static>
+pub fn page_1(event_pump: &mut EventPump, mut user_input: String, can_get_user_input: &mut bool) -> Page<'static>
 {
+    //===================== get user input =========================
+    if *can_get_user_input
+    {
+        let (holder, keep_getting_input) = (event_pump, user_input.to_string()).handle_keyboard_input();
+        user_input = holder;
+        if !keep_getting_input { *can_get_user_input = false };
+    }
+
     //===================== rects =========================
     let all_rects = vec! 
     [
@@ -97,15 +108,17 @@ pub fn page_1() -> Page<'static>
     let all_buttons: Vec<(bool, Color, Rect, u16)> = vec!
     [
         //page 1 button
-        (true, PURPLE_COLOR, Rect::new(750, 300, 300, 100), 3),
+        (true, PURPLE_COLOR, Rect::new(750, 300, 600, 100), 3),
     ];
 
     //===================== texts =========================
     let all_text = vec!
     [
         (18.0, (825, 550),  "Random Orange Box, Because I Can :)".to_string(), SUBTEXT_COLOR),
+        //user input text
+        (18.0, (800, 250),  "Click the Button To Start Getting Input".to_string(), SUBTEXT_COLOR),
         //page 1 button text
-        (25.0, (all_buttons[0].2.x + 15, all_buttons[0].2.y + 25), "page 1 button, yay".to_string(), BLACK_COLOR),
+        (25.0, (all_buttons[0].2.x + 15, all_buttons[0].2.y + 25), user_input.clone(), BLACK_COLOR),
     ];
 
     //===================== page creation =========================
@@ -116,6 +129,7 @@ pub fn page_1() -> Page<'static>
         buttons: Some( all_buttons  ),
         texts:   Some( all_text ),
         images:  None,
+        user_input: Some( user_input ),
     }
 }
 
@@ -123,13 +137,22 @@ pub fn page_1() -> Page<'static>
 
 
 
-pub fn page_2() -> Page<'static>
+pub fn page_2(event_pump: &mut EventPump, mut user_input: String, can_get_user_input: &mut bool) -> Page<'static>
 {
+    //===================== get user input =========================
+    if *can_get_user_input
+    {
+        let (holder, keep_getting_input) = (event_pump, user_input.to_string()).handle_keyboard_input();
+        user_input = holder;
+        if !keep_getting_input { *can_get_user_input = false };
+    }
+
     //===================== buttons =========================
     let all_buttons = vec!
     [
         //page2 sub page button
         (true, PURPLE_COLOR,   Rect::new(10, 105, 940, 40), 4),
+        (true, PURPLE_COLOR,   Rect::new(10, 500, 1800, 100), 6),
     ];
 
     //===================== texts =========================
@@ -137,6 +160,7 @@ pub fn page_2() -> Page<'static>
     [
         //page 2 sub page button text
         (18.0, (all_buttons[0].2.x + 10, all_buttons[0].2.y + 7), "Go To subpage_page2".to_string(), TEXT_COLOR),
+        (18.0, (all_buttons[1].2.x + 10, all_buttons[1].2.y + 7), user_input.clone(), TEXT_COLOR),
     ];
 
     //===================== page creation =========================
@@ -147,6 +171,7 @@ pub fn page_2() -> Page<'static>
         buttons: Some( all_buttons  ),
         texts:   Some( all_text ),
         images:  None,
+        user_input: Some(user_input),
     }
 }
 
@@ -185,5 +210,6 @@ pub fn subpage_page2() -> Page<'static>
         buttons: Some( all_buttons ),
         texts:   Some( all_text ),
         images:  Some( all_images ),
+        user_input: None,
     }
 }

@@ -3,7 +3,6 @@ A very simple and configurable example of an app using only sdl3 and fontconfig 
 
 # Todo:
 - *Scroll System*
-- *Less Scuffed Keyboard Input*
 - *Grid Creator? Maybe*
 
 # Currently Implemented:
@@ -13,4 +12,4 @@ A very simple and configurable example of an app using only sdl3 and fontconfig 
 - *Image Rendering*
 - *Text Rendering*
 - *Rect Rendering*
-- *An Very Scuffed Keyboard Input*
+- *Keyboard Input*

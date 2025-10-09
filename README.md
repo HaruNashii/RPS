@@ -7,6 +7,8 @@ A very simple and configurable example of an app using only sdl3 and fontconfig 
 - *Grid Creator? Maybe*
 
 # Currently Implemented:
+- *Border Radius*
+- *Button Change Color On Hover*
 - *Page System*
 - *Image Rendering*
 - *Text Rendering*

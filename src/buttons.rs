@@ -3,7 +3,6 @@ use sdl3::
     pixels::Color,
     rect::Rect,
 };
-use crate::pages::COLOR_CHANGE_WHEN_SELECTED;
 
 
 
@@ -14,34 +13,6 @@ pub static mut ALLOW_QUERY: bool = true;
 
 
 
-
-pub trait ChangeColors
-{
-   fn button_change_color_when_hovered(self) -> Vec<(bool, Color, Rect, u16)>;
-}
-
-impl ChangeColors for (&Vec<(bool, Color, Rect, u16)>, Option<usize>)
-{
-    fn button_change_color_when_hovered(self) -> Vec<(bool, Color, Rect, u16)>
-    {
-        let mut vec_of_buttons = self.0.clone();
-
-        if let Some(button_being_hovered) = self.1 
-        {
-            for button in &mut vec_of_buttons
-            {
-                if button_being_hovered as u16 == button.3
-                {
-                    if (button.1.r as i32 - COLOR_CHANGE_WHEN_SELECTED.0 as i32) > 1 { button.1.r -= COLOR_CHANGE_WHEN_SELECTED.0 } else { button.1.r = 0 };
-                    if (button.1.g as i32 - COLOR_CHANGE_WHEN_SELECTED.1 as i32) > 1 { button.1.g -= COLOR_CHANGE_WHEN_SELECTED.1 } else { button.1.g = 0 };
-                    if (button.1.b as i32 - COLOR_CHANGE_WHEN_SELECTED.2 as i32) > 1 { button.1.b -= COLOR_CHANGE_WHEN_SELECTED.2 } else { button.1.b = 0 };
-                };
-            };
-        }
-
-        vec_of_buttons
-    }
-}
 
 
 

@@ -1,5 +1,9 @@
-use sdl3::{pixels::Color, rect::Rect};
-use crate::{pages::COLOR_CHANGE_WHEN_SELECTED};
+use sdl3::
+{
+    pixels::Color,
+    rect::Rect,
+};
+use crate::pages::COLOR_CHANGE_WHEN_SELECTED;
 
 
 
@@ -16,13 +20,15 @@ pub trait ChangeColors
    fn button_change_color_when_hovered(self) -> Vec<(bool, Color, Rect, u16)>;
 }
 
-impl ChangeColors for (Vec<(bool, Color, Rect, u16)>, Option<usize>)
+impl ChangeColors for (&Vec<(bool, Color, Rect, u16)>, Option<usize>)
 {
-    fn button_change_color_when_hovered(mut self) -> Vec<(bool, Color, Rect, u16)>
+    fn button_change_color_when_hovered(self) -> Vec<(bool, Color, Rect, u16)>
     {
+        let mut vec_of_buttons = self.0.clone();
+
         if let Some(button_being_hovered) = self.1 
         {
-            for button in &mut self.0
+            for button in &mut vec_of_buttons
             {
                 if button_being_hovered as u16 == button.3
                 {
@@ -33,15 +39,14 @@ impl ChangeColors for (Vec<(bool, Color, Rect, u16)>, Option<usize>)
             };
         }
 
-        self.0
+        vec_of_buttons
     }
 }
 
 
 
 
-
-pub fn button_action(button_clicked: Option<usize>, page_to_render: &mut u8, mut can_get_user_input: bool) -> bool
+pub fn button_action(button_clicked: Option<usize>, get_user_input: &mut (bool, usize), page_to_render: &mut u8)
 {
     match button_clicked
     {
@@ -60,7 +65,8 @@ pub fn button_action(button_clicked: Option<usize>, page_to_render: &mut u8, mut
         Some(3) => 
         {
             // PAGE 1 BUTTON (PAGE 1)
-            if !can_get_user_input { can_get_user_input = true };
+            println!("button 3 pressed");
+            *get_user_input = (true, 0);
         }
 
         Some(4) => 
@@ -79,11 +85,9 @@ pub fn button_action(button_clicked: Option<usize>, page_to_render: &mut u8, mut
         {
             // PAGE 2 BUTTON (PAGE 2)
             println!("button 6 pressed");
-            if !can_get_user_input { can_get_user_input = true };
+            *get_user_input = (true, 1);
         }
         
         _=> {},
     }
-
-   can_get_user_input 
 }

@@ -1,8 +1,8 @@
 use sdl3::
 {
-    pixels::Color, rect::Rect, EventPump,
+    pixels::Color, 
+    rect::Rect,
 };
-use crate::input_handler::KeyboardInput;
 
 
 
@@ -19,7 +19,6 @@ pub struct Page<'a>
     pub buttons: Buttons,
     pub texts:   Texts,
     pub images:  Images<'a>,
-    pub user_input: Option<String>,
 }
 
 
@@ -79,7 +78,6 @@ pub fn persistent_page() -> Page<'static>
         buttons: Some( all_buttons  ),
         texts:   Some( all_text ),
         images:  Some( all_images ),
-        user_input: None,
     }
 }
 
@@ -87,16 +85,8 @@ pub fn persistent_page() -> Page<'static>
 
 
 
-pub fn page_1(event_pump: &mut EventPump, mut user_input: String, can_get_user_input: &mut bool) -> Page<'static>
+pub fn page_1(user_input: String) -> Page<'static>
 {
-    //===================== get user input =========================
-    if *can_get_user_input
-    {
-        let (holder, keep_getting_input) = (event_pump, user_input.to_string()).handle_keyboard_input();
-        user_input = holder;
-        if !keep_getting_input { *can_get_user_input = false };
-    }
-
     //===================== rects =========================
     let all_rects = vec! 
     [
@@ -129,7 +119,6 @@ pub fn page_1(event_pump: &mut EventPump, mut user_input: String, can_get_user_i
         buttons: Some( all_buttons  ),
         texts:   Some( all_text ),
         images:  None,
-        user_input: Some( user_input ),
     }
 }
 
@@ -137,16 +126,8 @@ pub fn page_1(event_pump: &mut EventPump, mut user_input: String, can_get_user_i
 
 
 
-pub fn page_2(event_pump: &mut EventPump, mut user_input: String, can_get_user_input: &mut bool) -> Page<'static>
+pub fn page_2(user_input: String) -> Page<'static>
 {
-    //===================== get user input =========================
-    if *can_get_user_input
-    {
-        let (holder, keep_getting_input) = (event_pump, user_input.to_string()).handle_keyboard_input();
-        user_input = holder;
-        if !keep_getting_input { *can_get_user_input = false };
-    }
-
     //===================== buttons =========================
     let all_buttons = vec!
     [
@@ -171,7 +152,6 @@ pub fn page_2(event_pump: &mut EventPump, mut user_input: String, can_get_user_i
         buttons: Some( all_buttons  ),
         texts:   Some( all_text ),
         images:  None,
-        user_input: Some(user_input),
     }
 }
 
@@ -210,6 +190,5 @@ pub fn subpage_page2() -> Page<'static>
         buttons: Some( all_buttons ),
         texts:   Some( all_text ),
         images:  Some( all_images ),
-        user_input: None,
     }
 }

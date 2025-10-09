@@ -8,8 +8,8 @@ use sdl3::
 
 
 
-type Rects = Option<Vec<(Color, Rect)>>;
-type Buttons = Option<Vec<(bool, Color, Rect, u16)>>;
+type Rects = Option<Vec<(Color, (Rect, i32))>>;
+type Buttons = Option<Vec<(bool, Color, (Rect, i32), u16)>>;
 type Texts = Option<Vec<(f64, (i32, i32), String, Color)>>;
 type Images<'a> = Option<Vec<((i32, i32), (u32, u32), &'a str)>>;
 pub struct Page<'a>
@@ -43,25 +43,25 @@ pub fn persistent_page() -> Page<'static>
     let all_rects = vec!
     [
         //header background
-        (BLACK_COLOR, Rect::new(0, 0, 1920, 100)),
+        (BLACK_COLOR, (Rect::new(0, 0, 1920, 100), 20)),
     ];
 
     //===================== buttons =========================
     let all_buttons = vec!
     [
         //page 1 button
-        (true, PINK_COLOR, Rect::new(550, 10, 200, 75), 1),
+        (true, PINK_COLOR, (Rect::new(550, 10, 200, 75), 20), 1),
         //page 2 button
-        (true, PINK_COLOR, Rect::new(850, 10, 200, 75), 2),
+        (true, PINK_COLOR, (Rect::new(850, 10, 200, 75), 20), 2),
     ];
 
     //===================== texts =========================
     let all_text = vec!
     [
         //page_1 button text
-        (17.0, (all_buttons[0].2.x + 10, all_buttons[0].2.y + 24), "Page 1".to_string(), TEXT_COLOR),
+        (17.0, (all_buttons[0].2.0.x + 10, all_buttons[0].2.0.y + 24), "Page 1".to_string(), TEXT_COLOR),
         //page_2 button text
-        (17.0, (all_buttons[1].2.x + 9, all_buttons[1].2.y + 24), "Page 2".to_string(), TEXT_COLOR),
+        (17.0, (all_buttons[1].2.0.x + 9,  all_buttons[1].2.0.y + 24), "Page 2".to_string(), TEXT_COLOR),
     ];
 
     //===================== images =========================
@@ -91,14 +91,14 @@ pub fn page_1(user_input: String) -> Page<'static>
     let all_rects = vec! 
     [
         //random orange box, just because i can :)
-        (ORANGE_COLOR, Rect::new(900, 600, 200, 200)),
+        (ORANGE_COLOR, (Rect::new(900, 600, 200, 200), 20)),
     ];
 
     //===================== buttons =========================
-    let all_buttons: Vec<(bool, Color, Rect, u16)> = vec!
+    let all_buttons = vec!
     [
         //page 1 button
-        (true, PURPLE_COLOR, Rect::new(750, 300, 600, 100), 3),
+        (true, PURPLE_COLOR, (Rect::new(750, 300, 600, 100), 20), 3),
     ];
 
     //===================== texts =========================
@@ -108,7 +108,7 @@ pub fn page_1(user_input: String) -> Page<'static>
         //user input text
         (18.0, (800, 250),  "Click the Button To Start Getting Input".to_string(), SUBTEXT_COLOR),
         //page 1 button text
-        (25.0, (all_buttons[0].2.x + 15, all_buttons[0].2.y + 25), user_input.clone(), BLACK_COLOR),
+        (25.0, (all_buttons[0].2.0.x + 15, all_buttons[0].2.0.y + 25), user_input.clone(), BLACK_COLOR),
     ];
 
     //===================== page creation =========================
@@ -132,16 +132,16 @@ pub fn page_2(user_input: String) -> Page<'static>
     let all_buttons = vec!
     [
         //page2 sub page button
-        (true, PURPLE_COLOR,   Rect::new(10, 105, 940, 40), 4),
-        (true, PURPLE_COLOR,   Rect::new(10, 500, 1800, 100), 6),
+        (true, PURPLE_COLOR,   (Rect::new(10, 105, 940, 40), 20),   4),
+        (true, PURPLE_COLOR,   (Rect::new(10, 500, 1800, 100), 20), 6),
     ];
 
     //===================== texts =========================
     let all_text = vec!
     [
         //page 2 sub page button text
-        (18.0, (all_buttons[0].2.x + 10, all_buttons[0].2.y + 7), "Go To subpage_page2".to_string(), TEXT_COLOR),
-        (18.0, (all_buttons[1].2.x + 10, all_buttons[1].2.y + 7), user_input.clone(), TEXT_COLOR),
+        (18.0, (all_buttons[0].2.0.x + 10, all_buttons[0].2.0.y + 7), "Go To subpage_page2".to_string(), TEXT_COLOR),
+        (18.0, (all_buttons[1].2.0.x + 10, all_buttons[1].2.0.y + 7), user_input.clone(), TEXT_COLOR),
     ];
 
     //===================== page creation =========================
@@ -165,7 +165,7 @@ pub fn subpage_page2() -> Page<'static>
     let all_buttons = vec!
     [
         //back button subpage page 2
-        (true, PINK_COLOR, Rect::new(20, 20, 50, 40), 5),
+        (true, PINK_COLOR, (Rect::new(20, 20, 50, 40), 20), 5),
     ];
 
     //===================== texts =========================
@@ -173,7 +173,7 @@ pub fn subpage_page2() -> Page<'static>
     [
         (18.0, (950, 400),  "Random Text, Because I Can :)".to_string(), SUBTEXT_COLOR),
         //back button subpage page 2 text
-        (18.0, (all_buttons[0].2.x + 10,  all_buttons[0].2.y + 7),  "<-".to_string(), TEXT_COLOR),
+        (18.0, (all_buttons[0].2.0.x + 10,  all_buttons[0].2.0.y + 7),  "<-".to_string(), TEXT_COLOR),
     ];
 
     //===================== images =========================

@@ -17,12 +17,12 @@ use crate::pages::COLOR_CHANGE_WHEN_SELECTED;
 
 pub trait ChangeColors
 {
-   fn button_change_color_when_hovered(self) -> Vec<(bool, Color, Rect, u16)>;
+   fn button_change_color_when_hovered(self) -> Vec<(bool, Color, (Rect, i32), u16)>;
 }
 
-impl ChangeColors for (&Vec<(bool, Color, Rect, u16)>, Option<usize>)
+impl ChangeColors for (&Vec<(bool, Color, (Rect, i32), u16)>, Option<usize>)
 {
-    fn button_change_color_when_hovered(self) -> Vec<(bool, Color, Rect, u16)>
+    fn button_change_color_when_hovered(self) -> Vec<(bool, Color, (Rect, i32), u16)>
     {
         let mut vec_of_buttons = self.0.clone();
 
@@ -47,11 +47,11 @@ impl ChangeColors for (&Vec<(bool, Color, Rect, u16)>, Option<usize>)
 
 
 
-type MouseInputReturn = (Option<usize>, (Option<Vec<(bool, Color, Rect, u16)>>, Vec<(bool, Color, Rect, u16)>));
+type MouseInputReturn = (Option<usize>, (Option<Vec<(bool, Color, (Rect, i32), u16)>>, Vec<(bool, Color, (Rect, i32), u16)>));
 pub trait MouseInput { fn handle_mouse_input(&mut self) -> MouseInputReturn; }
-impl MouseInput for ((Option<&Vec<(bool, Color, Rect, u16)>>, &Vec<(bool, Color, Rect, u16)>), &mut EventPump, (u32, u32))
+impl MouseInput for ((Option<&Vec<(bool, Color, (Rect, i32), u16)>>, &Vec<(bool, Color, (Rect, i32), u16)>), &mut EventPump, (u32, u32))
 {
-    fn handle_mouse_input(&mut self) -> (Option<usize>, (Option<Vec<(bool, Color, Rect, u16)>>, Vec<(bool, Color, Rect, u16)>))
+    fn handle_mouse_input(&mut self) -> (Option<usize>, (Option<Vec<(bool, Color, (Rect, i32), u16)>>, Vec<(bool, Color, (Rect, i32), u16)>))
     {
         let mouse_state = EventPump::mouse_state(self.1);
         let x = mouse_state.x();
@@ -62,22 +62,22 @@ impl MouseInput for ((Option<&Vec<(bool, Color, Rect, u16)>>, &Vec<(bool, Color,
         let x_scaled = x * (1920.00 / self.2.0 as f32);
         let y_scaled = y * (1080.00 / self.2.1 as f32);
 
-        if let Some(page_buttons) = self.0.0 
+        if let Some(page_buttons) = self.0.0
         {
             for buttons in page_buttons
             {
-                if x_scaled >= buttons.2.x as f32 && x_scaled <= (buttons.2.x + buttons.2.w) as f32 && y_scaled >= buttons.2.y as f32 && y_scaled <= (buttons.2.y + buttons.2.h) as f32
+                if x_scaled >= buttons.2.0.x as f32 && x_scaled <= (buttons.2.0.x + buttons.2.0.w) as f32 && y_scaled >= buttons.2.0.y as f32 && y_scaled <= (buttons.2.0.y + buttons.2.0.h) as f32
                 {
                     button_being_hovered = Some(buttons.3 as usize); 
                 }
             };
         };
 
-        for object in self.0.1
+        for buttons in self.0.1
         {
-            if x_scaled >= object.2.x as f32 && x_scaled <= (object.2.x + object.2.w) as f32 && y_scaled >= object.2.y as f32 && y_scaled <= (object.2.y + object.2.h) as f32
+            if x_scaled >= buttons.2.0.x as f32 && x_scaled <= (buttons.2.0.x + buttons.2.0.w) as f32 && y_scaled >= buttons.2.0.y as f32 && y_scaled <= (buttons.2.0.y + buttons.2.0.h) as f32
             {
-                button_being_hovered = Some(object.3 as usize); 
+                button_being_hovered = Some(buttons.3 as usize); 
             }
         };
 

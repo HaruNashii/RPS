@@ -16,22 +16,7 @@ use crate::
 
 
 
-fn draw_filled_circle(canvas: &mut Canvas<Window>, cx: i32, cy: i32, r: i32, color: Color) 
-{
-    canvas.set_draw_color(color);
-    for y in -r..=r 
-    {
-        for x in -r..=r 
-        {
-            if x * x + y * y <= r * r 
-            {
-                let _ = canvas.draw_point((cx + x, cy + y));
-            }
-        }
-    }
-}
-
-fn draw_rounded_box(canvas: &mut Canvas<Window>, x: i32, y: i32, w: i32, h: i32, r: i32, color: Color)
+fn draw_rounded_box(canvas: &mut Canvas<Window>, x: i32, y: i32, w: i32, h: i32, r: i32, color: Color) 
 {
     canvas.set_draw_color(color);
     canvas.fill_rect(Rect::new(x + r, y, (w - 2 * r) as u32, h as u32)).unwrap();
@@ -41,10 +26,18 @@ fn draw_rounded_box(canvas: &mut Canvas<Window>, x: i32, y: i32, w: i32, h: i32,
         canvas.fill_rect(Rect::new(x + dx, y + r, r as u32, (h - 2 * r) as u32)).unwrap();
     }
 
-    // Four corners (top-left, top-right, bottom-left, bottom-right)
-    for &(ox, oy) in &[(r, r), (w - r - 1, r), (r, h - r - 1), (w - r - 1, h - r - 1)] 
+    for &(ox, oy) in &[(r, r), (w - r - 1, r), (r, h - r - 1), (w - r - 1, h - r - 1),] 
     {
-        draw_filled_circle(canvas, x + ox, y + oy, r, color);
+        for cy in -r..=r 
+        {
+            for cx in -r..=r 
+            {
+                if cx * cx + cy * cy <= r * r 
+                {
+                    canvas.draw_point((x + ox + cx, y + oy + cy)).unwrap();
+                }
+            }
+        }
     }
 }
 

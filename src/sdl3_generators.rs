@@ -44,7 +44,7 @@ impl GenText for ( &Vec<(f64, (i32, i32), String, Color)>, &TextureCreator<Windo
 
 
 pub trait GenImage { fn generate_image(&self) -> Vec<(Texture<'_>, Rect)>; }
-impl GenImage for ( &Vec<((i32, i32), (u32, u32), &str)>, &TextureCreator<WindowContext>)
+impl GenImage for ( &Vec<((i32, i32), (u32, u32), String)>, &TextureCreator<WindowContext>)
 {
     fn generate_image(&self) -> Vec<(Texture<'_>, Rect)>
     {
@@ -52,9 +52,9 @@ impl GenImage for ( &Vec<((i32, i32), (u32, u32), &str)>, &TextureCreator<Window
 
         for text_infos in self.0
         {
-            if fs::exists(text_infos.2).unwrap()
+            if fs::exists(text_infos.2.clone()).unwrap()
             {
-                let texture = self.1.load_texture(text_infos.2).unwrap();
+                let texture = self.1.load_texture(text_infos.2.clone()).unwrap();
                 let rect = Rect::new(text_infos.0.0, text_infos.0.1, text_infos.1.0, text_infos.1.1);
                 new_vec.push((texture, rect));
             }

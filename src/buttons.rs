@@ -1,13 +1,3 @@
-use sdl3::
-{
-    pixels::Color,
-    rect::Rect,
-};
-
-
-
-
-
 pub static mut ALLOW_QUERY: bool = true;
 
 
@@ -36,7 +26,6 @@ pub fn button_action(button_clicked: Option<usize>, get_user_input: &mut (bool, 
         Some(3) => 
         {
             // PAGE 1 BUTTON (PAGE 1)
-            println!("button 3 pressed");
             *get_user_input = (true, 0);
         }
 
@@ -55,7 +44,6 @@ pub fn button_action(button_clicked: Option<usize>, get_user_input: &mut (bool, 
         Some(6) =>
         {
             // PAGE 2 BUTTON (PAGE 2)
-            println!("button 6 pressed");
             *get_user_input = (true, 1);
         }
         

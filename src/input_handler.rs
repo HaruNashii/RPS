@@ -116,32 +116,27 @@ impl KeyboardInput for (&mut EventPump, String, bool)
 {
     fn handle_keyboard_input(&mut self) -> (String, bool)
     {   
-        println!("function executed");
         for event in self.0.poll_iter() 
         {
             match event 
             {
                 Event::TextInput{text, .. } =>
                 {
-                    println!("any text pressed");
                     self.1.push_str(&text);
                 }
 
                 Event::KeyDown{keycode: Some(Keycode::Backspace), .. } =>
                 {
-                    println!("any text pressed");
                     if !self.1.is_empty() { self.1.pop(); };
                 }
 
                 Event::KeyDown{keycode: Some(Keycode::Return), .. } =>
                 {
-                    println!("any text pressed");
                     self.2 = false;
                 }
 
                 Event::KeyDown{keycode: Some(Keycode::Escape), .. } => 
                 {
-                    println!("any text pressed");
                     self.2 = false;
                 }
 

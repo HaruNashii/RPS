@@ -1,3 +1,4 @@
+use std::env;
 use sdl3::
 {
     pixels::Color, 
@@ -11,14 +12,14 @@ use sdl3::
 type Rects = Option<Vec<(Color, (Rect, i32))>>;
 type Buttons = Option<Vec<(bool, Color, (Rect, i32), u16)>>;
 type Texts = Option<Vec<(f64, (i32, i32), String, Color)>>;
-type Images<'a> = Option<Vec<((i32, i32), (u32, u32), &'a str)>>;
-pub struct Page<'a>
+type Images = Option<Vec<((i32, i32), (u32, u32), String)>>;
+pub struct Page
 {
     pub background_color: Option<Color>,
     pub rects:   Rects,
     pub buttons: Buttons,
     pub texts:   Texts,
-    pub images:  Images<'a>,
+    pub images:  Images,
 }
 
 
@@ -37,7 +38,7 @@ const BLACK_COLOR:      Color = Color::RGB(17,  17,  27);
 
 
 
-pub fn persistent_page() -> Page<'static>
+pub fn persistent_page() -> Page
 {
     //===================== rects =========================
     let all_rects = vec!
@@ -65,9 +66,10 @@ pub fn persistent_page() -> Page<'static>
     ];
 
     //===================== images =========================
+    let image_path = format!("{}/.cache/page_system/example_1.jpg", env::home_dir().unwrap().display());
     let all_images = vec!
     [
-       ((10, 10), (50, 50), "/home/elizabeth/.cache/page_system/example_1.jpg"),
+       ((10, 10), (50, 50), image_path),
     ];
 
     //===================== page creation =========================
@@ -85,7 +87,7 @@ pub fn persistent_page() -> Page<'static>
 
 
 
-pub fn page_1(user_input: String) -> Page<'static>
+pub fn page_1(user_input: String) -> Page
 {
     //===================== rects =========================
     let all_rects = vec! 
@@ -126,7 +128,7 @@ pub fn page_1(user_input: String) -> Page<'static>
 
 
 
-pub fn page_2(user_input: String) -> Page<'static>
+pub fn page_2(user_input: String) -> Page
 {
     //===================== buttons =========================
     let all_buttons = vec!
@@ -159,7 +161,7 @@ pub fn page_2(user_input: String) -> Page<'static>
 
 
 
-pub fn subpage_page2() -> Page<'static>
+pub fn subpage_page2() -> Page
 {
     //===================== buttons =========================
     let all_buttons = vec!
@@ -177,9 +179,10 @@ pub fn subpage_page2() -> Page<'static>
     ];
 
     //===================== images =========================
+    let image_path = format!("{}/.cache/page_system/example_2.jpg", env::home_dir().unwrap().display());
     let all_images = vec!
     [
-       ((500, 500), (300, 300), "/home/elizabeth/.cache/page_system/example_2.jpg"),
+       ((500, 500), (300, 300), image_path),
     ];
 
     //===================== page creation =========================

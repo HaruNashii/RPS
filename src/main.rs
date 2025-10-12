@@ -37,7 +37,6 @@ fn main()
         if get_user_input.0 { (user_input[get_user_input.1], get_user_input.0) = (&mut event_pump, user_input[get_user_input.1].to_string(), get_user_input.0).handle_keyboard_input(); }
 
 
-
         match page_to_render
         {
             1 => 

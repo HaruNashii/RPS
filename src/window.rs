@@ -83,24 +83,15 @@ pub fn render_page(page: Page, persistent_page: Option<Page>, canvas: &mut Canva
     canvas.set_draw_color(page.background_color.unwrap());
     canvas.clear();
 
-
-
-
-
-
-
-
-
-
     if let Some(rect_vector_of_tuple)    = &page.rects    { for tuple in rect_vector_of_tuple     { canvas.set_draw_color(tuple.0); draw_rounded_box(canvas, tuple.1.0.x(), tuple.1.0.y(), tuple.1.0.width() as i32, tuple.1.0.height() as i32, tuple.1.1, tuple.0); } }
-    if let Some(buttons_vector_of_tuple) = &page.buttons  { for tuple in buttons_vector_of_tuple  { if tuple.0 { canvas.set_draw_color(tuple.1); draw_rounded_box(canvas, tuple.2.0.x(), tuple.2.0.y(), tuple.2.0.width() as i32, tuple.2.0.height() as i32, tuple.2.1, tuple.1); } } }
+    if let Some(buttons_vector_of_tuple) = &page.buttons  { for tuple in buttons_vector_of_tuple  { if tuple.enabled { canvas.set_draw_color(tuple.color); draw_rounded_box(canvas, tuple.rect.x(), tuple.rect.y(), tuple.rect.width() as i32, tuple.rect.height() as i32, tuple.radius, tuple.color); } } }
     if let Some(texts_vector_of_tuple)   = &page.texts    { for tuple in (texts_vector_of_tuple,  texture_creator).generate_text()  { canvas.copy(&tuple.0, None, tuple.1).unwrap(); } }
     if let Some(images_vector_of_tuple)  = &page.images   { for tuple in (images_vector_of_tuple, texture_creator).generate_image() { canvas.copy(&tuple.0, None, tuple.1).unwrap(); } }
 
     if let Some(persistent_elements) = persistent_page 
     {
         if let Some(rect_vector_of_tuple) =    &persistent_elements.rects   { for tuple in rect_vector_of_tuple    { canvas.set_draw_color(tuple.0); draw_rounded_box(canvas, tuple.1.0.x(), tuple.1.0.y(), tuple.1.0.width() as i32, tuple.1.0.height() as i32, tuple.1.1, tuple.0); } }
-        if let Some(buttons_vector_of_tuple) = &persistent_elements.buttons { for tuple in buttons_vector_of_tuple { if tuple.0 { canvas.set_draw_color(tuple.1); draw_rounded_box(canvas, tuple.2.0.x(), tuple.2.0.y(), tuple.2.0.width() as i32, tuple.2.0.height() as i32, tuple.2.1, tuple.1); } } }
+        if let Some(buttons_vector_of_tuple) = &persistent_elements.buttons { for tuple in buttons_vector_of_tuple { if tuple.enabled { canvas.set_draw_color(tuple.color); draw_rounded_box(canvas, tuple.rect.x(), tuple.rect.y(), tuple.rect.width() as i32, tuple.rect.height() as i32, tuple.radius, tuple.color); } } }
         if let Some(texts_vector_of_tuple) =   &persistent_elements.texts   { for tuple in (texts_vector_of_tuple,  texture_creator).generate_text()  { canvas.copy(&tuple.0, None, tuple.1).unwrap(); } }
         if let Some(images_vector_of_tuple) =  &persistent_elements.images  { for tuple in (images_vector_of_tuple, texture_creator).generate_image() { canvas.copy(&tuple.0, None, tuple.1).unwrap(); } }
     }

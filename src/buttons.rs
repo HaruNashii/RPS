@@ -1,38 +1,35 @@
-pub fn button_action(button_clicked: Option<usize>, get_user_input: &mut (bool, usize), page_to_render: &mut u8)
+use crate::pages::ButtonId;
+
+pub fn button_action(button_clicked: Option<ButtonId>, get_user_input: &mut (bool, usize), page_to_render: &mut u8)
 {
     match button_clicked
     {
-        Some(1) =>
+        Some(ButtonId::Page1) =>
         {
-            //PAGE 1 BUTTON (PERSISTENT PAGE)
             *page_to_render = 1;
         }
 
-        Some(2) =>
+        Some(ButtonId::Page2) =>
         {
-            //PAGE 2 BUTTON (PERSISTENT PAGE)
             *page_to_render = 2;
         }
 
-        Some(3) => 
+        Some(ButtonId::InputStart1) => 
         {
-            // PAGE 1 BUTTON (PAGE 1)
             *get_user_input = (true, 0);
         }
 
-        Some(4) => 
+        Some(ButtonId::SubPage) => 
         {
-            //PAGE 2 TO SUBPAGE_PAGE2 BUTTON (PAGE 2)
             *page_to_render = 3;
         }
             
-        Some(5) => 
+        Some(ButtonId::Back) => 
         {
-            //SUBPAGE_PAGE2 TO PAGE 2 BUTTON (PAGE 3)
             *page_to_render = 2;
         }
 
-        Some(6) =>
+        Some(ButtonId::InputStart2) =>
         {
             // PAGE 2 BUTTON (PAGE 2)
             *get_user_input = (true, 1);

@@ -4,11 +4,9 @@ use sdl3::
     event::Event,
     keyboard::Keycode,
     mouse::MouseButton,
-    pixels::Color,
-    rect::Rect,
     EventPump
 };
-use crate::pages::COLOR_CHANGE_WHEN_SELECTED;
+use crate::pages::{Button, ButtonId, COLOR_CHANGE_WHEN_SELECTED};
 
 
 
@@ -17,29 +15,27 @@ use crate::pages::COLOR_CHANGE_WHEN_SELECTED;
 
 pub trait ChangeColors
 {
-   fn button_change_color_when_hovered(self) -> Vec<(bool, Color, (Rect, i32), u16)>;
+   fn button_change_color_when_hovered(self) -> Option<Vec<Button>>;
 }
 
-impl ChangeColors for (&Vec<(bool, Color, (Rect, i32), u16)>, Option<usize>)
+impl ChangeColors for (Option<Vec<Button>>, Option<ButtonId>)
 {
-    fn button_change_color_when_hovered(self) -> Vec<(bool, Color, (Rect, i32), u16)>
+    fn button_change_color_when_hovered(mut self) -> Option<Vec<Button>>
     {
-        let mut vec_of_buttons = self.0.clone();
-
-        if let Some(button_being_hovered) = self.1 
+        if let Some(button_hovered) = self.1 && self.0.is_some()
         {
-            for button in &mut vec_of_buttons
+            for button in self.0.as_mut().unwrap()
             {
-                if button_being_hovered as u16 == button.3
+                if button_hovered as usize == button.id as usize
                 {
-                    if (button.1.r as i32 - COLOR_CHANGE_WHEN_SELECTED.0 as i32) > 1 { button.1.r -= COLOR_CHANGE_WHEN_SELECTED.0 } else { button.1.r = 0 };
-                    if (button.1.g as i32 - COLOR_CHANGE_WHEN_SELECTED.1 as i32) > 1 { button.1.g -= COLOR_CHANGE_WHEN_SELECTED.1 } else { button.1.g = 0 };
-                    if (button.1.b as i32 - COLOR_CHANGE_WHEN_SELECTED.2 as i32) > 1 { button.1.b -= COLOR_CHANGE_WHEN_SELECTED.2 } else { button.1.b = 0 };
+                    if (button.color.r as i32 - COLOR_CHANGE_WHEN_SELECTED.0 as i32) > 1 { button.color.r -= COLOR_CHANGE_WHEN_SELECTED.0 } else { button.color.r = 0 };
+                    if (button.color.g as i32 - COLOR_CHANGE_WHEN_SELECTED.1 as i32) > 1 { button.color.g -= COLOR_CHANGE_WHEN_SELECTED.1 } else { button.color.g = 0 };
+                    if (button.color.b as i32 - COLOR_CHANGE_WHEN_SELECTED.2 as i32) > 1 { button.color.b -= COLOR_CHANGE_WHEN_SELECTED.2 } else { button.color.b = 0 };
                 };
-            };
-        }
+            }
+        }; 
 
-        vec_of_buttons
+        self.0
     }
 }
 
@@ -47,11 +43,11 @@ impl ChangeColors for (&Vec<(bool, Color, (Rect, i32), u16)>, Option<usize>)
 
 
 
-type MouseInputReturn = (Option<usize>, (Option<Vec<(bool, Color, (Rect, i32), u16)>>, Vec<(bool, Color, (Rect, i32), u16)>));
+type MouseInputReturn = (Option<ButtonId>, (Option<Vec<Button>>, Vec<Button>));
 pub trait MouseInput { fn handle_mouse_input(&mut self) -> MouseInputReturn; }
-impl MouseInput for ((Option<&Vec<(bool, Color, (Rect, i32), u16)>>, &Vec<(bool, Color, (Rect, i32), u16)>), &mut EventPump, (u32, u32))
+impl MouseInput for ((&Option<Vec<Button>>, &Option<Vec<Button>>), &mut EventPump, (u32, u32))
 {
-    fn handle_mouse_input(&mut self) -> (Option<usize>, (Option<Vec<(bool, Color, (Rect, i32), u16)>>, Vec<(bool, Color, (Rect, i32), u16)>))
+    fn handle_mouse_input(&mut self) -> MouseInputReturn
     {
         let mouse_state = EventPump::mouse_state(self.1);
         let x = mouse_state.x();
@@ -62,24 +58,27 @@ impl MouseInput for ((Option<&Vec<(bool, Color, (Rect, i32), u16)>>, &Vec<(bool,
         let x_scaled = x * (1920.00 / self.2.0 as f32);
         let y_scaled = y * (1080.00 / self.2.1 as f32);
 
-        if let Some(page_buttons) = self.0.0
+        if let Some(persistent_page_buttons) = self.0.0
         {
-            for buttons in page_buttons
+            for buttons in persistent_page_buttons
             {
-                if x_scaled >= buttons.2.0.x as f32 && x_scaled <= (buttons.2.0.x + buttons.2.0.w) as f32 && y_scaled >= buttons.2.0.y as f32 && y_scaled <= (buttons.2.0.y + buttons.2.0.h) as f32
+                if x_scaled >= buttons.rect.x as f32 && x_scaled <= (buttons.rect.x + buttons.rect.w) as f32 && y_scaled >= buttons.rect.y as f32 && y_scaled <= (buttons.rect.y + buttons.rect.h) as f32
                 {
-                    button_being_hovered = Some(buttons.3 as usize); 
+                    button_being_hovered = Some(buttons.id); 
                 }
             };
         };
-
-        for buttons in self.0.1
+        
+        if let Some(page_buttons) = self.0.1
         {
-            if x_scaled >= buttons.2.0.x as f32 && x_scaled <= (buttons.2.0.x + buttons.2.0.w) as f32 && y_scaled >= buttons.2.0.y as f32 && y_scaled <= (buttons.2.0.y + buttons.2.0.h) as f32
+            for buttons in page_buttons
             {
-                button_being_hovered = Some(buttons.3 as usize); 
-            }
-        };
+                if x_scaled >= buttons.rect.x as f32 && x_scaled <= (buttons.rect.x + buttons.rect.w) as f32 && y_scaled >= buttons.rect.y as f32 && y_scaled <= (buttons.rect.y + buttons.rect.h) as f32
+                {
+                    button_being_hovered = Some(buttons.id); 
+                }
+            };
+        }
 
         for event in self.1.poll_iter() 
         {
@@ -87,7 +86,7 @@ impl MouseInput for ((Option<&Vec<(bool, Color, (Rect, i32), u16)>>, &Vec<(bool,
             {
                 Event::MouseButtonDown {mouse_btn: MouseButton::Left, ..} =>
                 {
-                    if let Some(result) = button_being_hovered {button_clicked = Some(result)};
+                    if let Some(button_hovered) = button_being_hovered {button_clicked = Some(button_hovered)};
                 }
 
                 Event::Quit { .. } => 
@@ -99,11 +98,11 @@ impl MouseInput for ((Option<&Vec<(bool, Color, (Rect, i32), u16)>>, &Vec<(bool,
             }
         }
 
-        let mut new_persistent_page_button_colors = None;
-        if let Some(result) = self.0.0 { new_persistent_page_button_colors = Some((result, button_being_hovered).button_change_color_when_hovered()); };
-        let new_button_colors = (self.0.1, button_being_hovered).button_change_color_when_hovered();
+
+        let new_persistent_page_button_colors = (self.0.0.clone(), button_being_hovered).button_change_color_when_hovered();
+        let new_button_colors = (self.0.1.clone(), button_being_hovered).button_change_color_when_hovered();
         
-        (button_clicked, (new_persistent_page_button_colors, new_button_colors))
+        (button_clicked, (new_persistent_page_button_colors, new_button_colors.unwrap()))
     }
 }
 

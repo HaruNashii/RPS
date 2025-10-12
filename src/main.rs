@@ -44,7 +44,7 @@ fn main()
                 let mut page_1 = page_1(user_input[0].clone());
 
 
-                let (button_clicked, new_buttons) = ((Some(&persistent_page.buttons.clone().unwrap()), &page_1.buttons.clone().unwrap()), &mut event_pump, window_scale).handle_mouse_input();
+                let (button_clicked, new_buttons) = ((&persistent_page.buttons, &page_1.buttons), &mut event_pump, window_scale).handle_mouse_input();
                 persistent_page.buttons = new_buttons.0;
                 page_1.buttons = Some(new_buttons.1);
 
@@ -56,7 +56,7 @@ fn main()
             {
                 let mut page_2 = page_2(user_input[1].clone());
 
-                let (button_clicked, new_buttons) = ((Some(&persistent_page.buttons.clone().unwrap()), &page_2.buttons.clone().unwrap()), &mut event_pump, window_scale).handle_mouse_input();
+                let (button_clicked, new_buttons) = ((&persistent_page.buttons, &page_2.buttons), &mut event_pump, window_scale).handle_mouse_input();
                 persistent_page.buttons = new_buttons.0;
                 page_2.buttons = Some(new_buttons.1);
 
@@ -68,7 +68,7 @@ fn main()
             {
                 let mut subpage_page2 = subpage_page2();
 
-                let (button_clicked, new_buttons) = ((None, &subpage_page2.buttons.clone().unwrap()), &mut event_pump, window_scale).handle_mouse_input();
+                let (button_clicked, new_buttons) = ((&None, &subpage_page2.buttons), &mut event_pump, window_scale).handle_mouse_input();
                 subpage_page2.buttons = Some(new_buttons.1);
 
                 button_action(button_clicked, &mut (false, 0), &mut page_to_render);

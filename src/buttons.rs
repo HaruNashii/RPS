@@ -1,12 +1,3 @@
-pub static mut ALLOW_QUERY: bool = true;
-
-
-
-
-
-
-
-
 pub fn button_action(button_clicked: Option<usize>, get_user_input: &mut (bool, usize), page_to_render: &mut u8)
 {
     match button_clicked

@@ -61,6 +61,25 @@ impl InputHandler
                     }
                 }
 
+                Event::KeyDown { keycode: Some(Keycode::Backspace), .. } => 
+                {
+                    if state.capturing_input 
+                    {
+                        let current_page = state.current_page;
+                        let vec_user_input = &state.vec_user_input;
+                        let mut new_vec = vec_user_input.clone();
+
+                        for (index, user_input) in vec_user_input.iter().enumerate()
+                        {
+                            if user_input.1 == current_page && !new_vec[index].0.is_empty()
+                            {
+                                new_vec[index].0.pop();
+                            }
+                        }
+                        state.vec_user_input = new_vec;
+                    }
+                }
+
                 Event::KeyDown { keycode: Some(Keycode::Return), .. } => 
                 {
                     if state.capturing_input 

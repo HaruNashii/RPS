@@ -88,73 +88,8 @@ const RED_COLOR:        Color = Color::RGB(255,  0,  0);
 
 
 
-
 impl Page 
 {
-    pub fn need_user_input() -> Option<Vec<PageId>>
-    {
-        Some(vec![PageId::Page1, PageId::Page2])
-    }
-
-    pub fn from_id(id: PageId, user_input: Vec<(String, PageId)>) -> Self 
-    {
-        match id 
-        {
-            PageId::Persistent => Self::persistent_page(),
-            PageId::Page1 => 
-            {
-                let mut vec_to_send = Vec::new();
-                for string_and_id in user_input
-                {
-                    if string_and_id.1 == PageId::Page1
-                    {
-                        vec_to_send.push(string_and_id.0);
-                    };
-                };
-
-                if vec_to_send.is_empty() { vec_to_send.push(String::new())};
-                Self::page_1(vec_to_send)
-            },
-            PageId::Page2 =>
-            {
-                let mut vec_string_to_send = Vec::new();
-                for string_and_id in user_input
-                {
-                    if string_and_id.1 == PageId::Page2
-                    {
-                        vec_string_to_send.push(string_and_id.0);
-                    };
-                };
-
-                if vec_string_to_send.is_empty() { vec_string_to_send.push(String::new())};
-                Self::page_2(vec_string_to_send)
-            },
-            PageId::Page2SubPage => Self::subpage_page2(),
-        }
-    }
-
-    pub fn button_at(&self, x: f32, y: f32, window_size: (u32, u32)) -> Option<ButtonId> 
-    {
-        if let Some(vec_buttons) = &self.buttons
-        {
-            let x_scaled = x * (1920.00 / window_size.0 as f32);
-            let y_scaled = y * (1080.00 / window_size.1 as f32);
-
-            for button in vec_buttons
-            {
-                if x_scaled >= button.rect.x as f32 && x_scaled <= (button.rect.x + button.rect.w) as f32 && y_scaled >= button.rect.y as f32 && y_scaled <= (button.rect.y + button.rect.h) as f32
-                {
-                    return Some(button.id);
-                }
-            }
-        }
-        None
-    }
-
-
-
-
-
     pub fn persistent_page() -> Self
     {
         //===================== rects =========================

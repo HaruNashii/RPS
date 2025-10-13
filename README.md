@@ -4,10 +4,10 @@ A very simple and configurable example of an app using only sdl3 and fontconfig 
 # Todo:
 - *Scroll System*
 - *Grid Creator? Maybe*
+- *Button Change Color On Hover*
 
 # Currently Implemented:
 - *Border Radius*
-- *Button Change Color On Hover*
 - *Page System*
 - *Image Rendering*
 - *Text Rendering*

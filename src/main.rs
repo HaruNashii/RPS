@@ -29,16 +29,9 @@ fn main()
     'running: loop 
     {
         std::thread::sleep(Duration::from_millis(32));
-        app_state.window_size = (canvas.window().size().0, canvas.window().size().1);
         match input_handler.poll(&mut event_pump) 
         {
-            InputEvent::Click(x, y) => 
-            {
-                if let Some(button_id) = app_state.page_at(x, y) 
-                {
-                    app_state.handle_action(button_id);
-                }
-            }
+            InputEvent::Click(x, y) => if let Some(button_id) = app_state.page_at(x, y) { app_state.handle_action(button_id); },
             InputEvent::Text(s) => app_state.handle_text(s),
             InputEvent::Backspace => app_state.handle_backspace(),
             InputEvent::Submit => app_state.submit_input(),

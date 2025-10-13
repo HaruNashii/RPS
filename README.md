@@ -74,7 +74,7 @@ Quick start
    ```cargo build``` # or `cargo build --release` for release build
 
 4. Run
-   cargo run --release   # or just `cargo run` for debug build
+   ```cargo run --release```   # or just `cargo run` for debug build
 
 If cargo fails to link: check that your system SDL3 headers/libraries are installed and reachable (pkg-config, environment variables, or library paths).
 

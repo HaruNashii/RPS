@@ -146,6 +146,7 @@ impl AppState
     /// Render All Pages
     pub fn render(&mut self, canvas: &mut Canvas<Window>, texture_creator: &TextureCreator<WindowContext>, ttf_context: &Sdl3TtfContext) 
     {
+        self.window_size = (canvas.window().size().0, canvas.window().size().1);
         let page = self.create_current_page();
         if page.has_persistant_page 
         {

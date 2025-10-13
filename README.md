@@ -156,7 +156,7 @@ Roadmap / Ideas
 ---
 
 License
-This Project are licensed under the MIT licence. Please see the licence file for more information. tl;dr you can do whatever you want as long as you include the original copyright and license notice in any copy of the software/source.
+This Project are licensed under the MIT licence. Please see the [license](https://github.com/HaruNashii/basic_sdl3_rust_page_system/blob/main/LICENSE) file for more information. tl;dr you can do whatever you want as long as you include the original copyright and license notice in any copy of the software/source.
 
 ---
 

@@ -1,5 +1,9 @@
-use crate::system::window::WINDOW_DEFAULT_SCALE;
 use std::env;
+use crate::
+{
+    system::window::WINDOW_DEFAULT_SCALE,
+    ui::style::{BACKGROUND_COLOR, TEXT_COLOR, SUBTEXT_COLOR, PURPLE_COLOR, PINK_COLOR, ORANGE_COLOR, BLACK_COLOR, RED_COLOR},
+};
 use sdl3::
 {
     pixels::Color,
@@ -75,20 +79,6 @@ pub enum ButtonId
     ButtonSubPage,
     ButtonBack,
 }
-
-
-
-
-
-pub const COLOR_CHANGE_WHEN_SELECTED: (u8, u8, u8) = (25, 25, 25);
-const BACKGROUND_COLOR: Color = Color::RGB(30, 30, 46);
-const TEXT_COLOR: Color = Color::RGB(255, 255, 255);
-const SUBTEXT_COLOR: Color = Color::RGB(186, 194, 222);
-const PURPLE_COLOR: Color = Color::RGB(203, 166, 247);
-const PINK_COLOR: Color = Color::RGB(243, 139, 168);
-const ORANGE_COLOR: Color = Color::RGB(250, 179, 135);
-const BLACK_COLOR: Color = Color::RGB(17, 17, 27);
-const RED_COLOR: Color = Color::RGB(255, 0, 0);
 
 
 

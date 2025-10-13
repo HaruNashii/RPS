@@ -1,0 +1,319 @@
+use std::env;
+use sdl3::
+{
+    pixels::Color, 
+    rect::Rect,
+};
+use crate::system::window::WINDOW_DEFAULT_SCALE;
+
+
+
+
+
+struct RectCenterPos { pos_y: i32, pos_x: i32, w: u32, h: u32}
+fn get_center(rect_size: (i32, i32), window_pos: (u32, u32)) -> RectCenterPos
+{
+    let new_pos = ((window_pos.0 as i32 / 2) - (rect_size.0 / 2), (window_pos.1 as i32 / 2) - (rect_size.1 / 2));
+
+    RectCenterPos
+    {
+        pos_x: new_pos.0,
+        pos_y: new_pos.1,
+        w: rect_size.0 as u32,
+        h: rect_size.1 as u32,
+    }
+}
+
+
+
+
+
+type Rects = Option<Vec<(Color, (Rect, i32))>>;
+type Buttons = Option<Vec<Button>>;
+type Texts = Option<Vec<(f64, (i32, i32), String, Color)>>;
+type Images = Option<Vec<((i32, i32), (u32, u32), String)>>;
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PageId 
+{
+    Persistent,
+    Page1,
+    Page2,
+    Page2SubPage,
+}
+#[derive(Debug, Clone)]
+pub struct Page
+{
+    pub has_persistant_page: bool,
+    pub id: PageId,
+    pub background_color: Option<Color>,
+    pub rects:   Rects,
+    pub buttons: Buttons,
+    pub texts:   Texts,
+    pub images:  Images,
+}
+#[derive(Clone, Copy, Debug)]
+pub struct Button 
+{
+    pub enabled: bool,
+    pub color: Color,
+    pub rect: Rect,
+    pub radius: i32,
+    pub id: ButtonId,
+}
+#[derive(Clone, Copy, Debug)]
+#[repr(usize)]
+pub enum ButtonId 
+{
+    ButtonPage1,
+    ButtonPage2,
+    ButtonInputStart1,
+    ButtonInputStart2,
+    ButtonSubPage,
+    ButtonBack,
+}
+
+
+
+
+
+pub const COLOR_CHANGE_WHEN_SELECTED: (u8, u8, u8) = (25, 25, 25);
+const BACKGROUND_COLOR: Color = Color::RGB(30,  30,  46);
+const TEXT_COLOR:       Color = Color::RGB(255, 255, 255);
+const SUBTEXT_COLOR:    Color = Color::RGB(186, 194, 222);
+const PURPLE_COLOR:     Color = Color::RGB(203, 166, 247);
+const PINK_COLOR:       Color = Color::RGB(243, 139, 168);
+const ORANGE_COLOR:     Color = Color::RGB(250, 179, 135);
+const BLACK_COLOR:      Color = Color::RGB(17,  17,  27);
+const RED_COLOR:        Color = Color::RGB(255,  0,  0);
+
+
+
+
+impl Page 
+{
+    pub fn need_user_input() -> Option<Vec<PageId>>
+    {
+        Some(vec![PageId::Page1, PageId::Page2])
+    }
+
+    pub fn from_id(id: PageId, user_input: Vec<(String, PageId)>) -> Self 
+    {
+        match id 
+        {
+            PageId::Persistent => Self::persistent_page(),
+            PageId::Page1 => 
+            {
+                let mut vec_to_send = Vec::new();
+                for string_and_id in user_input
+                {
+                    if string_and_id.1 == PageId::Page1
+                    {
+                        vec_to_send.push(string_and_id.0);
+                    };
+                };
+
+                if vec_to_send.is_empty() { vec_to_send.push(String::new())};
+                Self::page_1(vec_to_send)
+            },
+            PageId::Page2 =>
+            {
+                let mut vec_string_to_send = Vec::new();
+                for string_and_id in user_input
+                {
+                    if string_and_id.1 == PageId::Page2
+                    {
+                        vec_string_to_send.push(string_and_id.0);
+                    };
+                };
+
+                if vec_string_to_send.is_empty() { vec_string_to_send.push(String::new())};
+                Self::page_2(vec_string_to_send)
+            },
+            PageId::Page2SubPage => Self::subpage_page2(),
+        }
+    }
+
+    pub fn button_at(&self, x: f32, y: f32, window_size: (u32, u32)) -> Option<ButtonId> 
+    {
+        if let Some(vec_buttons) = &self.buttons
+        {
+            let x_scaled = x * (1920.00 / window_size.0 as f32);
+            let y_scaled = y * (1080.00 / window_size.1 as f32);
+
+            for button in vec_buttons
+            {
+                if x_scaled >= button.rect.x as f32 && x_scaled <= (button.rect.x + button.rect.w) as f32 && y_scaled >= button.rect.y as f32 && y_scaled <= (button.rect.y + button.rect.h) as f32
+                {
+                    return Some(button.id);
+                }
+            }
+        }
+        None
+    }
+
+
+
+
+
+    pub fn persistent_page() -> Self
+    {
+        //===================== rects =========================
+        let all_rects = vec!
+        [
+            (BLACK_COLOR, (Rect::new(0, 0, 1920, 100), 0)),
+        ];
+
+        let padding_x = 200;
+        let window_center = get_center((200, 75), WINDOW_DEFAULT_SCALE);
+        //===================== buttons =========================
+        let all_buttons = vec!
+        [
+            Button{ enabled: true, color: PINK_COLOR, rect: Rect::new(window_center.pos_x - padding_x, 10, window_center.w, window_center.h), radius: 5, id: ButtonId::ButtonPage1},
+            Button{ enabled: true, color: PINK_COLOR, rect: Rect::new(window_center.pos_x + padding_x, 10, window_center.w, window_center.h), radius: 5, id: ButtonId::ButtonPage2},
+        ];
+
+        //===================== texts =========================
+        let all_text = vec!
+        [
+            //page_1 button text
+            (17.0, (all_buttons[0].rect.x + 9,  all_buttons[0].rect.y + 24), "Page 1".to_string(), TEXT_COLOR),
+            //page_2 button text
+            (17.0, (all_buttons[1].rect.x + 9,  all_buttons[1].rect.y + 24), "Page 2".to_string(), TEXT_COLOR),
+        ];
+
+        //===================== images =========================
+        let all_images = vec!
+        [
+            ((10, 10), (50, 50), format!("{}/.cache/page_system/example_1.jpg", env::home_dir().unwrap().display())),
+        ];
+
+        //===================== page creation =========================
+        Self
+        {
+            has_persistant_page: false,
+            id: PageId::Persistent,
+            background_color: None,
+            rects:   Some( all_rects ),
+            buttons: Some( all_buttons  ),
+            texts:   Some( all_text ),
+            images:  Some( all_images ),
+        }
+    }
+
+
+
+
+
+    pub fn page_1(user_input: Vec<String>) -> Self
+    {
+        let padding_y = 20;
+        let red_rect_data = get_center((200, 200), WINDOW_DEFAULT_SCALE);
+        let orange_rect_data = get_center((800, 200), WINDOW_DEFAULT_SCALE);
+        //===================== rects =========================
+        let all_rects = vec! 
+         [
+            (RED_COLOR, (Rect::new(red_rect_data.pos_x, red_rect_data.pos_y + (orange_rect_data.h as i32 + padding_y), red_rect_data.w, red_rect_data.h), 100)),
+            (ORANGE_COLOR, (Rect::new(orange_rect_data.pos_x, orange_rect_data.pos_y, orange_rect_data.w, orange_rect_data.h), 0)),
+         ];
+
+        let purple_button_data = get_center((600, 100), WINDOW_DEFAULT_SCALE);
+        //===================== buttons =========================
+        let all_buttons = vec!
+        [
+            Button{ enabled: true, color: PURPLE_COLOR, rect: Rect::new(purple_button_data.pos_x, purple_button_data.pos_y - (orange_rect_data.h as i32 - padding_y), purple_button_data.w, purple_button_data.h), radius: 20, id: ButtonId::ButtonInputStart1},
+        ];
+
+        //===================== texts =========================
+        let all_text = vec!
+        [
+            (18.0, (all_rects[1].1.0.x + 165, all_rects[1].1.0.y + 86),  "Random Orange Rectangle, Because I Can :)".to_string(), SUBTEXT_COLOR),
+            (18.0, (all_buttons[0].rect.x + 75, all_buttons[0].rect.y - 25),  "Click the Button To Start Getting Input".to_string(), SUBTEXT_COLOR),
+            (25.0, (all_buttons[0].rect.x + 15, all_buttons[0].rect.y + 35), user_input[0].clone(), BLACK_COLOR),
+        ];
+
+        //===================== page creation =========================
+        Self
+        {
+            has_persistant_page: true,
+            id: PageId::Page1,
+            background_color: Some(BACKGROUND_COLOR),
+            rects:   Some( all_rects ),
+            buttons: Some( all_buttons  ),
+            texts:   Some( all_text ),
+            images:  None,
+        }
+    }
+
+
+
+
+
+    pub fn page_2(user_input: Vec<String>) -> Self
+    {
+        let get_input_button_data = get_center((500, 100), WINDOW_DEFAULT_SCALE);
+        //===================== buttons =========================
+        let all_buttons = vec!
+        [
+            Button{ enabled: true, color: PURPLE_COLOR, rect: Rect::new(100, 150, 235, 40), radius: 20,   id: ButtonId::ButtonSubPage},
+            Button{ enabled: true, color: PURPLE_COLOR, rect: Rect::new(get_input_button_data.pos_x, get_input_button_data.pos_y, get_input_button_data.w as u32, get_input_button_data.h as u32), radius: 20, id: ButtonId::ButtonInputStart2},
+        ];
+
+
+        //===================== texts =========================
+        let all_text = vec!
+        [
+            (18.0, (all_buttons[0].rect.x + 10, all_buttons[0].rect.y + 7), "Go To subpage_page2".to_string(), TEXT_COLOR),
+            (18.0, (all_buttons[1].rect.x + 10, all_buttons[1].rect.y + 7), user_input[0].clone(), TEXT_COLOR),
+        ];
+
+        //===================== page creation =========================
+        Self
+        {
+            has_persistant_page: true,
+            id: PageId::Page2,
+            background_color: Some(BACKGROUND_COLOR),
+            rects:   None,
+            buttons: Some( all_buttons  ),
+            texts:   Some( all_text ),
+            images:  None,
+        }
+    }
+
+
+
+
+
+    pub fn subpage_page2() -> Self
+    {
+        //===================== buttons =========================
+        let all_buttons = vec!
+        [
+            Button{enabled: true, color: PINK_COLOR, rect: Rect::new(20, 20, 50, 40), radius: 0, id: ButtonId::ButtonBack},
+        ];
+
+        //===================== texts =========================
+        let all_text = vec!
+        [
+            (18.0, (950, 400),  "Random Text, Because I Can :)".to_string(), SUBTEXT_COLOR),
+            (18.0, (all_buttons[0].rect.x + 10,  all_buttons[0].rect.y + 7),  "<-".to_string(), TEXT_COLOR),
+        ];
+
+        //===================== images =========================
+        let all_images = vec!
+        [
+            ((500, 500), (300, 300), format!("{}/.cache/page_system/example_2.jpg", env::home_dir().unwrap().display())),
+        ];
+
+        //===================== page creation =========================
+        Self
+        {
+            has_persistant_page: false,
+            id: PageId::Page2SubPage,
+            background_color: Some(BACKGROUND_COLOR),
+            rects:   None,
+            buttons: Some( all_buttons ),
+            texts:   Some( all_text ),
+            images:  Some( all_images ),
+        }
+    }
+}

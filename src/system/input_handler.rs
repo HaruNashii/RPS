@@ -1,4 +1,3 @@
-use std::process::exit;
 use sdl3::
 {
     event::Event,
@@ -6,143 +5,75 @@ use sdl3::
     mouse::MouseButton,
     EventPump
 };
-use crate::ui::pages::{Button, ButtonId, COLOR_CHANGE_WHEN_SELECTED};
+use crate::ui::pages::ButtonId;
+use crate::system::state::AppState;
 
 
 
 
 
-pub trait ChangeColors { fn button_change_color_when_hovered(self) -> Option<Vec<Button>>; }
-impl ChangeColors for (Option<Vec<Button>>, Option<ButtonId>)
+#[derive(Debug, Clone)]
+pub enum InputEvent 
 {
-    fn button_change_color_when_hovered(mut self) -> Option<Vec<Button>>
-    {
-        if let Some(button_hovered) = self.1 && self.0.is_some()
-        {
-            for button in self.0.as_mut().unwrap()
-            {
-                if button_hovered as usize == button.id as usize
-                {
-                    if (button.color.r as i32 - COLOR_CHANGE_WHEN_SELECTED.0 as i32) > 1 { button.color.r -= COLOR_CHANGE_WHEN_SELECTED.0 } else { button.color.r = 0 };
-                    if (button.color.g as i32 - COLOR_CHANGE_WHEN_SELECTED.1 as i32) > 1 { button.color.g -= COLOR_CHANGE_WHEN_SELECTED.1 } else { button.color.g = 0 };
-                    if (button.color.b as i32 - COLOR_CHANGE_WHEN_SELECTED.2 as i32) > 1 { button.color.b -= COLOR_CHANGE_WHEN_SELECTED.2 } else { button.color.b = 0 };
-                };
-            }
-        }; 
-
-        self.0
-    }
+    Click(ButtonId),
+    Text(String),
+    Submit,
+    Quit,
+    None,
 }
 
-
-
-
-
-type MouseInputReturn = (Option<ButtonId>, (Option<Vec<Button>>, Vec<Button>));
-pub trait MouseInput { fn handle_mouse_input(&mut self) -> MouseInputReturn; }
-impl MouseInput for ((&Option<Vec<Button>>, &Option<Vec<Button>>), &mut EventPump, (u32, u32))
+pub struct InputHandler;
+impl InputHandler 
 {
-    fn handle_mouse_input(&mut self) -> MouseInputReturn
+    pub fn poll(&self, state: &mut AppState, event_pump: &mut EventPump) -> InputEvent 
     {
-        let mouse_state = EventPump::mouse_state(self.1);
-        let x = mouse_state.x();
-        let y = mouse_state.y();
-        let mut button_being_hovered = None;
-        let mut button_clicked = None;
-
-        let x_scaled = x * (1920.00 / self.2.0 as f32);
-        let y_scaled = y * (1080.00 / self.2.1 as f32);
-
-        if let Some(persistent_page_buttons) = self.0.0
-        {
-            for buttons in persistent_page_buttons
-            {
-                if x_scaled >= buttons.rect.x as f32 && x_scaled <= (buttons.rect.x + buttons.rect.w) as f32 && y_scaled >= buttons.rect.y as f32 && y_scaled <= (buttons.rect.y + buttons.rect.h) as f32
-                {
-                    button_being_hovered = Some(buttons.id); 
-                }
-            };
-        };
-        
-        if let Some(page_buttons) = self.0.1
-        {
-            for buttons in page_buttons
-            {
-                if x_scaled >= buttons.rect.x as f32 && x_scaled <= (buttons.rect.x + buttons.rect.w) as f32 && y_scaled >= buttons.rect.y as f32 && y_scaled <= (buttons.rect.y + buttons.rect.h) as f32
-                {
-                    button_being_hovered = Some(buttons.id); 
-                }
-            };
-        }
-
-        for event in self.1.poll_iter() 
+        for event in event_pump.poll_iter() 
         {
             match event 
             {
-                Event::MouseButtonDown {mouse_btn: MouseButton::Left, ..} =>
+                Event::Quit { .. } => return InputEvent::Quit,
+
+                Event::MouseButtonDown { mouse_btn: MouseButton::Left, x, y, .. } => 
                 {
-                    if let Some(button_hovered) = button_being_hovered {button_clicked = Some(button_hovered)};
+                    if let Some(id) = state.page_at(x, y) 
+                    {
+                        return InputEvent::Click(id);
+                    }
                 }
 
-                Event::Quit { .. } => 
-                { 
-                    exit(0); 
+                Event::TextInput { text, .. } => 
+                {
+                    if state.capturing_input 
+                    {
+                        let current_page = state.current_page;
+                        let vec_user_input = &state.vec_user_input;
+                        let mut new_vec = vec_user_input.clone();
+
+                        for (index, user_input) in vec_user_input.iter().enumerate()
+                        {
+                            if user_input.1 == current_page
+                            {
+                                new_vec[index].0.push_str(&text)   
+                            }
+                        }
+                        state.vec_user_input = new_vec;
+                        return InputEvent::Text(text);
+                    }
+                }
+
+                Event::KeyDown { keycode: Some(Keycode::Return), .. } => 
+                {
+                    if state.capturing_input 
+                    {
+                        state.submit_input();
+                        return InputEvent::Submit;
+                    }
                 }
 
                 _ => {}
             }
         }
-
-
-        let new_persistent_page_button_colors = (self.0.0.clone(), button_being_hovered).button_change_color_when_hovered();
-        let new_button_colors = (self.0.1.clone(), button_being_hovered).button_change_color_when_hovered();
-        
-        (button_clicked, (new_persistent_page_button_colors, new_button_colors.unwrap()))
+        InputEvent::None
     }
 }
 
-
-
-
-
-pub trait KeyboardInput { fn handle_keyboard_input(&mut self) -> (String, bool); }
-impl KeyboardInput for (&mut EventPump, String, bool)
-{
-    fn handle_keyboard_input(&mut self) -> (String, bool)
-    {   
-        for event in self.0.poll_iter() 
-        {
-            match event 
-            {
-                Event::TextInput{text, .. } =>
-                {
-                    self.1.push_str(&text);
-                }
-
-                Event::KeyDown{keycode: Some(Keycode::Backspace), .. } =>
-                {
-                    if !self.1.is_empty() { self.1.pop(); };
-                }
-
-                Event::KeyDown{keycode: Some(Keycode::Return), .. } =>
-                {
-                    self.2 = false;
-                }
-
-                Event::KeyDown{keycode: Some(Keycode::Escape), .. } => 
-                {
-                    self.2 = false;
-                }
-
-                Event::Quit { .. } => 
-                { 
-                    exit(0); 
-                }
-
-                _ => {}
-            }
-        }
-    
-        (self.1.clone(), self.2)
-    }
-}

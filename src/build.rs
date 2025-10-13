@@ -1,6 +1,10 @@
 use std::env;
 use std::fs;
 
+
+
+
+
 fn main() 
 {
 
@@ -10,8 +14,6 @@ fn main()
 
     let image_example_path = ["assets/image_example/example_1.jpg", "assets/image_example/example_2.jpg"];
     let image_example_dir = [format!("{}/example_1.jpg", target_image_example_dir).replace(" ", ""), format!("{}/example_2.jpg", target_image_example_dir).replace(" ", "")];
-
-
 
     if !fs::exists(&target_image_example_dir).unwrap() 
     {

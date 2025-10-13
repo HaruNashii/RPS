@@ -2,11 +2,12 @@ use std::fs;
 use fontconfig::Fontconfig;
 use sdl3::
 {
-    rect::Rect,
-    pixels::Color,
-    render::{Texture, TextureCreator},
-    video::WindowContext,
-    image::LoadTexture,
+    image::LoadTexture, 
+    pixels::Color, 
+    rect::Rect, 
+    render::{Texture, TextureCreator}, 
+    ttf::Sdl3TtfContext, 
+    video::WindowContext
 };
 
 
@@ -14,7 +15,7 @@ use sdl3::
 
 
 pub trait GenText { fn generate_text(&self) -> Vec<(Texture<'_>, Rect)>; }
-impl GenText for ( &Vec<(f64, (i32, i32), String, Color)>, &TextureCreator<WindowContext> )
+impl GenText for ( &Vec<(f64, (i32, i32), String, Color)>, &TextureCreator<WindowContext>, &Sdl3TtfContext)
 {
     fn generate_text(&self) -> Vec<(Texture<'_>, Rect)>
     {
@@ -22,12 +23,13 @@ impl GenText for ( &Vec<(f64, (i32, i32), String, Color)>, &TextureCreator<Windo
 
         for font_content in self.0
         {
-            let text_content = if font_content.2.is_empty() { &" ".to_string() } else { &font_content.2 };
+            let text_content = if font_content.2.is_empty() { &String::from(" ") } else { &font_content.2 };
+
             let font_config = Fontconfig::new().unwrap();
             let font = font_config.find("JetBrainsMono", Some("Bold")).unwrap();
             let font_path = font.path.display().to_string();
-            let ttf_context = sdl3::ttf::init().unwrap();
-            let font = ttf_context.load_font(font_path, font_content.0 as f32).unwrap();
+
+            let font = self.2.load_font(font_path, font_content.0 as f32).unwrap();
             let surface = font.render(text_content).blended(font_content.3).unwrap();
             let texture = self.1.create_texture_from_surface(&surface).unwrap();
             let rect = Rect::new(font_content.1.0, font_content.1.1, surface.width(), surface.height());

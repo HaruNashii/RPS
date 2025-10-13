@@ -1,40 +1,23 @@
-use crate::ui::pages::ButtonId;
+use crate::{system::state::AppState, ui::pages::{ButtonId, ButtonId::*, PageId}};
 
-pub fn button_action(button_clicked: Option<ButtonId>, get_user_input: &mut (bool, usize), page_to_render: &mut u8)
+
+
+
+
+pub fn button_action(app_state: &mut AppState, button_id: ButtonId)
 {
-    match button_clicked
-    {
-        Some(ButtonId::Page1) =>
+        if !app_state.capturing_input
         {
-            *page_to_render = 1;
+            match button_id 
+            {
+                ButtonPage1 => app_state.current_page = PageId::Page1,
+                ButtonPage2 => app_state.current_page = PageId::Page2,
+                ButtonSubPage => app_state.current_page = PageId::Page2SubPage,
+                ButtonBack => app_state.current_page = PageId::Page2,
+                ButtonInputStart1 | ButtonInputStart2 => 
+                {
+                    app_state.capturing_input = true;
+                }
+            }
         }
-
-        Some(ButtonId::Page2) =>
-        {
-            *page_to_render = 2;
-        }
-
-        Some(ButtonId::InputStart1) => 
-        {
-            *get_user_input = (true, 0);
-        }
-
-        Some(ButtonId::SubPage) => 
-        {
-            *page_to_render = 3;
-        }
-            
-        Some(ButtonId::Back) => 
-        {
-            *page_to_render = 2;
-        }
-
-        Some(ButtonId::InputStart2) =>
-        {
-            // PAGE 2 BUTTON (PAGE 2)
-            *get_user_input = (true, 1);
-        }
-        
-        _=> {},
-    }
 }

@@ -1,5 +1,8 @@
-use std::env;
-use std::fs;
+use std::
+{
+    env,
+    fs,
+};
 
 
 
@@ -7,7 +10,6 @@ use std::fs;
 
 fn main() 
 {
-
     //Move The Image To An Tmp Folder
     let home_path = env::home_dir().unwrap().display().to_string();
     let target_image_example_dir = format!("{}/.cache/page_system", home_path).replace(" ", "");
@@ -20,7 +22,7 @@ fn main()
         fs::create_dir_all(&target_image_example_dir).expect("Failed to create image directory");
     };
 
-    for (index, currently_image_example_path) in image_example_path.iter().enumerate()
+    for (index, currently_image_example_path) in image_example_path.iter().enumerate() 
     {
         if fs::exists(currently_image_example_path).unwrap() && !fs::exists(image_example_dir[index].clone()).unwrap() 
         {

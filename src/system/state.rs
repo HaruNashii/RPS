@@ -80,7 +80,6 @@ impl Page
 pub struct AppState 
 {
     pub current_page: PageId,
-    pub persistent_page: Page,
     pub vec_user_input: Vec<(String, PageId)>,
     pub capturing_input: bool,
     pub window_size: (u32, u32),
@@ -92,7 +91,7 @@ impl AppState
     /// Create The App State
     pub fn new() -> Self 
     {
-        let mut default_self = Self { current_page: PageId::Page1, persistent_page: Page::persistent_page(), vec_user_input: Vec::new(), capturing_input: false, window_size: (1920, 1080) };
+        let mut default_self = Self { current_page: PageId::Page1, vec_user_input: Vec::new(), capturing_input: false, window_size: (1920, 1080) };
         // Populate vec_user_input
         let option_vec_of_pages = Page::need_user_input();
         if let Some(vec_of_pages_id) = option_vec_of_pages 
@@ -150,7 +149,8 @@ impl AppState
         let page = self.create_current_page();
         if page.has_persistant_page 
         {
-            render_page(&page, Some(&self.persistent_page), canvas, texture_creator, ttf_context);
+            let persistent_page = Page::from_id(PageId::Persistent, self.vec_user_input.clone());
+            render_page(&page, Some(&persistent_page), canvas, texture_creator, ttf_context);
         } 
         else
         {

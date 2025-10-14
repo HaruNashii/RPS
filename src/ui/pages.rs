@@ -68,7 +68,7 @@ pub struct Button
     pub radius: i32,
     pub id: ButtonId,
 }
-#[derive(Clone, Copy, Debug)]
+#[derive(PartialEq, Clone, Copy, Debug)]
 #[repr(usize)]
 pub enum ButtonId 
 {

@@ -34,7 +34,7 @@ impl Page
         None
     }
 
-    fn from_id(id: PageId, user_input: Vec<(String, PageId, ButtonId)>) -> Self 
+    pub fn create_from_id(id: PageId, user_input: Vec<(String, PageId, ButtonId)>) -> Self 
     {
         match id 
         {
@@ -87,10 +87,10 @@ impl AppState
     pub fn new() -> Self { Self { current_page: PageId::Page1, vec_user_input: Vec::new(), capturing_input: (false, None), window_size: (1920, 1080) } }
 
     /// Returns the button ID under the cursor (if any)
-    pub fn page_at(&self, x: f32, y: f32) -> Option<ButtonId> 
+    pub fn page_button_at(&self, mouse_pos_x: f32, mouse_pos_y: f32) -> Option<ButtonId> 
     {
         let page = self.create_current_page();
-        let page_query_result = page.button_at(x, y, self.window_size);
+        let page_query_result = page.button_at(mouse_pos_x, mouse_pos_y, self.window_size);
         if page_query_result.is_some() 
         {
             page_query_result
@@ -98,7 +98,7 @@ impl AppState
         else 
         {
             let persistent_page = Page::persistent_page();
-            persistent_page.button_at(x, y, self.window_size)
+            persistent_page.button_at(mouse_pos_x, mouse_pos_y, self.window_size)
         }
     }
 
@@ -132,7 +132,7 @@ impl AppState
         let page = self.create_current_page();
         if page.has_persistant_page 
         {
-            let persistent_page = Page::from_id(PageId::Persistent, self.vec_user_input.clone());
+            let persistent_page = Page::create_from_id(PageId::Persistent, self.vec_user_input.clone());
             render_page(&page, Some(&persistent_page), canvas, texture_creator, ttf_context);
         } 
         else
@@ -145,7 +145,7 @@ impl AppState
     pub fn push_vec_user_input(&mut self, user_input_needed: Vec<(PageId, ButtonId)>) { for pageid_and_user_input_needed in user_input_needed { self.vec_user_input.push((String::new(), pageid_and_user_input_needed.0, pageid_and_user_input_needed.1)) } }
 
     /// Creates and Returns the current active page
-    pub fn create_current_page(&self) -> Page { Page::from_id(self.current_page, self.vec_user_input.clone()) }
+    pub fn create_current_page(&self) -> Page { Page::create_from_id(self.current_page, self.vec_user_input.clone()) }
 
     /// Returns the current window size
     pub fn current_window_size(&self) -> (u32, u32) { self.window_size }

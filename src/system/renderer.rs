@@ -1,7 +1,7 @@
 use crate::
 {
     sdl::sdl3_generators::{GenImage, GenText},
-    ui::pages::Page,
+    system::page_system::Page,
 };
 use sdl3::
 {

@@ -2,7 +2,7 @@ use crate::
 {
     actions::buttons_actions::button_action,
     system::state::AppState,
-    ui::pages::{ButtonId, PageId}
+    system::page_system::{ButtonId, PageId}
 };
 
 
@@ -72,6 +72,7 @@ fn app_state_submit_input()
     state.capturing_input = (true, Some(ButtonId::ButtonPurpleInputStartPage1));
     state.submit_input();
     assert!(!state.capturing_input.0);
+    assert_eq!(None, state.capturing_input.1);
 }
 
 #[test]

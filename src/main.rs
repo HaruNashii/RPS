@@ -7,7 +7,7 @@ use crate::
         state::AppState,
         window::create_window,
     },
-    ui::pages::{ButtonId, PageId}
+    system::page_system::{ButtonId, PageId}
 };
 
 
@@ -16,8 +16,8 @@ use crate::
 
 pub mod actions;
 pub mod sdl;
-pub mod system;
 pub mod ui;
+pub mod system;
 pub mod tests;
 pub mod misc;
 

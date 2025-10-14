@@ -1,74 +1,16 @@
 use std::env;
+use sdl3::rect::Rect;
 use crate::
 {
     misc::center_elements::get_center,
-    system::window::WINDOW_DEFAULT_SCALE,
+    system::{page_system::{Button, ButtonId, Page, PageId}, window::WINDOW_DEFAULT_SCALE},
     ui::style::{BACKGROUND_COLOR, BLACK_COLOR, ORANGE_COLOR, PINK_COLOR, PURPLE_COLOR, RED_COLOR, SUBTEXT_COLOR, TEXT_COLOR},
 };
-use sdl3::
-{
-    pixels::Color,
-    rect::Rect
-};
 
 
 
 
 
-
-
-
-
-
-type Rects = Option<Vec<(Color, (Rect, i32))>>;
-type Buttons = Option<Vec<Button>>;
-type Texts = Option<Vec<(f64, (i32, i32), String, Color)>>;
-type Images = Option<Vec<((i32, i32), (u32, u32), String)>>;
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum PageId 
-{
-    Persistent,
-    Page1,
-    Page2,
-    Page2SubPage,
-}
-#[derive(Debug, Clone)]
-pub struct Page 
-{
-    pub has_persistant_page: bool,
-    pub id: PageId,
-    pub background_color: Option<Color>,
-    pub rects: Rects,
-    pub buttons: Buttons,
-    pub texts: Texts,
-    pub images: Images,
-}
-
-
-
-
-
-#[derive(Clone, Copy, Debug)]
-pub struct Button 
-{
-    pub enabled: bool,
-    pub color: Color,
-    pub rect: Rect,
-    pub radius: i32,
-    pub id: ButtonId,
-}
-#[derive(PartialEq, Clone, Copy, Debug)]
-#[repr(usize)]
-pub enum ButtonId 
-{
-    ButtonPage1,
-    ButtonPage2,
-    ButtonPurpleInputStartPage1,
-    ButtonRedInputStartPage1,
-    ButtonPurpleInputStartPage2,
-    ButtonSubPage,
-    ButtonBack,
-}
 
 
 
@@ -87,7 +29,7 @@ impl Page
         [
             (BLACK_COLOR, (Rect::new(0, 0, 1920, 100), 0))
         ];
-
+    
         //===================== buttons =========================
         let all_buttons = vec!
         [

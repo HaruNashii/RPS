@@ -2,7 +2,7 @@ use std::env;
 use crate::
 {
     system::window::WINDOW_DEFAULT_SCALE,
-    ui::style::{BACKGROUND_COLOR, TEXT_COLOR, SUBTEXT_COLOR, PURPLE_COLOR, PINK_COLOR, ORANGE_COLOR, BLACK_COLOR, RED_COLOR},
+    ui::style::{BACKGROUND_COLOR, BLACK_COLOR, ORANGE_COLOR, PINK_COLOR, PURPLE_COLOR, RED_COLOR, SUBTEXT_COLOR, TEXT_COLOR},
 };
 use sdl3::
 {
@@ -74,8 +74,9 @@ pub enum ButtonId
 {
     ButtonPage1,
     ButtonPage2,
-    ButtonInputStart1,
-    ButtonInputStart2,
+    ButtonPurpleInputStartPage1,
+    ButtonRedInputStartPage1,
+    ButtonPurpleInputStartPage2,
     ButtonSubPage,
     ButtonBack,
 }
@@ -142,7 +143,8 @@ impl Page
         //===================== buttons =========================
         let all_buttons = vec!
         [
-            Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(purple_button_data.pos_x, purple_button_data.pos_y - (orange_rect_data.h as i32 - padding_y), purple_button_data.w, purple_button_data.h), radius: 20, id: ButtonId::ButtonInputStart1 }
+            Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(purple_button_data.pos_x, purple_button_data.pos_y - (orange_rect_data.h as i32 - padding_y),       purple_button_data.w, purple_button_data.h), radius: 20, id: ButtonId::ButtonPurpleInputStartPage1 },
+            Button { enabled: true, color: RED_COLOR,    rect: Rect::new(purple_button_data.pos_x, all_rects[0].1.0.y + all_rects[0].1.0.h + padding_y, purple_button_data.w, purple_button_data.h), radius: 0, id: ButtonId::ButtonRedInputStartPage1 }
         ];
 
         //===================== texts =========================
@@ -150,7 +152,8 @@ impl Page
         [
             (18.0, (all_rects[1].1.0.x + 165, all_rects[1].1.0.y + 86), "Random Orange Rectangle, Because I Can :)".to_string(), SUBTEXT_COLOR), 
             (18.0, (all_buttons[0].rect.x + 75, all_buttons[0].rect.y - 25), "Click the Button To Start Getting Input".to_string(), SUBTEXT_COLOR),
-            (25.0, (all_buttons[0].rect.x + 15, all_buttons[0].rect.y + 35), user_input[0].clone(), BLACK_COLOR)
+            (25.0, (all_buttons[0].rect.x + 15, all_buttons[0].rect.y + 35), user_input[0].clone(), BLACK_COLOR),
+            (25.0, (all_buttons[1].rect.x + 15, all_buttons[1].rect.y + 35), user_input[1].clone(), BLACK_COLOR)
         ];
 
         //===================== page creation =========================
@@ -166,7 +169,7 @@ impl Page
         let all_buttons = vec!
         [
             Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(100, 150, 235, 40), radius: 20, id: ButtonId::ButtonSubPage },
-            Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(get_input_button_data.pos_x, get_input_button_data.pos_y, get_input_button_data.w as u32, get_input_button_data.h as u32), radius: 20, id: ButtonId::ButtonInputStart2 }
+            Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(get_input_button_data.pos_x, get_input_button_data.pos_y, get_input_button_data.w as u32, get_input_button_data.h as u32), radius: 20, id: ButtonId::ButtonPurpleInputStartPage2 }
         ];
 
         //===================== texts =========================

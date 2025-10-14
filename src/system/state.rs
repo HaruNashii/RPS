@@ -34,12 +34,7 @@ impl Page
         None
     }
 
-    fn need_user_input() -> Option<Vec<PageId>> 
-    {
-        Some(vec![PageId::Page1, PageId::Page2])
-    }
-
-    fn from_id(id: PageId, user_input: Vec<(String, PageId)>) -> Self 
+    fn from_id(id: PageId, user_input: Vec<(String, PageId, ButtonId)>) -> Self 
     {
         match id 
         {
@@ -80,8 +75,8 @@ impl Page
 pub struct AppState 
 {
     pub current_page: PageId,
-    pub vec_user_input: Vec<(String, PageId)>,
-    pub capturing_input: bool,
+    pub vec_user_input: Vec<(String, PageId, ButtonId)>,
+    pub capturing_input: (bool, Option<ButtonId>),
     pub window_size: (u32, u32),
 }
 /// Default Implementation Of AppState
@@ -89,19 +84,7 @@ impl Default for AppState { fn default() -> Self { Self::new() } }
 impl AppState 
 {
     /// Create The App State
-    pub fn new() -> Self 
-    {
-        let mut default_self = Self { current_page: PageId::Page1, vec_user_input: Vec::new(), capturing_input: false, window_size: (1920, 1080) };
-        // Populate vec_user_input
-        let option_vec_of_pages = Page::need_user_input();
-        if let Some(vec_of_pages_id) = option_vec_of_pages 
-        {
-            let mut number_of_strings_needed: Vec<(String, PageId)> = Vec::new();
-            for page_id in vec_of_pages_id { number_of_strings_needed.push((String::new(), page_id)); }
-            default_self.vec_user_input = number_of_strings_needed;
-        };
-        default_self
-    }
+    pub fn new() -> Self { Self { current_page: PageId::Page1, vec_user_input: Vec::new(), capturing_input: (false, None), window_size: (1920, 1080) } }
 
     /// Returns the button ID under the cursor (if any)
     pub fn page_at(&self, x: f32, y: f32) -> Option<ButtonId> 
@@ -122,23 +105,23 @@ impl AppState
     /// Append typed text into the current page's input slot(s).
     pub fn handle_text(&mut self, text: String) 
     {
-        if !self.capturing_input { return; }
-        for entry in self.vec_user_input.iter_mut() 
+        if !self.capturing_input.0 { return; }
+        if let Some(capturing_input_button_id) = self.capturing_input.1 
         {
-            if entry.1 == self.current_page { entry.0.push_str(&text); }
-        }
+            for entry in self.vec_user_input.iter_mut() 
+            {
+                if entry.1 == self.current_page && entry.2 as usize == capturing_input_button_id as usize  { entry.0.push_str(&text); }
+            }
+       }
     }
 
     /// Handle a single backspace press for the current page's text input(s)
     pub fn handle_backspace(&mut self) 
     {
-        if !self.capturing_input { return; }
+        if !self.capturing_input.0 { return; }
         for entry in self.vec_user_input.iter_mut() 
         {
-            if entry.1 == self.current_page && !entry.0.is_empty() 
-            {
-                entry.0.pop();
-            }
+            if entry.1 == self.current_page && !entry.0.is_empty() { entry.0.pop(); }
         }
     }
 
@@ -158,6 +141,9 @@ impl AppState
         }
     }
 
+    /// Populate vec_user_input
+    pub fn push_vec_user_input(&mut self, user_input_needed: Vec<(PageId, ButtonId)>) { for pageid_and_user_input_needed in user_input_needed { self.vec_user_input.push((String::new(), pageid_and_user_input_needed.0, pageid_and_user_input_needed.1)) } }
+
     /// Creates and Returns the current active page
     pub fn create_current_page(&self) -> Page { Page::from_id(self.current_page, self.vec_user_input.clone()) }
 
@@ -168,5 +154,5 @@ impl AppState
     pub fn handle_action(&mut self, button_id: ButtonId) { button_action(self, button_id); }
     
     /// Called when user presses Enter or finishes typing
-    pub fn submit_input(&mut self) { self.capturing_input = false; }
+    pub fn submit_input(&mut self) { self.capturing_input.0 = false; }
 }

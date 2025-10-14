@@ -1,10 +1,10 @@
 use std::time::Duration;
-use crate::system::
+use crate::{system::
 {
     input_handler::{InputEvent, InputHandler},
     state::AppState,
     window::create_window,
-};
+}, ui::pages::{ButtonId, PageId}};
 
 
 
@@ -25,6 +25,14 @@ fn main()
     let (mut canvas, mut event_pump, texture_creator, ttf_context) = create_window();
     let input_handler = InputHandler;
     let mut app_state = AppState::new();
+
+    //Page That Receives User_Input
+    app_state.push_vec_user_input(vec!
+    [
+        (PageId::Page1, ButtonId::ButtonPurpleInputStartPage1),
+        (PageId::Page1, ButtonId::ButtonRedInputStartPage1),
+        (PageId::Page2, ButtonId::ButtonPurpleInputStartPage2),
+    ]);
 
     'running: loop 
     {

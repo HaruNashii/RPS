@@ -26,7 +26,7 @@ fn main()
     let input_handler = InputHandler;
     let mut app_state = AppState::new();
 
-    //Page That Receives User_Input
+    //Populate Vec_Of_User_input With Page And Buttons That Receives User_Input
     app_state.push_vec_user_input(vec!
     [
         (PageId::Page1, ButtonId::ButtonPurpleInputStartPage1),

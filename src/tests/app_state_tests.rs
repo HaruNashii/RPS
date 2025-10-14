@@ -34,16 +34,26 @@ fn app_state_push_vec_user_input()
 }
 
 #[test]
-fn app_state_handle_text_and_backspace() 
+fn app_state_handle_multiple_text_and_backspace() 
 {
     let mut state = AppState::new();
-    state.push_vec_user_input(vec![(PageId::Page1, ButtonId::ButtonPurpleInputStartPage1)]);
-    state.current_page = PageId::Page1;
+    state.push_vec_user_input(vec!
+    [
+        (PageId::Page1, ButtonId::ButtonPurpleInputStartPage1),
+        (PageId::Page1, ButtonId::ButtonRedInputStartPage1)
+    ]);
+
     state.capturing_input = (true, Some(ButtonId::ButtonPurpleInputStartPage1));
     state.handle_text("hello".to_string());
     assert_eq!(state.vec_user_input[0].0, "hello");
     state.handle_backspace();
     assert_eq!(state.vec_user_input[0].0, "hell");
+
+    state.capturing_input = (true, Some(ButtonId::ButtonRedInputStartPage1));
+    state.handle_text("world".to_string());
+    assert_eq!(state.vec_user_input[1].0, "world");
+    state.handle_backspace();
+    assert_eq!(state.vec_user_input[1].0, "worl");
 }
 
 #[test]

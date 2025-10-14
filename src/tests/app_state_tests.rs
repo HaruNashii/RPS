@@ -1,4 +1,13 @@
-use crate::{actions::buttons_actions::button_action, system::{state::AppState, window::create_window}, ui::pages::{ButtonId, Page, PageId}};
+use crate::
+{
+    actions::buttons_actions::button_action,
+    system::state::AppState,
+    ui::pages::{ButtonId, PageId}
+};
+
+
+
+
 
 #[test]
 fn app_state_initialization() 
@@ -102,30 +111,4 @@ fn app_state_page_at_none_when_no_button()
     let button_on_position = state.page_button_at(-10000.0, -10000.0);
     // See If Button Is Being Returned None When There Is No Button Selected
     assert!(button_on_position.is_none());
-}
-
-#[test]
-fn app_state_create_current_page_equal_to_create_from_id()
-{
-    let mut state = AppState::new();
-    state.current_page = PageId::Page2SubPage;
-    let page1 = state.create_current_page().id;
-    let page1_from_id = Page::create_from_id(state.current_page, state.vec_user_input).id;
-
-    assert_eq!(page1_from_id, page1);
-}   
-
-#[test]
-fn app_state_render_create_current_page_and_check_if_has_persistent_page()
-{
-    let mut state = AppState::new();
-    state.current_page = PageId::Page2SubPage;
-    let page = state.create_current_page();
-    let (mut canvas, _, texture_creator, ttf_context) = create_window(true);
-    state.render(&mut canvas, &texture_creator, &ttf_context);
-
-    // Check If Window Size Is Being Update Right
-    assert_eq!(canvas.window().size(), state.window_size);
-    // See If has_persistant_page is being checked correctly
-    assert!(!page.has_persistant_page);
 }

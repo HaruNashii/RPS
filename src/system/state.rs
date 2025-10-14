@@ -34,32 +34,44 @@ impl Page
         None
     }
 
-    pub fn create_from_id(id: PageId, user_input: Vec<(String, PageId, ButtonId)>) -> Self 
+    pub fn create_from_id(id: PageId, option_user_input: Option<Vec<(&String, &PageId)>>) -> Self 
     {
         match id 
         {
             PageId::Persistent => Self::persistent_page(),
             PageId::Page1 => 
             {
-                let mut vec_to_send = Vec::new();
-                for string_and_id in user_input 
+                let mut vec_string_to_send = Vec::new();
+                if let Some(vec_user_input) = option_user_input
                 {
-                    if string_and_id.1 == PageId::Page1 
+                    for user_input in vec_user_input
                     {
-                        vec_to_send.push(string_and_id.0);
-                    };
+                        vec_string_to_send.push(user_input.0.to_string());
+                    }
                 }
-                if vec_to_send.is_empty() { vec_to_send.push(String::new()) };
-                Self::page_1(vec_to_send)
+                else 
+                {
+                    println!("vec_user_input not provided, while the page need user_input, sending empty vec to prevent crash, but please fix it");
+                    vec_string_to_send.push(String::new());
+                };
+
+                Self::page_1(vec_string_to_send)
             }
             PageId::Page2 => 
             {
                 let mut vec_string_to_send = Vec::new();
-                for string_and_id in user_input 
+                if let Some(vec_user_input) = option_user_input
                 {
-                    if string_and_id.1 == PageId::Page2 { vec_string_to_send.push(string_and_id.0); };
+                    for user_input in vec_user_input
+                    {
+                        vec_string_to_send.push(user_input.0.to_string());
+                    }
                 }
-                if vec_string_to_send.is_empty() { vec_string_to_send.push(String::new()) };
+                else 
+                {
+                    println!("vec_user_input not provided, while the page need user_input, sending empty vec to prevent crash, but please fix it");
+                    vec_string_to_send.push(String::new());
+                };
                 Self::page_2(vec_string_to_send)
             }
             PageId::Page2SubPage => Self::subpage_page2(),
@@ -119,9 +131,12 @@ impl AppState
     pub fn handle_backspace(&mut self) 
     {
         if !self.capturing_input.0 { return; }
-        for entry in self.vec_user_input.iter_mut() 
+        if let Some(capturing_input_button_id) = self.capturing_input.1 
         {
-            if entry.1 == self.current_page && !entry.0.is_empty() { entry.0.pop(); }
+            for entry in self.vec_user_input.iter_mut() 
+            {
+                if entry.1 == self.current_page && entry.2 as usize == capturing_input_button_id as usize && !entry.0.is_empty() { entry.0.pop(); }
+            }
         }
     }
 
@@ -132,7 +147,22 @@ impl AppState
         let page = self.create_current_page();
         if page.has_persistant_page 
         {
-            let persistent_page = Page::create_from_id(PageId::Persistent, self.vec_user_input.clone());
+            let mut need_vec_user_input = false;
+            let mut vec_to_send = Vec::new();
+            for user_input in &self.vec_user_input 
+            { 
+                if self.current_page == user_input.1 
+                {
+                    need_vec_user_input = true; 
+                    vec_to_send.push((&user_input.0, &user_input.1)); 
+                } 
+            }
+
+            let persistent_page = if need_vec_user_input
+            { Page::create_from_id(PageId::Persistent, Some(vec_to_send)) }
+            else 
+            { Page::create_from_id(PageId::Persistent, None) };
+
             render_page(&page, Some(&persistent_page), canvas, texture_creator, ttf_context);
         } 
         else
@@ -145,7 +175,25 @@ impl AppState
     pub fn push_vec_user_input(&mut self, user_input_needed: Vec<(PageId, ButtonId)>) { for pageid_and_user_input_needed in user_input_needed { self.vec_user_input.push((String::new(), pageid_and_user_input_needed.0, pageid_and_user_input_needed.1)) } }
 
     /// Creates and Returns the current active page
-    pub fn create_current_page(&self) -> Page { Page::create_from_id(self.current_page, self.vec_user_input.clone()) }
+    pub fn create_current_page(&self) -> Page 
+    { 
+        let mut need_vec_user_input = false;
+        let mut vec_to_send = Vec::new();
+        for user_input in &self.vec_user_input 
+        { 
+            if self.current_page == user_input.1 
+            {
+                need_vec_user_input = true; 
+                vec_to_send.push((&user_input.0, &user_input.1)); 
+            } 
+        }
+
+
+        if need_vec_user_input
+        { Page::create_from_id(self.current_page, Some(vec_to_send)) }
+        else 
+        { Page::create_from_id(self.current_page, None) }
+    }
 
     /// Returns the current window size
     pub fn current_window_size(&self) -> (u32, u32) { self.window_size }

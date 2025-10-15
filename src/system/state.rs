@@ -1,8 +1,7 @@
 use crate::
 {
     actions::buttons_actions::button_action,
-    system::renderer::render_page,
-    system::page_system::{ButtonId, PageId, Page},
+    system::{page_system::{ButtonId, Page, PageId}, renderer::render_page, window::WINDOW_DEFAULT_SCALE},
 };
 use sdl3::
 {
@@ -33,7 +32,7 @@ impl Default for AppState { fn default() -> Self { Self::new() } }
 impl AppState 
 {
     /// Create The App State
-    pub fn new() -> Self { Self { current_page: PageId::Page1, vec_user_input: Vec::new(), capturing_input: (false, None), window_size: (1920, 1080) } }
+    pub fn new() -> Self { Self { current_page: PageId::Page1, vec_user_input: Vec::new(), capturing_input: (false, None), window_size: (WINDOW_DEFAULT_SCALE.0, WINDOW_DEFAULT_SCALE.1) } }
 
     /// Populate vec_user_input
     pub fn push_vec_user_input(&mut self, user_input_needed: Vec<(PageId, ButtonId)>) { for pageid_and_user_input_needed in user_input_needed { self.vec_user_input.push((String::new(), pageid_and_user_input_needed.0, pageid_and_user_input_needed.1)) } }

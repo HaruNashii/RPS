@@ -1,8 +1,7 @@
 use crate::
 {
     actions::buttons_actions::button_action,
-    system::state::AppState,
-    system::page_system::{ButtonId, PageId}
+    system::{page_system::{ButtonId, PageId}, state::AppState, window::WINDOW_DEFAULT_SCALE}
 };
 
 
@@ -16,7 +15,8 @@ fn app_state_initialization()
     assert_eq!(state.current_page, PageId::Page1);
     assert_eq!(state.vec_user_input.len(), 0);
     assert_eq!(state.capturing_input, (false, None));
-    assert_eq!(state.window_size, (1920, 1080));
+    assert_eq!(state.window_size, (WINDOW_DEFAULT_SCALE.0, WINDOW_DEFAULT_SCALE.1));
+
 }
 
 #[test]

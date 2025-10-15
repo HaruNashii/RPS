@@ -27,7 +27,7 @@ impl Page
         //===================== rects =========================
         let all_rects = vec!
         [
-            (BLACK_COLOR, (Rect::new(0, 0, 1920, 100), 0))
+            (BLACK_COLOR, (Rect::new(0, 0, WINDOW_DEFAULT_SCALE.0, 100), 0))
         ];
     
         //===================== buttons =========================
@@ -74,8 +74,8 @@ impl Page
         //===================== buttons =========================
         let all_buttons = vec!
         [
-            Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(purple_button_data.pos_x, purple_button_data.pos_y - (orange_rect_data.h as i32 - padding_y),       purple_button_data.w, purple_button_data.h), radius: 20, id: ButtonId::ButtonPurpleInputStartPage1 },
-            Button { enabled: true, color: RED_COLOR,    rect: Rect::new(purple_button_data.pos_x, all_rects[0].1.0.y + all_rects[0].1.0.h + padding_y, purple_button_data.w, purple_button_data.h), radius: 0, id: ButtonId::ButtonRedInputStartPage1 }
+            Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(purple_button_data.pos_x, purple_button_data.pos_y - (orange_rect_data.h as i32 - padding_y),       purple_button_data.w, purple_button_data.h), radius: 5, id: ButtonId::ButtonPurpleInputStartPage1 },
+            Button { enabled: true, color: RED_COLOR,    rect: Rect::new(purple_button_data.pos_x, all_rects[0].1.0.y + all_rects[0].1.0.h + padding_y, purple_button_data.w, purple_button_data.h), radius: 20, id: ButtonId::ButtonRedInputStartPage1 }
         ];
 
         //===================== texts =========================

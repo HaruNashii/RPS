@@ -4,6 +4,8 @@ use sdl3::
     rect::Rect
 };
 
+use crate::system::window::WINDOW_DEFAULT_SCALE;
+
 
 
 
@@ -69,8 +71,8 @@ impl Page
     {
         if let Some(vec_buttons) = &self.buttons 
         {
-            let x_scaled = mouse_pos_x * (1920.00 / window_size.0 as f32);
-            let y_scaled = mouse_pos_y * (1080.00 / window_size.1 as f32);
+            let x_scaled = mouse_pos_x * (WINDOW_DEFAULT_SCALE.0 as f32 / window_size.0 as f32);
+            let y_scaled = mouse_pos_y * (WINDOW_DEFAULT_SCALE.1 as f32 / window_size.1 as f32);
             for button in vec_buttons 
             {
                 if x_scaled >= button.rect.x as f32 && x_scaled <= (button.rect.x + button.rect.w) as f32 && y_scaled >= button.rect.y as f32 && y_scaled <= (button.rect.y + button.rect.h) as f32 

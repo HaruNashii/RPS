@@ -1,4 +1,4 @@
-# basic_sdl3_rust_page_system
+# RPS - Rust Page System
 
 A small, opinionated page/state management system built with Rust and SDL3.  
 This repository contains an example application and a lightweight page manager useful for games, tools, demos, or any SDL-based application that benefits from push/pop page stacks, deterministic update/rendering, and simple resource lifetimes.

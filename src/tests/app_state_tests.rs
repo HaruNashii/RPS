@@ -1,7 +1,8 @@
 use crate::
 {
     actions::buttons_actions::button_action,
-    system::{page_system::{ButtonId, PageId}, state::AppState, window::WINDOW_DEFAULT_SCALE}
+    system::{state::AppState, window::WINDOW_DEFAULT_SCALE},
+    ui::pages::{PageId, ButtonId}
 };
 
 

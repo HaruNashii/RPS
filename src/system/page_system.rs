@@ -3,8 +3,11 @@ use sdl3::
     pixels::Color,
     rect::Rect
 };
-
-use crate::system::window::WINDOW_DEFAULT_SCALE;
+use crate::
+{
+    system::window::WINDOW_DEFAULT_SCALE,
+    ui::pages::{ButtonId, PageId}
+};
 
 
 
@@ -14,14 +17,6 @@ type Rects = Option<Vec<(Color, (Rect, i32))>>;
 type Buttons = Option<Vec<Button>>;
 type Texts = Option<Vec<(f64, (i32, i32), String, Color)>>;
 type Images = Option<Vec<((i32, i32), (u32, u32), String)>>;
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum PageId 
-{
-    Persistent,
-    Page1,
-    Page2,
-    Page2SubPage,
-}
 #[derive(Debug, Clone)]
 pub struct Page 
 {
@@ -47,18 +42,6 @@ pub struct Button
     pub radius: i32,
     pub id: ButtonId,
 }
-#[derive(PartialEq, Clone, Copy, Debug)]
-#[repr(usize)]
-pub enum ButtonId 
-{
-    ButtonPage1,
-    ButtonPage2,
-    ButtonPurpleInputStartPage1,
-    ButtonRedInputStartPage1,
-    ButtonPurpleInputStartPage2,
-    ButtonSubPage,
-    ButtonBack,
-}
 
 
 
@@ -82,49 +65,5 @@ impl Page
             }
         }
         None
-    }
-
-    pub fn create_from_id(id: PageId, option_user_input: Option<Vec<(&String, &PageId)>>) -> Self 
-    {
-        match id 
-        {
-            PageId::Persistent => Self::persistent_page(),
-            PageId::Page1 => 
-            {
-                let mut vec_string_to_send = Vec::new();
-                if let Some(vec_user_input) = option_user_input
-                {
-                    for user_input in vec_user_input
-                    {
-                        vec_string_to_send.push(user_input.0.to_string());
-                    }
-                }
-                else 
-                {
-                    println!("vec_user_input not provided, while the page need user_input, sending empty vec to prevent crash, but please fix it");
-                    vec_string_to_send.push(String::new());
-                };
-
-                Self::page_1(vec_string_to_send)
-            }
-            PageId::Page2 => 
-            {
-                let mut vec_string_to_send = Vec::new();
-                if let Some(vec_user_input) = option_user_input
-                {
-                    for user_input in vec_user_input
-                    {
-                        vec_string_to_send.push(user_input.0.to_string());
-                    }
-                }
-                else 
-                {
-                    println!("vec_user_input not provided, while the page need user_input, sending empty vec to prevent crash, but please fix it");
-                    vec_string_to_send.push(String::new());
-                };
-                Self::page_2(vec_string_to_send)
-            }
-            PageId::Page2SubPage => Self::subpage_page2(),
-        }
     }
 }

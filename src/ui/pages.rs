@@ -3,7 +3,7 @@ use sdl3::rect::Rect;
 use crate::
 {
     misc::center_elements::get_center,
-    system::{page_system::{Button, ButtonId, Page, PageId}, window::WINDOW_DEFAULT_SCALE},
+    system::{page_system::{Button, Page}, window::WINDOW_DEFAULT_SCALE},
     ui::style::{BACKGROUND_COLOR, BLACK_COLOR, ORANGE_COLOR, PINK_COLOR, PURPLE_COLOR, RED_COLOR, SUBTEXT_COLOR, TEXT_COLOR},
 };
 
@@ -11,6 +11,28 @@ use crate::
 
 
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// Defines The ID for your Pages
+pub enum PageId 
+{
+    Persistent,
+    Page1,
+    Page2,
+    Page2SubPage,
+}
+#[derive(PartialEq, Clone, Copy, Debug)]
+#[repr(usize)]
+/// Defines The ID for your Buttons
+pub enum ButtonId 
+{
+    ButtonPage1,
+    ButtonPage2,
+    ButtonPurpleInputStartPage1,
+    ButtonRedInputStartPage1,
+    ButtonPurpleInputStartPage2,
+    ButtonSubPage,
+    ButtonBack,
+}
 
 
 
@@ -18,6 +40,23 @@ use crate::
 
 impl Page 
 {
+    /// Link PageId To The Page, Make the AppState Be Able To Create The Page Based On The Assigned
+    /// PageId
+    pub fn create_from_id(id: PageId, option_user_input: Option<Vec<String>>) -> Self 
+    {
+        match id 
+        {
+            PageId::Persistent => Self::persistent_page(),
+            PageId::Page1 => Self::page_1(option_user_input.expect("Page1 Received User Input That Doesn't Exist, Did you Set This Page To Receive Input?")),
+            PageId::Page2 => Self::page_2(option_user_input.expect("Page2 Received User Input That Doesn't Exist, Did you Set This Page To Receive Input?")),
+            PageId::Page2SubPage => Self::subpage_page2(),
+        }
+    }
+
+
+
+
+
     pub fn persistent_page() -> Self 
     {
         //===================== variables =========================

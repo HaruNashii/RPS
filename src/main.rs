@@ -1,15 +1,16 @@
 use std::time::Duration;
 use crate::
 {
+    actions::buttons_actions::button_action, 
     system::
     {
         input_handler::{InputEvent, InputHandler},
         state::AppState,
         window::create_window,
     },
-    system::page_system::{ButtonId, PageId}
 };
-
+/// Always Make "ButtonId" and "PageId" An Public Reimport In Main.rs For AppState Use
+pub use ui::pages::{ButtonId, PageId};
 
 
 
@@ -43,7 +44,7 @@ fn main()
         std::thread::sleep(Duration::from_millis(32));
         match input_handler.poll(&mut event_pump) 
         {
-            InputEvent::Click(x, y) => if let Some(button_id) = app_state.page_button_at(x, y) { app_state.handle_action(button_id); },
+            InputEvent::Click(x, y) => if let Some(button_id) = app_state.page_button_at(x, y) { button_action(&mut app_state, button_id); },
             InputEvent::Text(s) => app_state.handle_text(s),
             InputEvent::Backspace => app_state.handle_backspace(),
             InputEvent::Submit => app_state.submit_input(),

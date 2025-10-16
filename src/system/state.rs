@@ -1,7 +1,7 @@
+use crate::{ButtonId, PageId};
 use crate::
 {
-    actions::buttons_actions::button_action,
-    system::{page_system::{ButtonId, Page, PageId}, renderer::render_page, window::WINDOW_DEFAULT_SCALE},
+    system::{page_system::Page, renderer::render_page, window::WINDOW_DEFAULT_SCALE},
 };
 use sdl3::
 {
@@ -40,9 +40,6 @@ impl AppState
     /// Returns the current window size
     pub fn current_window_size(&self) -> (u32, u32) { self.window_size }
 
-    /// Handles what happens when a button is clicked
-    pub fn handle_action(&mut self, button_id: ButtonId) { button_action(self, button_id); }
-    
     /// Called when user presses Enter or finishes typing
     pub fn submit_input(&mut self) { self.capturing_input.0 = false; self.capturing_input.1 = None; }
 
@@ -106,12 +103,18 @@ impl AppState
                 if self.current_page == user_input.1 
                 {
                     need_vec_user_input = true; 
-                    vec_to_send.push((&user_input.0, &user_input.1)); 
+                    vec_to_send.push(user_input.0.clone()); 
                 } 
             }
 
+
+        let mut vec_string_to_send = Vec::new();
+        for user_input in &vec_to_send { vec_string_to_send.push(user_input.to_string()); }
+
+
+
             let persistent_page = if need_vec_user_input
-            { Page::create_from_id(PageId::Persistent, Some(vec_to_send)) }
+            { Page::create_from_id(PageId::Persistent, Some(vec_string_to_send)) }
             else 
             { Page::create_from_id(PageId::Persistent, None) };
 
@@ -133,10 +136,9 @@ impl AppState
             if self.current_page == user_input.1 
             {
                 need_vec_user_input = true; 
-                vec_to_send.push((&user_input.0, &user_input.1)); 
+                vec_to_send.push(user_input.0.clone()); 
             } 
         }
-
 
         if need_vec_user_input
         { Page::create_from_id(self.current_page, Some(vec_to_send)) }

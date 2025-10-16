@@ -3,11 +3,8 @@ use sdl3::
     pixels::Color,
     rect::Rect
 };
-use crate::
-{
-    system::window::WINDOW_DEFAULT_SCALE,
-    ui::pages::{ButtonId, PageId}
-};
+use crate::{ButtonId, PageId};
+use crate::system::window::WINDOW_DEFAULT_SCALE;
 
 
 

@@ -3,7 +3,6 @@ use sdl3::
     pixels::Color,
     rect::Rect
 };
-use crate::{ButtonId, PageId};
 use crate::system::window::WINDOW_DEFAULT_SCALE;
 
 
@@ -18,7 +17,7 @@ type Images = Option<Vec<((i32, i32), (u32, u32), String)>>;
 pub struct Page 
 {
     pub has_persistant_page: bool,
-    pub id: PageId,
+    pub id: usize,
     pub background_color: Option<Color>,
     pub rects: Rects,
     pub buttons: Buttons,
@@ -37,7 +36,7 @@ pub struct Button
     pub color: Color,
     pub rect: Rect,
     pub radius: i32,
-    pub id: ButtonId,
+    pub id: usize,
 }
 
 
@@ -47,7 +46,7 @@ pub struct Button
 
 impl Page 
 {
-    pub fn button_at(&self, mouse_pos_x: f32, mouse_pos_y: f32, window_size: (u32, u32)) -> Option<ButtonId> 
+    pub fn button_at(&self, mouse_pos_x: f32, mouse_pos_y: f32, window_size: (u32, u32)) -> Option<usize> 
     {
         if let Some(vec_buttons) = &self.buttons 
         {

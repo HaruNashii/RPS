@@ -19,6 +19,7 @@ pub enum PageId
     Page1,
     Page2,
     Page2SubPage,
+    None,
 }
 #[derive(PartialEq, Clone, Copy, Debug)]
 #[repr(usize)]
@@ -42,14 +43,15 @@ impl Page
 {
     /// Link PageId To The Page, Make the AppState Be Able To Create The Page Based On The Assigned
     /// PageId
-    pub fn create_from_id(id: PageId, option_user_input: Option<Vec<String>>) -> Self 
+    pub fn create_from_id(id: usize, option_user_input: Option<Vec<String>>) -> Self 
     {
-        match id 
+        match id
         {
-            PageId::Persistent => Self::persistent_page(),
-            PageId::Page1 => Self::page_1(option_user_input.expect("Page1 Received User Input That Doesn't Exist, Did you Set This Page To Receive Input?")),
-            PageId::Page2 => Self::page_2(option_user_input.expect("Page2 Received User Input That Doesn't Exist, Did you Set This Page To Receive Input?")),
-            PageId::Page2SubPage => Self::subpage_page2(),
+            0 => Self::persistent_page(),
+            1 => Self::page_1(option_user_input.expect("Page1 Received User Input That Doesn't Exist, Did you Set This Page To Receive Input?")),
+            2 => Self::page_2(option_user_input.expect("Page2 Received User Input That Doesn't Exist, Did you Set This Page To Receive Input?")),
+            3 => Self::subpage_page2(),
+            _ => Self::none()
         }
     }
 
@@ -72,8 +74,8 @@ impl Page
         //===================== buttons =========================
         let all_buttons = vec!
         [
-            Button { enabled: true, color: PINK_COLOR, rect: Rect::new(window_center.pos_x - padding_x, 10, window_center.w, window_center.h), radius: 5, id: ButtonId::ButtonPage1 },
-            Button { enabled: true, color: PINK_COLOR, rect: Rect::new(window_center.pos_x + padding_x, 10, window_center.w, window_center.h), radius: 5, id: ButtonId::ButtonPage2 }
+            Button { enabled: true, color: PINK_COLOR, rect: Rect::new(window_center.pos_x - padding_x, 10, window_center.w, window_center.h), radius: 5, id: ButtonId::ButtonPage1 as usize},
+            Button { enabled: true, color: PINK_COLOR, rect: Rect::new(window_center.pos_x + padding_x, 10, window_center.w, window_center.h), radius: 5, id: ButtonId::ButtonPage2 as usize}
         ];
 
         //===================== texts =========================
@@ -92,7 +94,7 @@ impl Page
         ];
 
         //===================== page creation =========================
-        Self { has_persistant_page: false, id: PageId::Persistent, background_color: None, rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
+        Self { has_persistant_page: false, id: PageId::Persistent as usize, background_color: None, rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
     }
 
     pub fn page_1(user_input: Vec<String>) -> Self 
@@ -113,8 +115,8 @@ impl Page
         //===================== buttons =========================
         let all_buttons = vec!
         [
-            Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(purple_button_data.pos_x, purple_button_data.pos_y - (orange_rect_data.h as i32 - padding_y),       purple_button_data.w, purple_button_data.h), radius: 5, id: ButtonId::ButtonPurpleInputStartPage1 },
-            Button { enabled: true, color: RED_COLOR,    rect: Rect::new(purple_button_data.pos_x, all_rects[0].1.0.y + all_rects[0].1.0.h + padding_y, purple_button_data.w, purple_button_data.h), radius: 20, id: ButtonId::ButtonRedInputStartPage1 }
+            Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(purple_button_data.pos_x, purple_button_data.pos_y - (orange_rect_data.h as i32 - padding_y),       purple_button_data.w, purple_button_data.h), radius: 5, id: ButtonId::ButtonPurpleInputStartPage1 as usize},
+            Button { enabled: true, color: RED_COLOR,    rect: Rect::new(purple_button_data.pos_x, all_rects[0].1.0.y + all_rects[0].1.0.h + padding_y, purple_button_data.w, purple_button_data.h), radius: 20, id: ButtonId::ButtonRedInputStartPage1 as usize }
         ];
 
         //===================== texts =========================
@@ -127,7 +129,7 @@ impl Page
         ];
 
         //===================== page creation =========================
-        Self { has_persistant_page: true, id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: None }
+        Self { has_persistant_page: true, id: PageId::Page1 as usize, background_color: Some(BACKGROUND_COLOR), rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: None }
     }
 
     pub fn page_2(user_input: Vec<String>) -> Self 
@@ -138,8 +140,8 @@ impl Page
         //===================== buttons =========================
         let all_buttons = vec!
         [
-            Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(100, 150, 235, 40), radius: 20, id: ButtonId::ButtonSubPage },
-            Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(get_input_button_data.pos_x, get_input_button_data.pos_y, get_input_button_data.w as u32, get_input_button_data.h as u32), radius: 20, id: ButtonId::ButtonPurpleInputStartPage2 }
+            Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(100, 150, 235, 40), radius: 20, id: ButtonId::ButtonSubPage as usize},
+            Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(get_input_button_data.pos_x, get_input_button_data.pos_y, get_input_button_data.w as u32, get_input_button_data.h as u32), radius: 20, id: ButtonId::ButtonPurpleInputStartPage2 as usize }
         ];
 
         //===================== texts =========================
@@ -150,7 +152,7 @@ impl Page
         ];
 
         //===================== page creation =========================
-        Self { has_persistant_page: true, id: PageId::Page2, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+        Self { has_persistant_page: true, id: PageId::Page2 as usize, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
     }
 
     pub fn subpage_page2() -> Self 
@@ -158,7 +160,7 @@ impl Page
         //===================== buttons =========================
         let all_buttons = vec!
         [
-            Button { enabled: true, color: PINK_COLOR, rect: Rect::new(20, 20, 50, 40), radius: 0, id: ButtonId::ButtonBack }
+            Button { enabled: true, color: PINK_COLOR, rect: Rect::new(20, 20, 50, 40), radius: 0, id: ButtonId::ButtonBack as usize}
         ];
 
         //===================== texts =========================
@@ -175,6 +177,6 @@ impl Page
         ];
 
         //===================== page creation =========================
-        Self { has_persistant_page: false, id: PageId::Page2SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
+        Self { has_persistant_page: false, id: PageId::Page2SubPage as usize, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
     }
 }

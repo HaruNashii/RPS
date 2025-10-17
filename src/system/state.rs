@@ -1,7 +1,11 @@
-use crate::{ButtonId, PageId};
 use crate::
 {
-    system::{page_system::Page, renderer::render_page, window::WINDOW_DEFAULT_SCALE},
+    system::
+    {
+        page_system::Page,
+        renderer::render_page,
+        window::WINDOW_DEFAULT_SCALE
+    },
 };
 use sdl3::
 {
@@ -13,7 +17,11 @@ use sdl3::
 
 
 
-
+impl Page 
+{
+    /// Null Implementantion Of An Page
+    pub fn none() -> Self { Self { has_persistant_page: false, id: 99999, background_color: None, rects: None, buttons: None, texts: None, images: None } }
+}
 
 
 
@@ -22,9 +30,9 @@ use sdl3::
 /// Global application state that holds UI and logic data.
 pub struct AppState 
 {
-    pub current_page: PageId,
-    pub vec_user_input: Vec<(String, PageId, ButtonId)>,
-    pub capturing_input: (bool, Option<ButtonId>),
+    pub current_page: usize,
+    pub vec_user_input: Vec<(String, usize, usize)>,
+    pub capturing_input: (bool, Option<usize>),
     pub window_size: (u32, u32),
 }
 /// Default Implementation Of AppState
@@ -32,10 +40,10 @@ impl Default for AppState { fn default() -> Self { Self::new() } }
 impl AppState 
 {
     /// Create The App State
-    pub fn new() -> Self { Self { current_page: PageId::Page1, vec_user_input: Vec::new(), capturing_input: (false, None), window_size: (WINDOW_DEFAULT_SCALE.0, WINDOW_DEFAULT_SCALE.1) } }
+    pub fn new() -> Self { Self { current_page: 1, vec_user_input: Vec::new(), capturing_input: (false, None), window_size: (WINDOW_DEFAULT_SCALE.0, WINDOW_DEFAULT_SCALE.1) } }
 
     /// Populate vec_user_input
-    pub fn push_vec_user_input(&mut self, user_input_needed: Vec<(PageId, ButtonId)>) { for pageid_and_user_input_needed in user_input_needed { self.vec_user_input.push((String::new(), pageid_and_user_input_needed.0, pageid_and_user_input_needed.1)) } }
+    pub fn push_vec_user_input(&mut self, user_input_needed: Vec<(usize, usize)>) { for pageid_and_user_input_needed in user_input_needed { self.vec_user_input.push((String::new(), pageid_and_user_input_needed.0, pageid_and_user_input_needed.1)) } }
 
     /// Returns the current window size
     pub fn current_window_size(&self) -> (u32, u32) { self.window_size }
@@ -44,20 +52,20 @@ impl AppState
     pub fn submit_input(&mut self) { self.capturing_input.0 = false; self.capturing_input.1 = None; }
 
     /// Returns the button ID under the cursor (if any)
-    pub fn page_button_at(&self, mouse_pos_x: f32, mouse_pos_y: f32) -> Option<ButtonId> 
+    pub fn page_button_at(&self, mouse_pos_x: f32, mouse_pos_y: f32) -> Option<usize> 
     {
         let page = self.create_current_page();
-        let page_button = page.button_at(mouse_pos_x, mouse_pos_y, self.window_size);
-        if page_button.is_some() 
+        let option_page_button = page.button_at(mouse_pos_x, mouse_pos_y, self.window_size);
+        if let Some(page_button) = option_page_button
         {
-            return page_button;
+            return Some(page_button)
         }
 
         let persistent_page = Page::persistent_page();
-        let persistent_page_button = persistent_page.button_at(mouse_pos_x, mouse_pos_y, self.window_size);
-        if persistent_page_button.is_some()
+        let option_persistent_page_button = persistent_page.button_at(mouse_pos_x, mouse_pos_y, self.window_size);
+        if let Some(persistent_page_button) = option_persistent_page_button
         {
-            return persistent_page_button
+            return Some(persistent_page_button)
         }
             
         None
@@ -71,7 +79,7 @@ impl AppState
         {
             for entry in self.vec_user_input.iter_mut() 
             {
-                if entry.1 == self.current_page && entry.2 as usize == capturing_input_button_id as usize  { entry.0.push_str(&text); }
+                if entry.1 == self.current_page && entry.2 == capturing_input_button_id { entry.0.push_str(&text); }
             }
        }
     }
@@ -84,7 +92,7 @@ impl AppState
         {
             for entry in self.vec_user_input.iter_mut() 
             {
-                if entry.1 == self.current_page && entry.2 as usize == capturing_input_button_id as usize && !entry.0.is_empty() { entry.0.pop(); }
+                if entry.1 == self.current_page && entry.2 == capturing_input_button_id && !entry.0.is_empty() { entry.0.pop(); }
             }
         }
     }
@@ -94,6 +102,7 @@ impl AppState
     {
         self.window_size = (canvas.window().size().0, canvas.window().size().1);
         let page = self.create_current_page();
+
         if page.has_persistant_page 
         {
             let mut need_vec_user_input = false;
@@ -106,17 +115,14 @@ impl AppState
                     vec_to_send.push(user_input.0.clone()); 
                 } 
             }
-
-
-        let mut vec_string_to_send = Vec::new();
-        for user_input in &vec_to_send { vec_string_to_send.push(user_input.to_string()); }
-
+            let mut vec_string_to_send = Vec::new();
+            for user_input in &vec_to_send { vec_string_to_send.push(user_input.to_string()); }
 
 
             let persistent_page = if need_vec_user_input
-            { Page::create_from_id(PageId::Persistent, Some(vec_string_to_send)) }
+            { Page::create_from_id(0, Some(vec_string_to_send)) }
             else 
-            { Page::create_from_id(PageId::Persistent, None) };
+            { Page::create_from_id(0, None) };
 
             render_page(&page, Some(&persistent_page), canvas, texture_creator, ttf_context);
         } 

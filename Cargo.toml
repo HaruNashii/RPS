@@ -11,6 +11,7 @@ incremental = true
 incremental = false
 
 [dependencies]
+display-info = "0.5.7"
 fontconfig = "0.10.0"
 sdl3 = { version = "0.15.1", features = ["build-from-source", "ttf", "image"] }
 

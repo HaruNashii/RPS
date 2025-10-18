@@ -1,14 +1,11 @@
 [package]
-name = "page_system"
+name = "rps"
 version = "0.1.0"
 edition = "2024"
-build = "src/build.rs"
 
-[profile.dev]
-incremental = true
-
-[profile.release]
-incremental = false
+[lib]
+name = "rps"
+path = "src/lib.rs"
 
 [dependencies]
 display-info = "0.5.7"

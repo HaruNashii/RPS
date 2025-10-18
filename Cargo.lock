@@ -364,15 +364,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
 
 [[package]]
-name = "page_system"
-version = "0.1.0"
-dependencies = [
- "display-info",
- "fontconfig",
- "sdl3",
-]
-
-[[package]]
 name = "pkg-config"
 version = "0.3.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -419,6 +410,15 @@ name = "rpkg-config"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5a2d2f3481209a6b42eec2fbb49063fb4e8d35b57023401495d4fe0f85c817f0"
+
+[[package]]
+name = "rps"
+version = "0.1.0"
+dependencies = [
+ "display-info",
+ "fontconfig",
+ "sdl3",
+]
 
 [[package]]
 name = "rustix"

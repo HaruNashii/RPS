@@ -39,7 +39,7 @@ fn main()
 
     let (mut canvas, mut event_pump, texture_creator, ttf_context) = create_window(false);
     let input_handler = InputHandler;
-    let mut app_state = AppState {current_page: (PageId::Page1 as usize, true), vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), capturing_input: (false, None), window_size: WINDOW_DEFAULT_SCALE, all_pages: Vec::new() };
+    let mut app_state = AppState {current_page: (PageId::Page1 as usize, true), vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), capturing_input: (false, None), window_size: WINDOW_DEFAULT_SCALE, persistent_page: Vec::new(), all_pages: Vec::new() };
     populate_or_update_app_state(&mut app_state, false);
 
     let refresh_rate = get_monitor_refresh_rate();

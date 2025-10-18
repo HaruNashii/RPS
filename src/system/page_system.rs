@@ -13,10 +13,10 @@ type Rects = Option<Vec<(Color, (Rect, i32))>>;
 pub type Buttons = Option<Vec<Button>>;
 type Texts = Option<Vec<(f64, (i32, i32), String, Color)>>;
 type Images = Option<Vec<((i32, i32), (u32, u32), String)>>;
-#[derive(Debug, Clone)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct Page 
 {
-    pub has_persistant_page: bool,
+    pub has_persistent_page: (bool, Option<Vec<usize>>),
     pub id: usize,
     pub background_color: Option<Color>,
     pub rects: Rects,
@@ -25,7 +25,7 @@ pub struct Page
     pub images: Images,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(PartialEq, Clone, Copy, Debug)]
 pub struct Button 
 {
     pub enabled: bool,
@@ -37,12 +37,11 @@ pub struct Button
 
 impl Page 
 {
-
     /// Null Implementantion Of An Page
-    pub fn none() -> Self { Self { has_persistant_page: false, id: 99999, background_color: None, rects: None, buttons: None, texts: None, images: None } }
+    pub fn none() -> Self { Self { has_persistent_page: (false, None), id: 99999, background_color: None, rects: None, buttons: None, texts: None, images: None } }
 }
 
-pub fn button_at(option_vec_of_buttons: Vec<Buttons>, mouse_pos_x: f32, mouse_pos_y: f32, window_size: (u32, u32)) -> Option<usize> 
+pub fn button_at(option_vec_of_buttons: Vec<&Buttons>, mouse_pos_x: f32, mouse_pos_y: f32, window_size: (u32, u32)) -> Option<usize> 
 {
     for result_vec_of_buttons in option_vec_of_buttons.into_iter().flatten()
     {
@@ -56,6 +55,5 @@ pub fn button_at(option_vec_of_buttons: Vec<Buttons>, mouse_pos_x: f32, mouse_po
             }
         }
     }
-
     None
 }

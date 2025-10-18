@@ -69,7 +69,7 @@ fn render_elements(canvas: &mut Canvas<Window>, page: &Page, texture_creator: &T
     }
 }
 
-pub fn render_page(page: &Page, persistent_page: Option<&Page>, canvas: &mut Canvas<Window>, texture_creator: &TextureCreator<WindowContext>, ttf_context: &Sdl3TtfContext) {
+pub fn render_page(page: &Page, persistent_page: Option<Vec<&Page>>, canvas: &mut Canvas<Window>, texture_creator: &TextureCreator<WindowContext>, ttf_context: &Sdl3TtfContext) {
     match page.background_color 
     {
         Some(background_color) => 
@@ -87,7 +87,13 @@ pub fn render_page(page: &Page, persistent_page: Option<&Page>, canvas: &mut Can
     }
 
     render_elements(canvas, page, texture_creator, ttf_context);
-    if let Some(new_persistent_page) = persistent_page { render_elements(canvas, new_persistent_page, texture_creator, ttf_context); }
+    if let Some(new_persistent_page) = persistent_page 
+    {
+        for result in new_persistent_page
+        {
+            render_elements(canvas, result, texture_creator, ttf_context); 
+        }
+    }
 
     canvas.present();
 }

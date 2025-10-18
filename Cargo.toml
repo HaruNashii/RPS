@@ -7,6 +7,10 @@ edition = "2024"
 name = "rps"
 path = "src/lib.rs"
 
+[[example]]
+name = "AdvancedExampleDemo"
+path = "examples/AdvancedExample/demo.rs"
+
 [dependencies]
 display-info = "0.5.7"
 fontconfig = "0.10.0"

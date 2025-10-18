@@ -71,8 +71,6 @@ impl AppState
     /// Append typed text into the current page's input slot(s).
     pub fn handle_text(&mut self, text: String) 
     {
-        println!("vec_user_input: {:?}", self.vec_user_input);
-        println!("vec_user_input_string: {:?}", self.vec_user_input_string);
         if !self.capturing_input.0 { return; }
         if let Some(capturing_input_button_id) = self.capturing_input.1 
         {

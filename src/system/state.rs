@@ -11,11 +11,14 @@ use sdl3::
 };
 
 
+
+
+
 /// Global application state that holds UI and logic data.
 pub struct AppState 
 {
     pub current_page: (usize, bool),
-    pub vec_user_input: Vec<(String, usize, usize)>,
+    pub vec_user_input: Vec<(usize, usize)>,
     pub vec_user_input_string: Vec<String>,
     pub capturing_input: (bool, Option<usize>),
     pub window_size: (u32, u32),
@@ -42,7 +45,7 @@ impl AppState
     { 
         for pageid_and_user_input_needed in user_input_needed 
         { 
-            self.vec_user_input.push((String::new(), pageid_and_user_input_needed.0, pageid_and_user_input_needed.1));
+            self.vec_user_input.push((pageid_and_user_input_needed.0, pageid_and_user_input_needed.1));
             self.vec_user_input_string.push(String::new());
         } 
     }
@@ -74,10 +77,9 @@ impl AppState
         if !self.capturing_input.0 { return; }
         if let Some(button_id) = self.capturing_input.1 
         {
-            for (index, string_pageid_button_id) in self.vec_user_input.iter_mut().enumerate()
+            for (index, pageid_buttonid) in self.vec_user_input.iter_mut().enumerate()
             {
-                if string_pageid_button_id.1 == self.current_page.0 && string_pageid_button_id.2 == button_id { string_pageid_button_id.0.push_str(&text);}
-                if string_pageid_button_id.1 == self.current_page.0 && string_pageid_button_id.2 == button_id { self.vec_user_input_string[index].push_str(&text);}
+                if pageid_buttonid.0 == self.current_page.0 && pageid_buttonid.1 == button_id { self.vec_user_input_string[index].push_str(&text);}
             }
        }
     }
@@ -88,10 +90,9 @@ impl AppState
         if !self.capturing_input.0 { return; }
         if let Some(capturing_input_button_id) = self.capturing_input.1 
         {
-            for (index, entry) in self.vec_user_input.iter_mut().enumerate()
+            for (index, pageid_buttonid) in self.vec_user_input.iter_mut().enumerate()
             {
-                if entry.1 == self.current_page.0 && entry.2 == capturing_input_button_id && !entry.0.is_empty() { entry.0.pop(); }
-                if entry.1 == self.current_page.0 && entry.2 == capturing_input_button_id && !self.vec_user_input_string[index].is_empty() { self.vec_user_input_string[index].pop(); }
+                if pageid_buttonid.0 == self.current_page.0 && pageid_buttonid.1 == capturing_input_button_id && !self.vec_user_input_string[index].is_empty() { self.vec_user_input_string[index].pop(); }
             }
         }
     }
@@ -100,7 +101,6 @@ impl AppState
     pub fn render(&mut self, canvas: &mut Canvas<Window>, texture_creator: &TextureCreator<WindowContext>, ttf_context: &Sdl3TtfContext) 
     {
         self.window_size = (canvas.window().size().0, canvas.window().size().1);
-        
         for page in &self.all_pages
         {
             if self.current_page.0 == page.id && !page.has_persistant_page

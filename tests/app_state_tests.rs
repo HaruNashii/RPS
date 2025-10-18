@@ -38,8 +38,8 @@ fn app_state_push_vec_user_input()
     // Check The Len Of The Vec_User_Input
     assert_eq!(state.vec_user_input.len(), 1);
     // Check correct PageId and ButtonId
-    assert_eq!(state.vec_user_input[0].1, PageId::Page1 as usize);
-    assert_eq!(state.vec_user_input[0].2, ButtonId::ButtonPurpleInputStartPage1 as usize);
+    assert_eq!(state.vec_user_input[0].0, PageId::Page1 as usize);
+    assert_eq!(state.vec_user_input[0].1, ButtonId::ButtonPurpleInputStartPage1 as usize);
 }
 
 #[test]
@@ -54,9 +54,9 @@ fn app_state_handle_text_and_backspace()
     state.current_page.0 = PageId::Page1 as usize;
     state.capturing_input = (true, Some(ButtonId::ButtonPurpleInputStartPage1 as usize));
     state.handle_text("hello".to_string());
-    assert_eq!(state.vec_user_input[0].0, "hello");
+    assert_eq!(state.vec_user_input_string[0], "hello");
     state.handle_backspace();
-    assert_eq!(state.vec_user_input[0].0, "hell");
+    assert_eq!(state.vec_user_input_string[0], "hell");
 }
 
 #[test]

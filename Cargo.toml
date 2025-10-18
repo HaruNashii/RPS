@@ -8,8 +8,11 @@ name = "rps"
 path = "src/lib.rs"
 
 [[example]]
-name = "AdvancedExampleDemo"
+name = "AdvancedExample"
 path = "examples/AdvancedExample/demo.rs"
+[[example]]
+name = "SimpleExample"
+path = "examples/SimpleExample/demo.rs"
 
 [dependencies]
 display-info = "0.5.7"

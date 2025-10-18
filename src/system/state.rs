@@ -45,7 +45,6 @@ impl AppState
             self.vec_user_input.push((String::new(), pageid_and_user_input_needed.0, pageid_and_user_input_needed.1));
             self.vec_user_input_string.push(String::new());
         } 
-        println!("vec_user_input: {:?}", self.vec_user_input);
     }
 
     /// Returns the button ID under the cursor (if any)

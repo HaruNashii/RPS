@@ -1,8 +1,8 @@
 use std::env;
-use rps::AppState;
 use sdl3::rect::Rect;
-use rps::
+use rust_page_system::
 {
+    AppState,
     misc::center_elements::get_center,
     system::{page_system::{Button, Page}, window::WINDOW_DEFAULT_SCALE},
 };

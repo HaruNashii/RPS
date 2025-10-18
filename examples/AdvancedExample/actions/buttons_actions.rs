@@ -1,4 +1,4 @@
-use rps::system::state::AppState;
+use rust_page_system::system::state::AppState;
 use crate::ui::pages::{ButtonId::*, PageId};
 
 

@@ -1,6 +1,6 @@
 use std::{env, time::Duration};
 use sdl3::{pixels::Color, rect::Rect};
-use rps::
+use rust_page_system::
 {
     Button,
     misc::center_elements::get_center,

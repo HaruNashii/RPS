@@ -1,4 +1,4 @@
-use rps::system::{state::AppState, window::WINDOW_DEFAULT_SCALE};
+use rust_page_system::system::{state::AppState, window::WINDOW_DEFAULT_SCALE};
 use crate::setup_tests::
 {
     button_action,

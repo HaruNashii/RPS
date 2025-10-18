@@ -1,10 +1,27 @@
 [package]
-name = "rps"
+name = "rust_page_system"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+keywords = ["framework", "gui", "utility", "ui", "tool"]
+categories = ["gui", "rendering"]
+exclude = [".*"]
+repository = "https://github.com/HaruNashii/RPS"
+readme = "README.md"
+description = "RPS - Rust Page System, Is a small, opinionated page/state management system built with Rust and SDL3."
+
+
+[badges]
+maintenance = { status = "experimental" }
+
+[profile.dev]
+opt-level = 0               
+
+[profile.release]
+opt-level = 3               
 
 [lib]
-name = "rps"
+name = "rust_page_system"
 path = "src/lib.rs"
 
 [[example]]
@@ -17,5 +34,4 @@ path = "examples/SimpleExample/demo.rs"
 [dependencies]
 display-info = "0.5.7"
 fontconfig = "0.10.0"
-sdl3 = { version = "0.15.1", features = ["build-from-source", "ttf", "image"] }
-
+sdl3 = { version = "0.16.1", features = ["build-from-source", "ttf", "image"] }

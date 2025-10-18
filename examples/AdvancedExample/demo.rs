@@ -1,5 +1,5 @@
 use std::time::Duration;
-use rps::
+use rust_page_system::
 {
     system::
     {

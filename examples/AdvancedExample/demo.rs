@@ -1,19 +1,20 @@
 use std::time::Duration;
 use rust_page_system::
 {
+    Renderer,
     system::
     {
         input_handler::{InputEvent, InputHandler},
         page_system::PageData,
         state::AppState,
         window::{create_window, get_monitor_refresh_rate, WindowConfig}
-    }, 
-    Renderer
+    }
 };
 use crate::
 {   
     actions::buttons_actions::button_action, 
-    ui::pages::{populate_or_update_app_state, ButtonId, PageId},
+    ui::pages::{ButtonId, PageId},
+    system::setup_page_data::{populate_page_data, update_page_data} 
 };
 
 
@@ -28,6 +29,7 @@ mod build;
 
 
 
+pub mod system;
 pub mod actions;
 pub mod ui;
 
@@ -57,7 +59,7 @@ fn main()
     let mut page_data = PageData::new();
     let mut renderer = Renderer::<PageId, ButtonId>::new(&mut canvas, &texture_creator, &ttf_context);
 
-    populate_or_update_app_state(&mut page_data, false);
+    populate_page_data(&mut page_data);
 
     let refresh_rate = get_monitor_refresh_rate();
     'running: loop 
@@ -73,7 +75,7 @@ fn main()
             InputEvent::Quit                    => break 'running,
             InputEvent::None                    => {}
         }
-        populate_or_update_app_state(&mut page_data, true);
+        update_page_data(&mut page_data);
         renderer.render(&app_state, &page_data);
     }
 }

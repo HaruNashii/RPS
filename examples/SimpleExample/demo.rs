@@ -45,7 +45,7 @@ fn main()
     let mut app_state = AppState::<PageId, ButtonId>::new(PageId::Page1, true);
     let mut page_data = PageData::<PageId, ButtonId>::new();
     let mut renderer = Renderer::<PageId, ButtonId>::new(&mut canvas, &texture_creator, &ttf_context);
-    populate_or_update_app_state(&mut page_data, false);
+    populate_page_data(&mut page_data);
 
     let refresh_rate = get_monitor_refresh_rate();
     'running: loop 
@@ -61,7 +61,7 @@ fn main()
             InputEvent::Quit                    => break 'running,
             InputEvent::None                    => {}
         }
-        populate_or_update_app_state(&mut page_data, true);
+        update_page_data(&mut page_data);
         renderer.render(&mut app_state, &page_data);
     }
 }
@@ -81,6 +81,36 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: Butt
         // Non Handle Buttons Will Be Considered User Input Buttons
         app_state.capturing_input = (true, Some(button_id));
     }
+}
+
+
+
+//==========================================================================================================================================================================
+//===============================================================# can be a different file, like: setup_page_data.rs #======================================================
+//==========================================================================================================================================================================
+pub fn populate_page_data(page_data: &mut PageData<PageId, ButtonId>)
+{
+    //Populate Vec_Of_User_input With Page And Buttons That Receives User_Input
+    page_data.push_vec_user_input(vec!
+    [
+        (PageId::Page1, ButtonId::ButtonPurpleInputStartPage1),
+    ]);
+    //Populate Persistent Elements with your defined persistent elements, (If your Persistent
+    //Elements have runtime changing elements, like: Userinput, you need to place this definition inside an loop)
+    page_data.define_persistent_elements(vec! 
+    [
+        persistent_elements(),
+    ]);
+    
+}
+pub fn update_page_data(page_data: &mut PageData<PageId, ButtonId>)
+{
+    //Populate PageData allpages vector
+    page_data.populate_and_update_all_pages(vec!
+    [
+        page_1(&page_data.vec_user_input_string),
+        subpage_page1(),
+    ]);
 }
 
 
@@ -120,28 +150,8 @@ pub enum ButtonId
     ButtonSubPage,
     ButtonBack,
 }
-pub fn populate_or_update_app_state(page_data: &mut PageData<PageId, ButtonId>, only_update: bool)
-{
-    if !only_update
-    {
-        //Populate Vec_Of_User_input With Page And Buttons That Receives User_Input
-        page_data.push_vec_user_input(vec!
-        [
-            (PageId::Page1, ButtonId::ButtonPurpleInputStartPage1),
-        ]);
-    }
 
-    page_data.define_persistent_elements(vec! 
-    [
-        persistent_elements(),
-    ]);
-    
-    page_data.populate_and_update_all_pages(vec!
-    [
-        page_1(&page_data.vec_user_input_string),
-        subpage_page1(),
-    ]);
-}
+
 
 // Define Your Pages Here:
 pub fn persistent_elements() -> Page<PageId, ButtonId>

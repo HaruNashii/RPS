@@ -59,7 +59,7 @@ impl<PageId: Copy + Eq, ButtonId: Copy + Eq + Debug> PageData<PageId, ButtonId>
     /// Update vec_user_input_string
     pub fn update_vec_user_input_string(&mut self)
     {
-        let strings: Vec<String> = self.vec_user_input.iter().map(|(_, _, s)| s.clone()).collect();
+        let strings: Vec<String> = self.vec_user_input.iter().map(|(_, _, s)| s.to_string()).collect();
         self.vec_user_input_string = strings;
     }
 

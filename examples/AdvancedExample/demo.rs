@@ -5,13 +5,13 @@ use rust_page_system::
     {
         input_handler::{InputEvent, InputHandler},
         state::AppState,
-        window::{create_window, get_monitor_refresh_rate, WINDOW_DEFAULT_SCALE},
+        window::{create_window, get_monitor_refresh_rate},
     },
 };
 use crate::
 {   
     actions::buttons_actions::button_action, 
-    ui::pages::{populate_or_update_app_state, PageId},
+    ui::pages::{populate_or_update_app_state, ButtonId, PageId},
 };
 
 
@@ -39,7 +39,7 @@ fn main()
 
     let (mut canvas, mut event_pump, texture_creator, ttf_context) = create_window(false, (false, None), true);
     let input_handler = InputHandler;
-    let mut app_state = AppState {current_page: (PageId::Page1 as usize, true), vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), capturing_input: (false, None), window_size: WINDOW_DEFAULT_SCALE, persistent_elements: Vec::new(), all_pages: Vec::new() };
+    let mut app_state = AppState::<PageId, ButtonId>::new(PageId::Page1, true);
     populate_or_update_app_state(&mut app_state, false);
 
     let refresh_rate = get_monitor_refresh_rate();

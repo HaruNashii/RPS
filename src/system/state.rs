@@ -1,8 +1,9 @@
-use crate::system::{
-        page_system::{button_at, Page},
-        renderer::render_page,
-        window::WINDOW_DEFAULT_SCALE
-    };
+use crate::system::
+{
+    page_system::{Button, Page},
+    renderer::Renderer,
+    window::WINDOW_DEFAULT_SCALE
+};
 use sdl3::
 {
     render::{Canvas, TextureCreator},
@@ -15,22 +16,21 @@ use sdl3::
 
 
 /// Global application state that holds UI and logic data.
-pub struct AppState 
+pub struct AppState<PageId, ButtonId>
 {
-    pub current_page: (usize, bool),
-    pub vec_user_input: Vec<(usize, usize)>,
+    pub current_page: (PageId, bool),
+    pub vec_user_input: Vec<(PageId, ButtonId)>,
     pub vec_user_input_string: Vec<String>,
-    pub capturing_input: (bool, Option<usize>),
+    pub capturing_input: (bool, Option<ButtonId>),
     pub window_size: (u32, u32),
-    pub persistent_elements: Vec<Page>,
-    pub all_pages: Vec<Page>,
+    pub persistent_elements: Vec<Page<PageId, ButtonId>>,
+    pub all_pages: Vec<Page<PageId, ButtonId>>,
 }
 /// Default Implementation Of AppState
-impl Default for AppState { fn default() -> Self { Self::new() } }
-impl AppState 
+impl<PageId, ButtonId> AppState<PageId, ButtonId> where PageId: Copy + Eq, ButtonId: Copy + Eq,
 {
     /// Create The App State
-    pub fn new() -> Self { Self { current_page: (1, false), vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), capturing_input: (false, None), window_size: (WINDOW_DEFAULT_SCALE.0, WINDOW_DEFAULT_SCALE.1), persistent_elements: Vec::new(), all_pages: Vec::new()} }
+    pub fn new(page_id: PageId, has_user_input: bool) -> Self { Self { current_page: (page_id, has_user_input), vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), capturing_input: (false, None), window_size: (WINDOW_DEFAULT_SCALE.0, WINDOW_DEFAULT_SCALE.1), persistent_elements: Vec::new(), all_pages: Vec::new()} }
 
     /// Returns the current window size
     pub fn current_window_size(&self) -> (u32, u32) { self.window_size }
@@ -39,13 +39,13 @@ impl AppState
     pub fn submit_input(&mut self) { self.capturing_input.0 = false; self.capturing_input.1 = None; }
 
     /// Define Persistant Page
-    pub fn define_persistent_elements(&mut self, persistent_elements: Vec<Page>) { self.persistent_elements = persistent_elements }
+    pub fn define_persistent_elements(&mut self, persistent_elements: Vec<Page<PageId, ButtonId>>) { self.persistent_elements = persistent_elements }
 
     /// Populate all_buttons
-    pub fn populate_and_update_all_pages(&mut self, all_pages: Vec<Page>) { self.all_pages = all_pages }
+    pub fn populate_and_update_all_pages(&mut self, all_pages: Vec<Page<PageId, ButtonId>>) { self.all_pages = all_pages }
 
     /// Populate vec_user_input
-    pub fn push_vec_user_input(&mut self, user_input_needed: Vec<(usize, usize)>) 
+    pub fn push_vec_user_input(&mut self, user_input_needed: Vec<(PageId, ButtonId)>) 
     { 
         for pageid_and_user_input_needed in user_input_needed 
         { 
@@ -55,7 +55,7 @@ impl AppState
     }
 
     /// Returns the button ID under the cursor (if any)
-    pub fn page_button_at(&self, mouse_pos_x: f32, mouse_pos_y: f32) -> Option<usize> 
+    pub fn page_button_at(&self, mouse_pos_x: f32, mouse_pos_y: f32) -> Option<ButtonId> 
     {
         let mut buttons = Vec::new();
         for persistent_elements in &self.persistent_elements 
@@ -74,17 +74,21 @@ impl AppState
             {
                 buttons_to_be_evaluated.push(&page.buttons);
             };
-            if page.has_persistent_elements.0 && page.id == self.current_page.0 && let Some(vec_index) = &page.has_persistent_elements.1
+
+            if page.has_persistent_elements.0 && page.id == self.current_page.0 && let Some(vec_of_pageid) = &page.has_persistent_elements.1
             {
-                for index in vec_index
+                for (index, pageid) in vec_of_pageid.iter().enumerate()
                 {
-                    buttons_to_be_evaluated.push(&self.persistent_elements[*index].buttons)
+                    if *pageid == self.persistent_elements[index].id
+                    {
+                        buttons_to_be_evaluated.push(&self.persistent_elements[index].buttons)
+                    }
                 }
             };
         }
 
     
-        button_at(buttons_to_be_evaluated, mouse_pos_x, mouse_pos_y, self.window_size)
+        Button::button_at(buttons_to_be_evaluated, mouse_pos_x, mouse_pos_y, self.window_size)
     }
 
     /// Append typed text into the current page's input slot(s).
@@ -121,17 +125,20 @@ impl AppState
         {
             if self.current_page.0 == page.id && !page.has_persistent_elements.0
             {
-                render_page(page, None, canvas, texture_creator, ttf_context);
+                Renderer::render_page(page, None, canvas, texture_creator, ttf_context);
             }
 
-            if self.current_page.0 == page.id && page.has_persistent_elements.0 && let Some(vec_index) = &page.has_persistent_elements.1
+            if self.current_page.0 == page.id && page.has_persistent_elements.0 && let Some(vec_of_pageid) = &page.has_persistent_elements.1
             {
                 let mut vec_persistent_elements = Vec::new();
-                for index in vec_index
+                for (index, pageid) in vec_of_pageid.iter().enumerate()
                 {
-                    vec_persistent_elements.push(&self.persistent_elements[*index])
+                    if *pageid == self.persistent_elements[index].id
+                    {
+                        vec_persistent_elements.push(&self.persistent_elements[index]);
+                    }
                 }
-                render_page(page, Some(vec_persistent_elements), canvas, texture_creator, ttf_context);
+                Renderer::render_page(page, Some(vec_persistent_elements), canvas, texture_creator, ttf_context);
             }
         }
     }

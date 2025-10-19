@@ -65,7 +65,7 @@ If you need the official SDL source and instructions:
 
 ## Example usage
 Below is a example of how a page system might be used. The exact API in the repository may vary slightly; use this as a guide to how the system is intended to behave.
-for more accurate examples you can see them [here](https://github.com/HaruNashii/RPS/tree/bdadc5c7d4d283b3438400ebcb894370032b1765/tests)
+for more accurate examples you can see them [here](https://github.com/HaruNashii/RPS/tree/bdadc5c7d4d283b3438400ebcb894370032b1765/examples)
 
 <details> <summary>Simple Conceptual Example</summary>
 

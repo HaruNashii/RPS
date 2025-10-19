@@ -8,13 +8,11 @@ This README explains the features, the dependencies you need to build and run th
 ---
 
 ## Table of contents
-
-Link to the sample section: [Link Text](#sample-section).
 - [Features](#Features)
 - [Requirements](#Requirements)
 - [Example usage](#Example-usage)
-- [Project layout](#Project-layout)
-- [Development notes & recommended workflow](#Development-notes-&-recommended-workflow)
+- [Project layout](#Suggested-Project-layout)
+- [Development notes & recommended workflow](#Development-notes--recommended-workflow)
 - [Contributing](#Contributing)
 - [Troubleshooting](#Troubleshooting)
 - [Roadmap](#Roadmap)
@@ -267,7 +265,7 @@ This pattern lets you:
 
 ---
 
-## Suggested Project layout (high-level)
+## Suggested Project layout
 - Cargo.toml — Rust project configuration
 - assets/ — images, fonts, audio used by examples (if included)
 - src/

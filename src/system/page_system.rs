@@ -33,8 +33,8 @@ pub struct PageData<PageId, ButtonId>
     pub persistent_elements: Vec<Page<PageId, ButtonId>>,
     pub all_pages: Vec<Page<PageId, ButtonId>>,
 }
-impl<PageId, ButtonId> Default for PageData<PageId, ButtonId> where PageId: Copy + Eq, ButtonId: Copy + Eq, { fn default() -> Self { Self::new() } }
-impl<PageId, ButtonId> PageData<PageId, ButtonId> where PageId: Copy + Eq, ButtonId: Copy + Eq,
+impl<PageId: Copy + Eq, ButtonId: Copy + Eq> Default for PageData<PageId, ButtonId> { fn default() -> Self { Self::new() } }
+impl<PageId: Copy + Eq, ButtonId: Copy + Eq> PageData<PageId, ButtonId>
 {
     /// Define Persistant Page
     pub fn new() -> Self { Self {vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), persistent_elements: Vec::new(), all_pages: Vec::new()} }
@@ -110,7 +110,7 @@ pub struct Button<ButtonId>
     pub id: ButtonId,
 }
 
-impl<ButtonId> Button<ButtonId> where ButtonId: Copy + Eq,
+impl<ButtonId: Copy + Eq> Button<ButtonId>
 {
     pub fn button_at(option_vec_of_buttons: Vec<&Buttons<ButtonId>>, mouse_pos_x: f32, mouse_pos_y: f32, window_size: (u32, u32)) -> Option<ButtonId> 
     {

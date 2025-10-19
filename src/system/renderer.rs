@@ -22,7 +22,7 @@ pub struct Renderer<'a, PageId, ButtonId>
     pub texture_creator: &'a TextureCreator<WindowContext>,
     pub ttf_context: &'a Sdl3TtfContext,
 }
-impl<'a, PageId, ButtonId> Renderer<'a, PageId, ButtonId> where PageId: Copy + Eq, ButtonId: Copy + Eq,
+impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId> 
 {
     pub fn new(canvas: &'a mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, ttf_context: &'a Sdl3TtfContext) -> Self { Self{ _page_id: None, _button_id: None, canvas, texture_creator, ttf_context} }
 

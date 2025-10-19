@@ -22,8 +22,8 @@ pub enum InputEvent
     None,
 }
 pub struct InputHandler<PageId, ButtonId> { _pageid: Option<PageId>, _buttonid: Option<ButtonId>}
-impl<PageId, ButtonId> Default for InputHandler<PageId, ButtonId> where PageId: Copy + Eq, ButtonId: Copy + Eq, { fn default() -> Self { Self::new() } }
-impl<PageId, ButtonId> InputHandler<PageId, ButtonId> where PageId: Copy + Eq, ButtonId: Copy + Eq,
+impl<PageId: Copy + Eq, ButtonId: Copy + Eq> Default for InputHandler<PageId, ButtonId> { fn default() -> Self { Self::new() } }
+impl<PageId: Copy + Eq, ButtonId: Copy + Eq> InputHandler<PageId, ButtonId>
 {
     pub fn new() -> Self { Self { _pageid: None, _buttonid: None}}
 

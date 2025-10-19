@@ -1,8 +1,19 @@
-use rust_page_system::{get_center, system::{page_system::PageData, state::AppState}, Button, Page};
 use sdl3::{pixels::Color, rect::Rect};
+use rust_page_system::
+{
+    get_center,
+    system::{page_system::PageData, state::AppState},
+    Button,
+    Page
+};
+
+
+
 
 
 pub const WINDOW_DEFAULT_SCALE: (u32, u32) = (1920, 1080);
+
+
 
 
 

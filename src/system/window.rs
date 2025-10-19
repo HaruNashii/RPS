@@ -31,31 +31,47 @@ pub fn get_monitor_refresh_rate() -> u64
     *all_monitors_refresh_rate.iter().max().unwrap()
 }
 
+#[derive(Debug)]
+pub struct WindowConfig
+{
+    pub window_title: String,
+    pub icon: (bool, Option<String>),
+    pub start_window_size: (u32, u32),
+    pub window_minimum_size: (u32, u32),
+    pub resizable: bool,
+    pub centered: bool,
+    pub hint_sdl3_vsync: bool
+}
 
-pub fn create_window(window_is_hidden: bool, has_icon: (bool, Option<String>), hint_sdl3_vsync: bool) -> (Canvas<Window>, EventPump, TextureCreator<WindowContext>, Sdl3TtfContext)
+
+pub fn create_window(window_config: WindowConfig) -> (Canvas<Window>, EventPump, TextureCreator<WindowContext>, Sdl3TtfContext)
 {
     let sdl_started = sdl3::init().unwrap();
     let video_system = sdl_started.video().unwrap();
-
-    if hint_sdl3_vsync 
+    let mut window = if window_config.resizable
     {
-        // Enable vsync via hint before creating the canvas
-        sdl3::hint::set(sdl3::hint::names::RENDER_VSYNC, "1");
-    };
-
-    //Flag Hidden Is Necessary For Some Unit Tests
-    let mut window = if window_is_hidden
+        if window_config.centered
+        {
+            video_system.window(&window_config.window_title, window_config.start_window_size.0, window_config.start_window_size.1).resizable().position_centered().build().unwrap()
+        }
+        else 
+        {
+            video_system.window(&window_config.window_title, window_config.start_window_size.0, window_config.start_window_size.1).resizable().build().unwrap()
+        }
+    }
+    else if window_config.centered
     {
-        video_system.window("Page System", WINDOW_DEFAULT_SCALE.0, WINDOW_DEFAULT_SCALE.1).hidden().resizable().position_centered().build().unwrap()
+        video_system.window(&window_config.window_title, window_config.start_window_size.0, window_config.start_window_size.1).position_centered().build().unwrap()
     }
     else 
     {
-        video_system.window("Page System", WINDOW_DEFAULT_SCALE.0, WINDOW_DEFAULT_SCALE.1).resizable().position_centered().build().unwrap()
+        video_system.window(&window_config.window_title, window_config.start_window_size.0, window_config.start_window_size.1).build().unwrap()
     };
 
-    if has_icon.0 
+    if window_config.hint_sdl3_vsync { sdl3::hint::set(sdl3::hint::names::RENDER_VSYNC, "1"); };
+    if window_config.icon.0 
     {
-        match has_icon.1
+        match window_config.icon.1
         {
             Some(icon_path) =>
             {
@@ -90,7 +106,7 @@ pub fn create_window(window_is_hidden: bool, has_icon: (bool, Option<String>), h
         }
     }
 
-    window.set_minimum_size(1024, 576).unwrap();
+    window.set_minimum_size(window_config.window_minimum_size.0, window_config.window_minimum_size.1).unwrap();
     video_system.text_input().start(&window);
 
     let ttf_context = sdl3::ttf::init().unwrap();
@@ -98,8 +114,8 @@ pub fn create_window(window_is_hidden: bool, has_icon: (bool, Option<String>), h
     let mut canvas = window.into_canvas();
     let texture_creator = canvas.texture_creator();
 
-    canvas.set_logical_size(WINDOW_DEFAULT_SCALE.0, WINDOW_DEFAULT_SCALE.1, SDL_LOGICAL_PRESENTATION_STRETCH).unwrap();
-    canvas.set_viewport(Rect::new(0, 0, canvas.window().size().0, canvas.window().size().1));
+    canvas.set_logical_size(1920, 1080, SDL_LOGICAL_PRESENTATION_STRETCH).unwrap();
+    canvas.set_viewport(Rect::new(0, 0, 1920, 1080));
     
     (canvas, event_pump, texture_creator, ttf_context)
 }

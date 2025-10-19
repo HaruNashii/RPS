@@ -73,13 +73,16 @@ use std::{env, time::Duration};
 use sdl3::{pixels::Color, rect::Rect};
 use rust_page_system::
 {
-    misc::center_elements::get_center, system::
+    Button,
+    Renderer,
+    misc::center_elements::get_center, 
+    system::
     {
         input_handler::{InputEvent, InputHandler}, 
         page_system::{Page, PageData}, 
         state::AppState, 
-        window::{create_window, get_monitor_refresh_rate, WINDOW_DEFAULT_SCALE}
-    }, Button, Renderer 
+        window::{create_window, get_monitor_refresh_rate, WindowConfig, WINDOW_DEFAULT_SCALE}
+    }
 };
 
 
@@ -89,7 +92,19 @@ use rust_page_system::
 //==========================================================================================================================================================================
 fn main() 
 {
-    let (mut canvas, mut event_pump, texture_creator, ttf_context) = create_window(false, (false, None), true);
+    let window_config = WindowConfig
+    {
+        window_title: "SimpleExample".to_string(),
+        icon: (false, None),
+        // Recommended to start with 16:9 aspect ratio
+        start_window_size: (800, 600),
+        // Recommended to have minimum size with 16:9 aspect ratio
+        window_minimum_size: (112, 63),
+        resizable: true,
+        centered: true,
+        hint_sdl3_vsync: true
+    };
+    let (mut canvas, mut event_pump, texture_creator, ttf_context) = create_window(window_config);
     let mut input_handler = InputHandler::<PageId, ButtonId>::new();
     let mut app_state = AppState::<PageId, ButtonId>::new(PageId::Page1, true);
     let mut page_data = PageData::<PageId, ButtonId>::new();
@@ -254,7 +269,6 @@ pub fn subpage_page1() -> Page<PageId,ButtonId>
     //===================== page creation =========================
     Page { has_persistent_elements: (false, None), id: PageId::Page1SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
-
 ```
 
 </details>

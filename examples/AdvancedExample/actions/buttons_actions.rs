@@ -13,6 +13,6 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
         if &ButtonSubPage    == button_id {app_state.current_page = (PageId::Page2SubPage, false); return};
         if &ButtonBack       == button_id {app_state.current_page = (PageId::Page2,        true);  return};
         // Non Handle Buttons Will Be Considered User Input Buttons
-        app_state.capturing_input = (true, Some(button_id.clone()));
+        app_state.capturing_input = (true, Some(*button_id));
     }
 }

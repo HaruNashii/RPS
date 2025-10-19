@@ -81,7 +81,7 @@ use rust_page_system::
         input_handler::{InputEvent, InputHandler}, 
         page_system::{Page, PageData}, 
         state::AppState, 
-        window::{create_window, get_monitor_refresh_rate, WindowConfig, WINDOW_DEFAULT_SCALE}
+        window::{create_window, get_monitor_refresh_rate, WindowConfig}
     }
 };
 
@@ -105,28 +105,29 @@ fn main()
         hint_sdl3_vsync: true
     };
     let (mut canvas, mut event_pump, texture_creator, ttf_context) = create_window(window_config);
-    let mut input_handler = InputHandler::<PageId, ButtonId>::new();
-    let mut app_state = AppState::<PageId, ButtonId>::new(PageId::Page1, true);
-    let mut page_data = PageData::<PageId, ButtonId>::new();
-    let mut renderer = Renderer::<PageId, ButtonId>::new(&mut canvas, &texture_creator, &ttf_context);
+    let mut input_handler = InputHandler::new();
+    let mut app_state = AppState::new(PageId::Page1, true);
+    let mut page_data = PageData::new();
+    let mut renderer = Renderer::new(&mut canvas, &texture_creator, &ttf_context);
+
     populate_page_data(&mut page_data);
 
     let refresh_rate = get_monitor_refresh_rate();
     'running: loop 
     {
-        app_state.update_window_size(renderer.canvas.window().size());
         std::thread::sleep(Duration::from_millis(1000 / refresh_rate));
         match input_handler.poll(&mut event_pump) 
         {
-            InputEvent::Click(x, y)   => if let Some(button_id) = page_data.page_button_at(&app_state, x, y) { button_action(&mut app_state, button_id); },
+            InputEvent::Click(x, y)   => if let Some(button_id) = page_data.page_button_at(&app_state, x, y) { button_action(&mut app_state, &button_id); },
             InputEvent::Text(string)    => input_handler.handle_text(string, &mut app_state, &mut page_data),
             InputEvent::Backspace               => input_handler.handle_backspace(&mut app_state, &mut page_data),
             InputEvent::Submit                  => input_handler.submit_input(&mut app_state),
             InputEvent::Quit                    => break 'running,
             InputEvent::None                    => {}
         }
+        app_state.update_window_size(renderer.canvas.window().size());
         update_page_data(&mut page_data);
-        renderer.render(&mut app_state, &page_data);
+        renderer.render(&app_state, &page_data);
     }
 }
 
@@ -135,15 +136,15 @@ fn main()
 //==========================================================================================================================================================================
 //===============================================================# can be a different file, like: buttons_actions.rs #======================================================
 //==========================================================================================================================================================================
-pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: ButtonId) 
+pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &ButtonId) 
 {
     if !app_state.capturing_input.0
     {
-        if ButtonId::ButtonPage1    == button_id {app_state.current_page = (PageId::Page1,        true);    return};
-        if ButtonId::ButtonSubPage  == button_id {app_state.current_page = (PageId::Page1SubPage, true);    return};
-        if ButtonId::ButtonBack     == button_id {app_state.current_page = (PageId::Page1,        true);    return};
+        if &ButtonId::ButtonPage1    == button_id {app_state.current_page = (PageId::Page1,        true);    return};
+        if &ButtonId::ButtonSubPage  == button_id {app_state.current_page = (PageId::Page1SubPage, true);    return};
+        if &ButtonId::ButtonBack     == button_id {app_state.current_page = (PageId::Page1,        true);    return};
         // Non Handle Buttons Will Be Considered User Input Buttons
-        app_state.capturing_input = (true, Some(button_id));
+        app_state.capturing_input = (true, Some(*button_id));
     }
 }
 
@@ -220,17 +221,11 @@ pub enum ButtonId
 // Define Your Pages Here:
 pub fn persistent_elements() -> Page<PageId, ButtonId>
 {
-    //===================== variables =========================
-    let window_center = get_center((200, 75), WINDOW_DEFAULT_SCALE);
-
     //===================== rects =========================
-    let all_rects = vec! [ (BLACK_COLOR, (Rect::new(0, 0, WINDOW_DEFAULT_SCALE.0, 100), 0)) ];
-
-    //===================== buttons =========================
-    let all_buttons = vec! [ Button { enabled: true, color: PINK_COLOR, rect: Rect::new(window_center.pos_x, 10, window_center.w, window_center.h), radius: 5, id: ButtonId::ButtonPage1}, ];
+    let all_rects = vec! [ (BLACK_COLOR, (Rect::new(0, 0, 1920, 100), 0)) ];
 
     //===================== texts =========================
-    let all_text = vec! [ (17.0, (all_buttons[0].rect.x + 9, all_buttons[0].rect.y + 24), "Page 1".to_string(), TEXT_COLOR), ];
+    let all_text = vec! [ (17.0, (825, 34), "This Is A Persistent Element".to_string(), TEXT_COLOR), ];
 
     //===================== images =========================
     let all_images = vec!
@@ -239,14 +234,14 @@ pub fn persistent_elements() -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (false, None), id: PageId::Persistent, background_color: None, rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
+    Page { has_persistent_elements: (false, None), id: PageId::Persistent, background_color: None, rects: Some(all_rects), buttons: None, texts: Some(all_text), images: Some(all_images) }
 }
 
 pub fn page_1(user_input: &[String]) -> Page<PageId, ButtonId>
 {
     //===================== variables =========================
-    let purple_button_data = get_center((600, 100), WINDOW_DEFAULT_SCALE);
-    let subpage_button_data = get_center((235, 40), WINDOW_DEFAULT_SCALE);
+    let purple_button_data = get_center((600, 100), (1920, 1080));
+    let subpage_button_data = get_center((235, 40), (1920, 1080));
 
     //===================== buttons =========================
     let all_buttons = vec!
@@ -260,7 +255,7 @@ pub fn page_1(user_input: &[String]) -> Page<PageId, ButtonId>
     [
         (18.0, (all_buttons[0].rect.x + 10, all_buttons[0].rect.y + 7), "Go To subpage_page1".to_string(), TEXT_COLOR),
         (18.0, (all_buttons[1].rect.x + 75, all_buttons[1].rect.y - 25), "Click the Button To Start Getting Input".to_string(), SUBTEXT_COLOR),
-        (25.0, (all_buttons[1].rect.x + 15, all_buttons[1].rect.y + 35), user_input[0].clone(), BLACK_COLOR),
+        (25.0, (all_buttons[1].rect.x + 15, all_buttons[1].rect.y + 35), user_input[0].to_string(), BLACK_COLOR),
     ];
 
     //===================== page creation =========================

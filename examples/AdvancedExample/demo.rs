@@ -13,7 +13,7 @@ use rust_page_system::
 use crate::
 {   
     actions::buttons_actions::button_action, 
-    ui::pages::{ButtonId, PageId},
+    ui::pages::PageId,
     system::setup_page_data::{populate_page_data, update_page_data} 
 };
 
@@ -54,17 +54,16 @@ fn main()
         hint_sdl3_vsync: true
     };
     let (mut canvas, mut event_pump, texture_creator, ttf_context) = create_window(window_config);
-    let mut input_handler = InputHandler::<PageId, ButtonId>::new();
-    let mut app_state = AppState::<PageId, ButtonId>::new(PageId::Page1, true);
+    let mut input_handler = InputHandler::new();
+    let mut app_state = AppState::new(PageId::Page1, true);
     let mut page_data = PageData::new();
-    let mut renderer = Renderer::<PageId, ButtonId>::new(&mut canvas, &texture_creator, &ttf_context);
+    let mut renderer = Renderer::new(&mut canvas, &texture_creator, &ttf_context);
 
     populate_page_data(&mut page_data);
 
     let refresh_rate = get_monitor_refresh_rate();
     'running: loop 
     {
-        app_state.update_window_size(renderer.canvas.window().size());
         std::thread::sleep(Duration::from_millis(1000 / refresh_rate));
         match input_handler.poll(&mut event_pump) 
         {
@@ -76,6 +75,7 @@ fn main()
             InputEvent::None                    => {}
         }
         update_page_data(&mut page_data);
+        app_state.update_window_size(renderer.canvas.window().size());
         renderer.render(&app_state, &page_data);
     }
 }

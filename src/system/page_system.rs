@@ -1,9 +1,5 @@
-use sdl3::
-{
-    pixels::Color,
-    rect::Rect
-};
-use crate::system::window::WINDOW_DEFAULT_SCALE;
+use crate::{system::window::WINDOW_DEFAULT_SCALE, AppState};
+use sdl3::{pixels::Color, rect::Rect};
 
 
 
@@ -24,6 +20,85 @@ pub struct Page<PageId, ButtonId>
     pub texts: Texts,
     pub images: Images,
 }
+
+
+
+
+
+#[derive(PartialEq, Debug, Clone)]
+pub struct PageData<PageId, ButtonId>
+{
+    pub vec_user_input: Vec<(PageId, ButtonId, String)>,
+    pub vec_user_input_string: Vec<String>,
+    pub persistent_elements: Vec<Page<PageId, ButtonId>>,
+    pub all_pages: Vec<Page<PageId, ButtonId>>,
+}
+impl<PageId, ButtonId> Default for PageData<PageId, ButtonId> where PageId: Copy + Eq, ButtonId: Copy + Eq, { fn default() -> Self { Self::new() } }
+impl<PageId, ButtonId> PageData<PageId, ButtonId> where PageId: Copy + Eq, ButtonId: Copy + Eq,
+{
+    /// Define Persistant Page
+    pub fn new() -> Self { Self {vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), persistent_elements: Vec::new(), all_pages: Vec::new()} }
+
+    /// Define Persistant Page
+    pub fn define_persistent_elements(&mut self, persistent_elements: Vec<Page<PageId, ButtonId>>) { self.persistent_elements = persistent_elements }
+
+    /// Populate all_buttons
+    pub fn populate_and_update_all_pages(&mut self, all_pages: Vec<Page<PageId, ButtonId>>) { self.all_pages = all_pages }
+
+    /// Populate vec_user_input
+    pub fn push_vec_user_input(&mut self, user_input_needed: Vec<(PageId, ButtonId)>) 
+    { 
+        for pageid_and_user_input_needed in user_input_needed 
+        { 
+            self.vec_user_input.push((pageid_and_user_input_needed.0, pageid_and_user_input_needed.1, String::new()));
+        } 
+        self.update_vec_user_input_string();
+    }
+
+    /// Update vec_user_input_string
+    pub fn update_vec_user_input_string(&mut self)
+    {
+        let strings: Vec<String> = self.vec_user_input.iter().map(|(_, _, s)| s.clone()).collect();
+        self.vec_user_input_string = strings;
+    }
+
+    /// Returns the button ID under the cursor (if any)
+    pub fn page_button_at(&self, app_state: &AppState<PageId, ButtonId>, mouse_pos_x: f32, mouse_pos_y: f32) -> Option<ButtonId> 
+    {
+        let current_page = app_state.current_page;
+        let window_size = app_state.window_size;
+        let mut buttons = Vec::new();
+        for persistent_elements in &self.persistent_elements { buttons.push(&persistent_elements.buttons); };
+        for pages in &self.all_pages { buttons.push(&pages.buttons); };
+
+        let mut buttons_to_be_evaluated = Vec::new();
+        for page in &self.all_pages
+        {
+            if page.id == current_page.0
+            {
+                buttons_to_be_evaluated.push(&page.buttons);
+            };
+
+            if page.has_persistent_elements.0 && page.id == current_page.0 && let Some(vec_of_pageid) = &page.has_persistent_elements.1
+            {
+                for (index, pageid) in vec_of_pageid.iter().enumerate()
+                {
+                    if *pageid == self.persistent_elements[index].id
+                    {
+                        buttons_to_be_evaluated.push(&self.persistent_elements[index].buttons)
+                    }
+                }
+            };
+        }
+        Button::button_at(buttons_to_be_evaluated, mouse_pos_x, mouse_pos_y, window_size)
+    }
+
+}
+
+
+
+
+
 
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub struct Button<ButtonId>

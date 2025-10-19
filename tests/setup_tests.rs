@@ -1,4 +1,4 @@
-use rust_page_system::{system::state::AppState, Page, Button, get_center};
+use rust_page_system::{get_center, system::{page_system::PageData, state::AppState}, Button, Page};
 use sdl3::{pixels::Color, rect::Rect};
 
 
@@ -66,6 +66,35 @@ pub enum ButtonId
     ButtonPurpleInputStartPage1,
     ButtonRedInputStartPage1,
     ButtonPurpleInputStartPage2,
+}
+
+
+
+pub fn populate_or_update_app_state(page_data: &mut PageData<PageId, ButtonId>, only_update: bool)
+{
+    if !only_update
+    {
+        //Populate Vec_Of_User_input With Page And Buttons That Receives User_Input
+        page_data.push_vec_user_input(vec!
+        [
+            (PageId::Page1, ButtonId::ButtonPurpleInputStartPage1),
+            (PageId::Page1, ButtonId::ButtonRedInputStartPage1),
+            (PageId::Page2, ButtonId::ButtonPurpleInputStartPage2),
+        ]);
+    }
+
+    page_data.define_persistent_elements(vec! 
+    [
+        persistent_elements1(),
+        persistent_elements2(),
+    ]);
+    
+    page_data.populate_and_update_all_pages(vec!
+    [
+        page_1(&page_data.vec_user_input_string),
+        page_2(&page_data.vec_user_input_string),
+        subpage_page2(),
+    ]);
 }
 
 pub fn persistent_elements1() -> Page<PageId, ButtonId>

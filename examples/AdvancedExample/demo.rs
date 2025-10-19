@@ -1,13 +1,7 @@
 use std::time::Duration;
-use rust_page_system::
-{
-    system::
-    {
-        input_handler::{InputEvent, InputHandler},
-        state::AppState,
-        window::{create_window, get_monitor_refresh_rate},
-    },
-};
+use rust_page_system::{system::{
+        input_handler::{InputEvent, InputHandler}, page_system::PageData, state::AppState, window::{create_window, get_monitor_refresh_rate}
+    }, Renderer};
 use crate::
 {   
     actions::buttons_actions::button_action, 
@@ -38,24 +32,28 @@ fn main()
     setup_build();
 
     let (mut canvas, mut event_pump, texture_creator, ttf_context) = create_window(false, (false, None), true);
-    let input_handler = InputHandler;
+    let mut input_handler = InputHandler::<PageId, ButtonId>::new();
     let mut app_state = AppState::<PageId, ButtonId>::new(PageId::Page1, true);
-    populate_or_update_app_state(&mut app_state, false);
+    let mut page_data = PageData::new();
+    let mut renderer = Renderer::<PageId, ButtonId>::new();
+
+    populate_or_update_app_state(&mut page_data, false);
 
     let refresh_rate = get_monitor_refresh_rate();
     'running: loop 
     {
+        app_state.update_window_size(canvas.window().size());
         std::thread::sleep(Duration::from_millis(1000 / refresh_rate));
         match input_handler.poll(&mut event_pump) 
         {
-            InputEvent::Click(x, y)   => if let Some(button_id) = app_state.page_button_at(x, y) { button_action(&mut app_state, button_id); },
-            InputEvent::Text(string)    => app_state.handle_text(string),
-            InputEvent::Backspace               => app_state.handle_backspace(),
-            InputEvent::Submit                  => app_state.submit_input(),
+            InputEvent::Click(x, y)   => if let Some(button_id) = page_data.page_button_at(&app_state, x, y) { button_action(&mut app_state, &button_id); },
+            InputEvent::Text(string)    => input_handler.handle_text(string, &mut app_state, &mut page_data),
+            InputEvent::Backspace               => input_handler.handle_backspace(&mut app_state, &mut page_data),
+            InputEvent::Submit                  => input_handler.submit_input(&mut app_state),
             InputEvent::Quit                    => break 'running,
             InputEvent::None                    => {}
         }
-        populate_or_update_app_state(&mut app_state, true);
-        app_state.render(&mut canvas, &texture_creator, &ttf_context);
+        populate_or_update_app_state(&mut page_data, true);
+        renderer.render(&mut canvas, &texture_creator, &ttf_context, &app_state, &page_data);
     }
 }

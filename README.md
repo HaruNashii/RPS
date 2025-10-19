@@ -74,16 +74,18 @@ use std::{env, time::Duration};
 use sdl3::{pixels::Color, rect::Rect};
 use rust_page_system::
 {
-    Button,
-    misc::center_elements::get_center,
-    system::
+    misc::center_elements::get_center, system::
     {
         input_handler::{InputEvent, InputHandler}, 
-        page_system::Page, 
+        page_system::{Page, PageData}, 
         state::AppState, 
         window::{create_window, get_monitor_refresh_rate, WINDOW_DEFAULT_SCALE}
-    }, 
+    }, Button, Renderer 
 };
+
+// To Be Ignored, Just An Setup To Configure The Build
+use crate::build::setup_build;
+mod build;
 
 
 
@@ -92,26 +94,32 @@ use rust_page_system::
 //==========================================================================================================================================================================
 fn main() 
 {
+    // To Be Ignored, Just An Setup To Configure The Build
+    setup_build();
+
     let (mut canvas, mut event_pump, texture_creator, ttf_context) = create_window(false, (false, None), true);
-    let input_handler = InputHandler;
+    let mut input_handler = InputHandler::<PageId, ButtonId>::new();
     let mut app_state = AppState::<PageId, ButtonId>::new(PageId::Page1, true);
-    populate_or_update_app_state(&mut app_state, false);
+    let mut page_data = PageData::<PageId, ButtonId>::new();
+    let mut renderer = Renderer::<PageId, ButtonId>::new();
+    populate_or_update_app_state(&mut page_data, false);
 
     let refresh_rate = get_monitor_refresh_rate();
     'running: loop 
     {
+        app_state.update_window_size(canvas.window().size());
         std::thread::sleep(Duration::from_millis(1000 / refresh_rate));
         match input_handler.poll(&mut event_pump) 
         {
-            InputEvent::Click(x, y)   => if let Some(button_id) = app_state.page_button_at(x, y) { button_action(&mut app_state, button_id); },
-            InputEvent::Text(string)    => app_state.handle_text(string),
-            InputEvent::Backspace               => app_state.handle_backspace(),
-            InputEvent::Submit                  => app_state.submit_input(),
+            InputEvent::Click(x, y)   => if let Some(button_id) = page_data.page_button_at(&app_state, x, y) { button_action(&mut app_state, button_id); },
+            InputEvent::Text(string)    => input_handler.handle_text(string, &mut app_state, &mut page_data),
+            InputEvent::Backspace               => input_handler.handle_backspace(&mut app_state, &mut page_data),
+            InputEvent::Submit                  => input_handler.submit_input(&mut app_state),
             InputEvent::Quit                    => break 'running,
             InputEvent::None                    => {}
         }
-        populate_or_update_app_state(&mut app_state, true);
-        app_state.render(&mut canvas, &texture_creator, &ttf_context);
+        populate_or_update_app_state(&mut page_data, true);
+        renderer.render(&mut canvas, &texture_creator, &ttf_context, &mut app_state, &page_data);
     }
 }
 
@@ -169,26 +177,25 @@ pub enum ButtonId
     ButtonSubPage,
     ButtonBack,
 }
-
-pub fn populate_or_update_app_state(app_state: &mut AppState<PageId, ButtonId>, only_update: bool)
+pub fn populate_or_update_app_state(page_data: &mut PageData<PageId, ButtonId>, only_update: bool)
 {
     if !only_update
     {
         //Populate Vec_Of_User_input With Page And Buttons That Receives User_Input
-        app_state.push_vec_user_input(vec!
+        page_data.push_vec_user_input(vec!
         [
             (PageId::Page1, ButtonId::ButtonPurpleInputStartPage1),
         ]);
     }
 
-    app_state.define_persistent_elements(vec! 
+    page_data.define_persistent_elements(vec! 
     [
         persistent_elements(),
     ]);
     
-    app_state.populate_and_update_all_pages(vec!
+    page_data.populate_and_update_all_pages(vec!
     [
-        page_1(&app_state.vec_user_input_string),
+        page_1(&page_data.vec_user_input_string),
         subpage_page1(),
     ]);
 }

@@ -1,6 +1,8 @@
 use display_info::DisplayInfo;
+use std::fs;
 use sdl3::
 {
+    surface::Surface,
     rect::Rect,
     render::{Canvas, TextureCreator},
     sys::render::SDL_LOGICAL_PRESENTATION_STRETCH,
@@ -30,15 +32,18 @@ pub fn get_monitor_refresh_rate() -> u64
 }
 
 
-pub fn create_window(window_is_hidden: bool) -> (Canvas<Window>, EventPump, TextureCreator<WindowContext>, Sdl3TtfContext)
+pub fn create_window(window_is_hidden: bool, has_icon: (bool, Option<String>), hint_sdl3_vsync: bool) -> (Canvas<Window>, EventPump, TextureCreator<WindowContext>, Sdl3TtfContext)
 {
     let sdl_started = sdl3::init().unwrap();
     let video_system = sdl_started.video().unwrap();
 
-    // Enable vsync via hint before creating the canvas
-    sdl3::hint::set(sdl3::hint::names::RENDER_VSYNC, "1");
+    if hint_sdl3_vsync 
+    {
+        // Enable vsync via hint before creating the canvas
+        sdl3::hint::set(sdl3::hint::names::RENDER_VSYNC, "1");
+    };
 
-    //Flag Hidden Is Necessary For Unit Tests
+    //Flag Hidden Is Necessary For Some Unit Tests
     let mut window = if window_is_hidden
     {
         video_system.window("Page System", WINDOW_DEFAULT_SCALE.0, WINDOW_DEFAULT_SCALE.1).hidden().resizable().position_centered().build().unwrap()
@@ -47,6 +52,43 @@ pub fn create_window(window_is_hidden: bool) -> (Canvas<Window>, EventPump, Text
     {
         video_system.window("Page System", WINDOW_DEFAULT_SCALE.0, WINDOW_DEFAULT_SCALE.1).resizable().position_centered().build().unwrap()
     };
+
+    if has_icon.0 
+    {
+        match has_icon.1
+        {
+            Some(icon_path) =>
+            {
+                if fs::exists(&icon_path).unwrap()
+                {
+                    if let Some((_, after)) = icon_path.rsplit_once('.') 
+                    {
+                        if after == "bpm"
+                        {
+                            let icon_surface = Surface::load_bmp(icon_path).unwrap();
+                            window.set_icon(icon_surface);
+                        }
+                        else 
+                        {
+                            println!("WARNING!!!! Window is declared to have icon, but the provided icon path doesn't lead to an .bmp file");
+                            println!("Icon Path Provided: {}", icon_path);
+                        }
+                    }
+                    else 
+                    {
+                        println!("WARNING!!!! Window is declared to have icon, but the provided icon path doesn't lead to an .bmp file");
+                        println!("Icon Path Provided: {}", icon_path);
+                    }
+                }
+                else 
+                {
+                    println!("WARNING!!!! Window is declared to have icon, but icon path parsed doesn't exist");
+                    println!("Icon Path Provided: {}", icon_path);
+                }
+            }
+            None => { println!("WARNING!!!! Window is declared to have icon, but no icon path was parsed!!!!") }
+        }
+    }
 
     window.set_minimum_size(1024, 576).unwrap();
     video_system.text_input().start(&window);

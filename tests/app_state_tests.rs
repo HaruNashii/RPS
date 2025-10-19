@@ -30,7 +30,7 @@ fn app_state_initialization()
 }
 
 #[test]
-pub fn app_state_define_persistent_elementss()
+pub fn app_state_define_persistent_elements()
 {
     let mut state = AppState::new();
     let vec_of_persistent_elementss = vec!
@@ -73,20 +73,44 @@ fn app_state_push_vec_user_input()
 }
 
 #[test]
-fn app_state_handle_text_and_backspace() 
+fn app_state_handle_multiple_text_and_backspace() 
 {
     let mut state = AppState::new();
     state.push_vec_user_input(vec!
     [
         (PageId::Page1 as usize, ButtonId::ButtonPurpleInputStartPage1 as usize),
+        (PageId::Page1 as usize, ButtonId::ButtonRedInputStartPage1 as usize),
+        (PageId::Page2 as usize, ButtonId::ButtonPurpleInputStartPage2 as usize),
     ]);
 
+    // Try Pushing Input To Button Purple Page 1 And Removing One Letter
     state.current_page.0 = PageId::Page1 as usize;
     state.capturing_input = (true, Some(ButtonId::ButtonPurpleInputStartPage1 as usize));
+    assert_eq!(state.vec_user_input_string[0], "");
     state.handle_text("hello".to_string());
     assert_eq!(state.vec_user_input_string[0], "hello");
     state.handle_backspace();
     assert_eq!(state.vec_user_input_string[0], "hell");
+    state.capturing_input = (false, None);
+
+    // Try Pushing Input To Button Red Page 1 And Removing One Letter
+    state.capturing_input = (true, Some(ButtonId::ButtonRedInputStartPage1 as usize));
+    assert_eq!(state.vec_user_input_string[1], "");
+    state.handle_text("world".to_string());
+    assert_eq!(state.vec_user_input_string[1], "world");
+    state.handle_backspace();
+    assert_eq!(state.vec_user_input_string[1], "worl");
+    state.capturing_input = (false, None);
+
+
+    // Try Pushing Input To Button Purple Page 2 And Removing One Letter
+    state.current_page.0 = PageId::Page2 as usize;
+    state.capturing_input = (true, Some(ButtonId::ButtonPurpleInputStartPage2 as usize));
+    assert_eq!(state.vec_user_input_string[2], "");
+    state.handle_text("test".to_string());
+    assert_eq!(state.vec_user_input_string[2], "test");
+    state.handle_backspace();
+    assert_eq!(state.vec_user_input_string[2], "tes");
 }
 
 #[test]
@@ -145,7 +169,7 @@ fn app_state_handle_action_starts_input_capture()
     state.capturing_input.0 = false;
     state.capturing_input.1 = None;
 
-    //Test Start User Input In Page2
+    //Test Start User Input In Purple Button In Page2
     state.current_page.0 = PageId::Page2 as usize;
     let input_button = ButtonId::ButtonPurpleInputStartPage2 as usize;
     button_action(&mut state, input_button);

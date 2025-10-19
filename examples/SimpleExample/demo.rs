@@ -29,7 +29,7 @@ fn main()
 
     let (mut canvas, mut event_pump, texture_creator, ttf_context) = create_window(false);
     let input_handler = InputHandler;
-    let mut app_state = AppState {current_page: (PageId::Page1 as usize, true), vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), capturing_input: (false, None), window_size: WINDOW_DEFAULT_SCALE, persistent_page: Vec::new(), all_pages: Vec::new() };
+    let mut app_state = AppState {current_page: (PageId::Page1 as usize, true), vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), capturing_input: (false, None), window_size: WINDOW_DEFAULT_SCALE, persistent_elements: Vec::new(), all_pages: Vec::new() };
     populate_or_update_app_state(&mut app_state, false);
 
     let refresh_rate = get_monitor_refresh_rate();
@@ -116,9 +116,9 @@ pub fn populate_or_update_app_state(app_state: &mut AppState, only_update: bool)
         ]);
     }
 
-    app_state.define_persistent_pages(vec! 
+    app_state.define_persistent_elements(vec! 
     [
-        persistent_page(),
+        persistent_elements(),
     ]);
     
     app_state.populate_and_update_all_pages(vec!
@@ -129,7 +129,7 @@ pub fn populate_or_update_app_state(app_state: &mut AppState, only_update: bool)
 }
 
 // Define Your Pages Here:
-pub fn persistent_page() -> Page
+pub fn persistent_elements() -> Page
 {
     //===================== variables =========================
     let window_center = get_center((200, 75), WINDOW_DEFAULT_SCALE);
@@ -150,7 +150,7 @@ pub fn persistent_page() -> Page
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_page: (false, None), id: PageId::Persistent as usize, background_color: None, rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
+    Page { has_persistent_elements: (false, None), id: PageId::Persistent as usize, background_color: None, rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
 }
 
 pub fn page_1(user_input: &[String]) -> Page
@@ -175,7 +175,7 @@ pub fn page_1(user_input: &[String]) -> Page
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_page: (true, Some(vec![PageId::Persistent as usize])), id: PageId::Page1 as usize, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_persistent_elements: (true, Some(vec![PageId::Persistent as usize])), id: PageId::Page1 as usize, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 
 }
 
@@ -188,5 +188,5 @@ pub fn subpage_page1() -> Page
     let all_text = vec! [ (18.0, (all_buttons[0].rect.x + 10, all_buttons[0].rect.y + 7), "<-".to_string(), TEXT_COLOR) ];
 
     //===================== page creation =========================
-    Page { has_persistent_page: (false, None), id: PageId::Page1SubPage as usize, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_persistent_elements: (false, None), id: PageId::Page1SubPage as usize, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }

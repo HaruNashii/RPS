@@ -4,8 +4,8 @@ use crate::setup_tests::
     button_action, 
     page_1, 
     page_2, 
-    persistent_page1, 
-    persistent_page2, 
+    persistent_elements1, 
+    persistent_elements2, 
     subpage_page2, 
     ButtonId, 
     PageId
@@ -30,16 +30,16 @@ fn app_state_initialization()
 }
 
 #[test]
-pub fn app_state_define_persistent_pages()
+pub fn app_state_define_persistent_elementss()
 {
     let mut state = AppState::new();
-    let vec_of_persistent_pages = vec!
+    let vec_of_persistent_elementss = vec!
     [
-        persistent_page1(),
-        persistent_page2()
+        persistent_elements1(),
+        persistent_elements2()
     ];
-    state.define_persistent_pages(vec_of_persistent_pages.clone());
-    assert_eq!(state.persistent_page, vec_of_persistent_pages);
+    state.define_persistent_elements(vec_of_persistent_elementss.clone());
+    assert_eq!(state.persistent_elements, vec_of_persistent_elementss);
 }
 
 #[test]

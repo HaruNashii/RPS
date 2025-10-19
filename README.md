@@ -7,20 +7,22 @@ This README explains the features, the dependencies you need to build and run th
 
 ---
 
-Table of contents
-- Features
-- Requirements
-- Example usage
-- Project layout
-- Development notes & recommended workflow
-- Contributing
-- Troubleshooting
-- Roadmap
-- License
+## Table of contents
+
+Link to the sample section: [Link Text](#sample-section).
+- [Features](#Features)
+- [Requirements](#Requirements)
+- [Example usage](#Example-usage)
+- [Project layout](#Project-layout)
+- [Development notes & recommended workflow](#Development-notes-&-recommended-workflow)
+- [Contributing](#Contributing)
+- [Troubleshooting](#Troubleshooting)
+- [Roadmap](#Roadmap)
+- [License](#License)
 
 ---
 
-Features
+## Features
 - Lightweight page system for SDL-based Rust apps
   - Push/pop pages (stack-based scene management)
   - Deterministic update loop with fixed timestep guidance
@@ -28,14 +30,14 @@ Features
   - Simple render ordering (top-of-stack renders last)
 - Minimal, idiomatic Rust API (designed to be easy to adapt)
 - Example pages in the repository that demonstrate:
-  - Menu page + game/demo page
+  - Simple single page with persistent elements
   - Basic input handling (keyboard / mouse)
-  - Simple transition pattern and resource cleanup
+  - More complex example with Multiples Pages, Persistent Elements and UserInputText
 - Designed to work with SDL3 (native windowing, events, rendering, textures, fonts, images)
 
 ---
 
-Requirements
+## Requirements
 
 1. Rust toolchain
    - rustup recommended
@@ -61,9 +63,12 @@ If you need the official SDL source and instructions:
 
 ---
 
-Example usage (conceptual)
+## Example usage (conceptual)
 
 Below is a conceptual example of how a page system might be used. The exact API in the repository may vary slightly; use this as a guide to how the system is intended to behave.
+for more accurate examples you can see them [here](https://github.com/HaruNashii/RPS/tree/bdadc5c7d4d283b3438400ebcb894370032b1765/tests)
+
+<details> <summary>Simple Conceptual Example</summary>
 
 ```rust
 use std::{env, time::Duration};
@@ -90,7 +95,7 @@ fn main()
 {
     let (mut canvas, mut event_pump, texture_creator, ttf_context) = create_window(false);
     let input_handler = InputHandler;
-    let mut app_state = AppState {current_page: (PageId::Page1 as usize, true), vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), capturing_input: (false, None), window_size: WINDOW_DEFAULT_SCALE, persistent_page: Vec::new(), all_pages: Vec::new() };
+    let mut app_state = AppState {current_page: (PageId::Page1 as usize, true), vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), capturing_input: (false, None), window_size: WINDOW_DEFAULT_SCALE, persistent_elements: Vec::new(), all_pages: Vec::new() };
     populate_or_update_app_state(&mut app_state, false);
 
     let refresh_rate = get_monitor_refresh_rate();
@@ -177,9 +182,9 @@ pub fn populate_or_update_app_state(app_state: &mut AppState, only_update: bool)
         ]);
     }
 
-    app_state.define_persistent_pages(vec! 
+    app_state.define_persistent_elements(vec! 
     [
-        persistent_page(),
+        persistent_elements(),
     ]);
     
     app_state.populate_and_update_all_pages(vec!
@@ -190,7 +195,7 @@ pub fn populate_or_update_app_state(app_state: &mut AppState, only_update: bool)
 }
 
 // Define Your Pages Here:
-pub fn persistent_page() -> Page
+pub fn persistent_elements() -> Page
 {
     //===================== variables =========================
     let window_center = get_center((200, 75), WINDOW_DEFAULT_SCALE);
@@ -211,7 +216,7 @@ pub fn persistent_page() -> Page
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_page: (false, None), id: PageId::Persistent as usize, background_color: None, rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
+    Page { has_persistent_elements: (false, None), id: PageId::Persistent as usize, background_color: None, rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
 }
 
 pub fn page_1(user_input: &[String]) -> Page
@@ -236,7 +241,7 @@ pub fn page_1(user_input: &[String]) -> Page
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_page: (true, Some(vec![PageId::Persistent as usize])), id: PageId::Page1 as usize, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_persistent_elements: (true, Some(vec![PageId::Persistent as usize])), id: PageId::Page1 as usize, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 
 }
 
@@ -249,9 +254,11 @@ pub fn subpage_page1() -> Page
     let all_text = vec! [ (18.0, (all_buttons[0].rect.x + 10, all_buttons[0].rect.y + 7), "<-".to_string(), TEXT_COLOR) ];
 
     //===================== page creation =========================
-    Page { has_persistent_page: (false, None), id: PageId::Page1SubPage as usize, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_persistent_elements: (false, None), id: PageId::Page1SubPage as usize, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 ```
+
+</details>
 
 This pattern lets you:
 - Swap entire screens/pages cleanly
@@ -260,7 +267,7 @@ This pattern lets you:
 
 ---
 
-Suggested Project layout (high-level)
+## Suggested Project layout (high-level)
 - Cargo.toml — Rust project configuration
 - assets/ — images, fonts, audio used by examples (if included)
 - src/
@@ -271,10 +278,8 @@ Suggested Project layout (high-level)
 
 ---
 
-Development notes & recommended workflow
-- Use clippy
-  - cargo clippy
-- If you add native SDL dependencies, version them in the README and consider documenting how to pin alternate SDL installations via PKG_CONFIG_PATH or PKG_CONFIG_SYSROOT_DIR.
+## Development notes & recommended workflow
+- Use cargo clippy
 - When adding features (audio, fonts, etc.), gate them behind Cargo features and document required system dependencies.
 
 Suggested Cargo features (example)
@@ -285,7 +290,7 @@ Suggested Cargo features (example)
 
 ---
 
-Contributing
+## Contributing
 - Fork the repository, create a feature branch, and open a pull request.
 - When opening PRs:
   - Include a short description of the change
@@ -294,8 +299,7 @@ Contributing
 
 ---
 
-Troubleshooting
-
+## Troubleshooting
 Linker errors (cannot find -lSDL3, undefined references)
 - Ensure the SDL3 dev libraries are installed and visible to your linker.
 - On Linux, verify pkg-config can find SDL3: pkg-config --cflags --libs sdl3
@@ -310,21 +314,20 @@ Runtime errors on Windows
 
 ---
 
-Roadmap / Ideas
-- Add examples showing:
-  - Smooth transitions (fade/slide) between pages
-  - Resource manager for textures/fonts/sounds
-  - Input remapping and configurable controls
-- Add unit/integration tests for the page manager logic
+## Roadmap / Ideas
+- Smooth transitions (fade/slide) between pages
+- Resource manager for textures/fonts/sounds
+- Input remapping and configurable controls
+- Add more unit/integration tests for the page manager logic
 
 ---
 
-License
+## License
 This Project are licensed under the MIT licence. Please see the [license](https://github.com/HaruNashii/RPS/blob/main/LICENSE) file for more information. tl;dr you can do whatever you want as long as you include the original copyright and license notice in any copy of the software/source.
 
 ---
 
-Acknowledgements & References
+## Acknowledgements & References
 - SDL: https://www.libsdl.org/
 - SDL GitHub: https://github.com/libsdl-org/SDL
 - SDL3 Rust-Bindings: https://github.com/vhspace/sdl3-rs

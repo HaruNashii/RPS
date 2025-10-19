@@ -68,7 +68,7 @@ pub enum ButtonId
     ButtonPurpleInputStartPage2,
 }
 
-pub fn persistent_page1() -> Page
+pub fn persistent_elements1() -> Page
 {
     //===================== variables =========================
     let padding_x = 200;
@@ -97,10 +97,10 @@ pub fn persistent_page1() -> Page
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_page: (false, None), id: PageId::Persistent1 as usize, background_color: None, rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_persistent_elements: (false, None), id: PageId::Persistent1 as usize, background_color: None, rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 
-pub fn persistent_page2() -> Page 
+pub fn persistent_elements2() -> Page 
 {
     //===================== rects =========================
     let all_rects = vec!
@@ -115,7 +115,7 @@ pub fn persistent_page2() -> Page
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_page: (false, None), id: PageId::Persistent2 as usize, background_color: None, rects: Some(all_rects), buttons: None, texts: Some(all_text), images: None }
+    Page { has_persistent_elements: (false, None), id: PageId::Persistent2 as usize, background_color: None, rects: Some(all_rects), buttons: None, texts: Some(all_text), images: None }
 }
 
 pub fn page_1(_: &[String]) -> Page
@@ -150,7 +150,7 @@ pub fn page_1(_: &[String]) -> Page
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_page: (true, Some(vec![PageId::Persistent1 as usize])), id: PageId::Page1 as usize, background_color: Some(BACKGROUND_COLOR), rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_persistent_elements: (true, Some(vec![PageId::Persistent1 as usize])), id: PageId::Page1 as usize, background_color: Some(BACKGROUND_COLOR), rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 
 pub fn page_2(_: &[String]) -> Page
@@ -173,7 +173,7 @@ pub fn page_2(_: &[String]) -> Page
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_page: (true, Some(vec![PageId::Persistent1 as usize, PageId::Persistent2 as usize])), id: PageId::Page2 as usize, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_persistent_elements: (true, Some(vec![PageId::Persistent1 as usize, PageId::Persistent2 as usize])), id: PageId::Page2 as usize, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 
 pub fn subpage_page2() -> Page
@@ -192,5 +192,5 @@ pub fn subpage_page2() -> Page
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_page: (true, Some(vec![PageId::Persistent2 as usize])), id: PageId::Page2SubPage as usize, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_persistent_elements: (true, Some(vec![PageId::Persistent2 as usize])), id: PageId::Page2SubPage as usize, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }

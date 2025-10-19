@@ -16,7 +16,7 @@ type Images = Option<Vec<((i32, i32), (u32, u32), String)>>;
 #[derive(PartialEq, Debug, Clone)]
 pub struct Page 
 {
-    pub has_persistent_page: (bool, Option<Vec<usize>>),
+    pub has_persistent_elements: (bool, Option<Vec<usize>>),
     pub id: usize,
     pub background_color: Option<Color>,
     pub rects: Rects,
@@ -38,7 +38,7 @@ pub struct Button
 impl Page 
 {
     /// Null Implementantion Of An Page
-    pub fn none() -> Self { Self { has_persistent_page: (false, None), id: 99999, background_color: None, rects: None, buttons: None, texts: None, images: None } }
+    pub fn none() -> Self { Self { has_persistent_elements: (false, None), id: 99999, background_color: None, rects: None, buttons: None, texts: None, images: None } }
 }
 
 pub fn button_at(option_vec_of_buttons: Vec<&Buttons>, mouse_pos_x: f32, mouse_pos_y: f32, window_size: (u32, u32)) -> Option<usize> 

@@ -8,16 +8,17 @@ This README explains the features, the dependencies you need to build and run th
 ---
 
 ## Table of contents
-- [Features](#Features)
-- [Requirements](#Requirements)
-- [Example usage](#Example-usage)
-- [Project layout](#Suggested-Project-layout)
-- [Development notes & recommended workflow](#Development-notes--recommended-workflow)
-- [Contributing](#Contributing)
-- [Troubleshooting](#Troubleshooting)
-- [Roadmap](#Roadmap)
-- [License](#License)
-
+- [Features](#features)
+- [Requirements](#requirements)
+- [Example usage](#example-usage)
+- [Project layout](#suggested-project-layout)
+- [Development notes & recommended workflow](#development-notes--recommended-workflow)
+- [Contributing](#contributing)
+- [Troubleshooting](#troubleshooting)
+- [Roadmap](#roadmap--ideas)
+- [License](#license)
+- [Acknowledgements & References](#acknowledgements--references)
+  
 ---
 
 ## Features
@@ -58,12 +59,12 @@ This README explains the features, the dependencies you need to build and run th
 If you need the official SDL source and instructions:
 - SDL GitHub: https://github.com/libsdl-org/SDL
 - SDL docs and downloads: https://www.libsdl.org/
+- SDL3 Rust-Bindings Github: https://github.com/vhspace/sdl3-rs
 
 ---
 
-## Example usage (conceptual)
-
-Below is a conceptual example of how a page system might be used. The exact API in the repository may vary slightly; use this as a guide to how the system is intended to behave.
+## Example usage
+Below is a example of how a page system might be used. The exact API in the repository may vary slightly; use this as a guide to how the system is intended to behave.
 for more accurate examples you can see them [here](https://github.com/HaruNashii/RPS/tree/bdadc5c7d4d283b3438400ebcb894370032b1765/tests)
 
 <details> <summary>Simple Conceptual Example</summary>

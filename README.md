@@ -94,7 +94,7 @@ fn main()
 {
     let (mut canvas, mut event_pump, texture_creator, ttf_context) = create_window(false, (false, None), true);
     let input_handler = InputHandler;
-    let mut app_state = AppState {current_page: (PageId::Page1 as usize, true), vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), capturing_input: (false, None), window_size: WINDOW_DEFAULT_SCALE, persistent_elements: Vec::new(), all_pages: Vec::new() };
+    let mut app_state = AppState::<PageId, ButtonId>::new(PageId::Page1, true);
     populate_or_update_app_state(&mut app_state, false);
 
     let refresh_rate = get_monitor_refresh_rate();
@@ -104,11 +104,11 @@ fn main()
         match input_handler.poll(&mut event_pump) 
         {
             InputEvent::Click(x, y)   => if let Some(button_id) = app_state.page_button_at(x, y) { button_action(&mut app_state, button_id); },
-            InputEvent::Text(string)  => app_state.handle_text(string),
-            InputEvent::Backspace     => app_state.handle_backspace(),
-            InputEvent::Submit        => app_state.submit_input(),
-            InputEvent::Quit          => break 'running,
-            InputEvent::None          => {}
+            InputEvent::Text(string)    => app_state.handle_text(string),
+            InputEvent::Backspace               => app_state.handle_backspace(),
+            InputEvent::Submit                  => app_state.submit_input(),
+            InputEvent::Quit                    => break 'running,
+            InputEvent::None                    => {}
         }
         populate_or_update_app_state(&mut app_state, true);
         app_state.render(&mut canvas, &texture_creator, &ttf_context);
@@ -120,13 +120,13 @@ fn main()
 //==========================================================================================================================================================================
 //===============================================================# can be a different file, like: buttons_actions.rs #======================================================
 //==========================================================================================================================================================================
-pub fn button_action(app_state: &mut AppState, button_id: usize) 
+pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: ButtonId) 
 {
     if !app_state.capturing_input.0
     {
-        if ButtonId::ButtonPage1 as usize   == button_id {app_state.current_page.0 = PageId::Page1 as usize; app_state.current_page.1 = true; return};
-        if ButtonId::ButtonSubPage as usize == button_id {app_state.current_page.0 = PageId::Page1SubPage as usize; return};
-        if ButtonId::ButtonBack as usize    == button_id {app_state.current_page.0 = PageId::Page1 as usize; app_state.current_page.1 = true; return};
+        if ButtonId::ButtonPage1    == button_id {app_state.current_page = (PageId::Page1,        true);    return};
+        if ButtonId::ButtonSubPage  == button_id {app_state.current_page = (PageId::Page1SubPage, true);    return};
+        if ButtonId::ButtonBack     == button_id {app_state.current_page = (PageId::Page1,        true);    return};
         // Non Handle Buttons Will Be Considered User Input Buttons
         app_state.capturing_input = (true, Some(button_id));
     }
@@ -159,7 +159,7 @@ pub enum PageId
     Page1,
     Page1SubPage,
 }
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(Eq, PartialEq, Clone, Copy, Debug)]
 #[repr(usize)]
 /// Defines The ID for your Buttons
 pub enum ButtonId 
@@ -170,14 +170,14 @@ pub enum ButtonId
     ButtonBack,
 }
 
-pub fn populate_or_update_app_state(app_state: &mut AppState, only_update: bool)
+pub fn populate_or_update_app_state(app_state: &mut AppState<PageId, ButtonId>, only_update: bool)
 {
     if !only_update
     {
         //Populate Vec_Of_User_input With Page And Buttons That Receives User_Input
         app_state.push_vec_user_input(vec!
         [
-            (PageId::Page1 as usize, ButtonId::ButtonPurpleInputStartPage1 as usize),
+            (PageId::Page1, ButtonId::ButtonPurpleInputStartPage1),
         ]);
     }
 
@@ -194,7 +194,7 @@ pub fn populate_or_update_app_state(app_state: &mut AppState, only_update: bool)
 }
 
 // Define Your Pages Here:
-pub fn persistent_elements() -> Page
+pub fn persistent_elements() -> Page<PageId, ButtonId>
 {
     //===================== variables =========================
     let window_center = get_center((200, 75), WINDOW_DEFAULT_SCALE);
@@ -203,7 +203,7 @@ pub fn persistent_elements() -> Page
     let all_rects = vec! [ (BLACK_COLOR, (Rect::new(0, 0, WINDOW_DEFAULT_SCALE.0, 100), 0)) ];
 
     //===================== buttons =========================
-    let all_buttons = vec! [ Button { enabled: true, color: PINK_COLOR, rect: Rect::new(window_center.pos_x, 10, window_center.w, window_center.h), radius: 5, id: ButtonId::ButtonPage1 as usize }, ];
+    let all_buttons = vec! [ Button { enabled: true, color: PINK_COLOR, rect: Rect::new(window_center.pos_x, 10, window_center.w, window_center.h), radius: 5, id: ButtonId::ButtonPage1}, ];
 
     //===================== texts =========================
     let all_text = vec! [ (17.0, (all_buttons[0].rect.x + 9, all_buttons[0].rect.y + 24), "Page 1".to_string(), TEXT_COLOR), ];
@@ -215,10 +215,10 @@ pub fn persistent_elements() -> Page
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (false, None), id: PageId::Persistent as usize, background_color: None, rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
+    Page { has_persistent_elements: (false, None), id: PageId::Persistent, background_color: None, rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
 }
 
-pub fn page_1(user_input: &[String]) -> Page
+pub fn page_1(user_input: &[String]) -> Page<PageId, ButtonId>
 {
     //===================== variables =========================
     let purple_button_data = get_center((600, 100), WINDOW_DEFAULT_SCALE);
@@ -227,8 +227,8 @@ pub fn page_1(user_input: &[String]) -> Page
     //===================== buttons =========================
     let all_buttons = vec!
     [
-        Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(subpage_button_data.pos_x, 150, subpage_button_data.w, subpage_button_data.h), radius: 20, id: ButtonId::ButtonSubPage as usize },
-        Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(purple_button_data.pos_x, purple_button_data.pos_y, purple_button_data.w, purple_button_data.h), radius: 5, id: ButtonId::ButtonPurpleInputStartPage1 as usize },
+        Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(subpage_button_data.pos_x, 150, subpage_button_data.w, subpage_button_data.h), radius: 20, id: ButtonId::ButtonSubPage},
+        Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(purple_button_data.pos_x, purple_button_data.pos_y, purple_button_data.w, purple_button_data.h), radius: 5, id: ButtonId::ButtonPurpleInputStartPage1},
     ];
 
     //===================== texts =========================
@@ -240,20 +240,20 @@ pub fn page_1(user_input: &[String]) -> Page
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (true, Some(vec![PageId::Persistent as usize])), id: PageId::Page1 as usize, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_persistent_elements: (true, Some(vec![PageId::Persistent])), id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 
 }
 
-pub fn subpage_page1() -> Page
+pub fn subpage_page1() -> Page<PageId,ButtonId>
 {
     //===================== buttons =========================
-    let all_buttons = vec! [ Button { enabled: true, color: PINK_COLOR, rect: Rect::new(20, 20, 50, 40), radius: 0, id: ButtonId::ButtonBack as usize }];
+    let all_buttons = vec! [ Button { enabled: true, color: PINK_COLOR, rect: Rect::new(20, 20, 50, 40), radius: 0, id: ButtonId::ButtonBack}];
 
     //===================== texts =========================
     let all_text = vec! [ (18.0, (all_buttons[0].rect.x + 10, all_buttons[0].rect.y + 7), "<-".to_string(), TEXT_COLOR) ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (false, None), id: PageId::Page1SubPage as usize, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_persistent_elements: (false, None), id: PageId::Page1SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 ```
 

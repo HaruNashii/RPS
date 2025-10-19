@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use crate::{system::page_system::PageData, AppState};
 use sdl3::
 {
@@ -22,8 +23,8 @@ pub enum InputEvent
     None,
 }
 pub struct InputHandler<PageId, ButtonId> { _pageid: Option<PageId>, _buttonid: Option<ButtonId>}
-impl<PageId: Copy + Eq, ButtonId: Copy + Eq> Default for InputHandler<PageId, ButtonId> { fn default() -> Self { Self::new() } }
-impl<PageId: Copy + Eq, ButtonId: Copy + Eq> InputHandler<PageId, ButtonId>
+impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Default for InputHandler<PageId, ButtonId> { fn default() -> Self { Self::new() } }
+impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId, ButtonId>
 {
     pub fn new() -> Self { Self { _pageid: None, _buttonid: None}}
 

@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use crate::{system::window::WINDOW_DEFAULT_SCALE, AppState};
 use sdl3::{pixels::Color, rect::Rect};
 
@@ -33,8 +34,8 @@ pub struct PageData<PageId, ButtonId>
     pub persistent_elements: Vec<Page<PageId, ButtonId>>,
     pub all_pages: Vec<Page<PageId, ButtonId>>,
 }
-impl<PageId: Copy + Eq, ButtonId: Copy + Eq> Default for PageData<PageId, ButtonId> { fn default() -> Self { Self::new() } }
-impl<PageId: Copy + Eq, ButtonId: Copy + Eq> PageData<PageId, ButtonId>
+impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Default for PageData<PageId, ButtonId> { fn default() -> Self { Self::new() } }
+impl<PageId: Copy + Eq, ButtonId: Copy + Eq + Debug> PageData<PageId, ButtonId>
 {
     /// Define Persistant Page
     pub fn new() -> Self { Self {vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), persistent_elements: Vec::new(), all_pages: Vec::new()} }
@@ -110,7 +111,7 @@ pub struct Button<ButtonId>
     pub id: ButtonId,
 }
 
-impl<ButtonId: Copy + Eq> Button<ButtonId>
+impl<ButtonId: Copy + Eq + Debug> Button<ButtonId>
 {
     pub fn button_at(option_vec_of_buttons: Vec<&Buttons<ButtonId>>, mouse_pos_x: f32, mouse_pos_y: f32, window_size: (u32, u32)) -> Option<ButtonId> 
     {

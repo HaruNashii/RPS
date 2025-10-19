@@ -35,14 +35,14 @@ fn main()
     let mut input_handler = InputHandler::<PageId, ButtonId>::new();
     let mut app_state = AppState::<PageId, ButtonId>::new(PageId::Page1, true);
     let mut page_data = PageData::new();
-    let mut renderer = Renderer::<PageId, ButtonId>::new();
+    let mut renderer = Renderer::<PageId, ButtonId>::new(&mut canvas, &texture_creator, &ttf_context);
 
     populate_or_update_app_state(&mut page_data, false);
 
     let refresh_rate = get_monitor_refresh_rate();
     'running: loop 
     {
-        app_state.update_window_size(canvas.window().size());
+        app_state.update_window_size(renderer.canvas.window().size());
         std::thread::sleep(Duration::from_millis(1000 / refresh_rate));
         match input_handler.poll(&mut event_pump) 
         {
@@ -54,6 +54,6 @@ fn main()
             InputEvent::None                    => {}
         }
         populate_or_update_app_state(&mut page_data, true);
-        renderer.render(&mut canvas, &texture_creator, &ttf_context, &app_state, &page_data);
+        renderer.render(&app_state, &page_data);
     }
 }

@@ -24,12 +24,11 @@ This README explains the features, the dependencies you need to build and run th
 ## Features
 - Lightweight page system for SDL-based Rust apps
   - Push/pop pages (stack-based scene management)
-  - Deterministic update loop with fixed timestep guidance
   - Centralized input/event routing to active page(s)
   - Simple render ordering (top-of-stack renders last)
 - Minimal, idiomatic Rust API (designed to be easy to adapt)
 - Example pages in the repository that demonstrate:
-  - Simple single page with persistent elements
+  - Simple single Page with Persistent Elements and UserInputText
   - Basic input handling (keyboard / mouse)
   - More complex example with Multiples Pages, Persistent Elements and UserInputText
 - Designed to work with SDL3 (native windowing, events, rendering, textures, fonts, images)
@@ -83,10 +82,6 @@ use rust_page_system::
     }, Button, Renderer 
 };
 
-// To Be Ignored, Just An Setup To Configure The Build
-use crate::build::setup_build;
-mod build;
-
 
 
 //==========================================================================================================================================================================
@@ -94,20 +89,17 @@ mod build;
 //==========================================================================================================================================================================
 fn main() 
 {
-    // To Be Ignored, Just An Setup To Configure The Build
-    setup_build();
-
     let (mut canvas, mut event_pump, texture_creator, ttf_context) = create_window(false, (false, None), true);
     let mut input_handler = InputHandler::<PageId, ButtonId>::new();
     let mut app_state = AppState::<PageId, ButtonId>::new(PageId::Page1, true);
     let mut page_data = PageData::<PageId, ButtonId>::new();
-    let mut renderer = Renderer::<PageId, ButtonId>::new();
+    let mut renderer = Renderer::<PageId, ButtonId>::new(&mut canvas, &texture_creator, &ttf_context);
     populate_or_update_app_state(&mut page_data, false);
 
     let refresh_rate = get_monitor_refresh_rate();
     'running: loop 
     {
-        app_state.update_window_size(canvas.window().size());
+        app_state.update_window_size(renderer.canvas.window().size());
         std::thread::sleep(Duration::from_millis(1000 / refresh_rate));
         match input_handler.poll(&mut event_pump) 
         {
@@ -119,7 +111,7 @@ fn main()
             InputEvent::None                    => {}
         }
         populate_or_update_app_state(&mut page_data, true);
-        renderer.render(&mut canvas, &texture_creator, &ttf_context, &mut app_state, &page_data);
+        renderer.render(&mut app_state, &page_data);
     }
 }
 
@@ -262,6 +254,7 @@ pub fn subpage_page1() -> Page<PageId,ButtonId>
     //===================== page creation =========================
     Page { has_persistent_elements: (false, None), id: PageId::Page1SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
+
 ```
 
 </details>
@@ -321,6 +314,7 @@ Runtime errors on Windows
 ---
 
 ## Roadmap / Ideas
+- Deterministic update loop with fixed timestep guidance
 - Smooth transitions (fade/slide) between pages
 - Resource manager for textures/fonts/sounds
 - Input remapping and configurable controls

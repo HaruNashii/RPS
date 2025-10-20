@@ -53,11 +53,11 @@ fn main()
         centered: true,
         hint_sdl3_vsync: true
     };
-    let (mut canvas, mut event_pump, texture_creator, ttf_context) = create_window(window_config);
+    let mut window_modules = create_window(window_config);
     let mut input_handler = InputHandler::new();
     let mut app_state = AppState::new(PageId::Page1, true);
     let mut page_data = PageData::new();
-    let mut renderer = Renderer::new(&mut canvas, &texture_creator, &ttf_context);
+    let mut renderer = Renderer::new(&mut window_modules.canvas, &window_modules.texture_creator, &window_modules.ttf_context);
 
     populate_page_data(&mut page_data);
 
@@ -65,7 +65,7 @@ fn main()
     'running: loop 
     {
         std::thread::sleep(Duration::from_millis(1000 / refresh_rate));
-        match input_handler.poll(&mut event_pump) 
+        match input_handler.poll(&mut window_modules.event_pump) 
         {
             InputEvent::Click(x, y)   => if let Some(button_id) = page_data.page_button_at(&app_state, x, y) { button_action(&mut app_state, &button_id); },
             InputEvent::Text(string)    => input_handler.handle_text(string, &mut app_state, &mut page_data),

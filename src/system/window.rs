@@ -43,8 +43,16 @@ pub struct WindowConfig
     pub hint_sdl3_vsync: bool
 }
 
+pub struct WindowModules
+{
+    pub canvas: Canvas<Window>,
+    pub event_pump: EventPump,
+    pub texture_creator: TextureCreator<WindowContext>,
+    pub ttf_context: Sdl3TtfContext
+}
 
-pub fn create_window(window_config: WindowConfig) -> (Canvas<Window>, EventPump, TextureCreator<WindowContext>, Sdl3TtfContext)
+
+pub fn create_window(window_config: WindowConfig) -> WindowModules
 {
     let sdl_started = sdl3::init().unwrap();
     let video_system = sdl_started.video().unwrap();
@@ -117,5 +125,5 @@ pub fn create_window(window_config: WindowConfig) -> (Canvas<Window>, EventPump,
     canvas.set_logical_size(1920, 1080, SDL_LOGICAL_PRESENTATION_STRETCH).unwrap();
     canvas.set_viewport(Rect::new(0, 0, 1920, 1080));
     
-    (canvas, event_pump, texture_creator, ttf_context)
+    WindowModules{canvas, event_pump, texture_creator, ttf_context}
 }

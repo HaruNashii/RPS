@@ -74,7 +74,7 @@ fn app_state_handle_multiple_text_and_backspace()
 {
     let mut state = AppState::new(PageId::Page1);
     let mut data = PageData::new(&state);
-    let mut input_handler = InputHandler::<PageId, ButtonId>::new();
+    let mut input_handler = InputHandler::<PageId, ButtonId>::new(true);
 
     populate_or_update_app_state(&mut data, false);
 
@@ -109,7 +109,7 @@ fn app_state_handle_multiple_text_and_backspace()
 fn app_state_submit_input() 
 {
     let mut state = AppState::new(PageId::Page1);
-    let mut input_handler = InputHandler::<PageId, ButtonId>::new();
+    let mut input_handler = InputHandler::<PageId, ButtonId>::new(true);
     state.capturing_input = (true, Some(ButtonId::ButtonPurpleInputStartPage1 ));
     input_handler.submit_input(&mut state);
     assert!(!state.capturing_input.0);

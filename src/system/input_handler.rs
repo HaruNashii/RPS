@@ -18,6 +18,7 @@ pub enum InputEvent
     Submit,          
     Back,
     Front,
+    ExitCapturingInput,
     AltPressed,
     Quit,
     None,
@@ -41,6 +42,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
                 Event::TextInput { text, .. } => return InputEvent::Text(text),
                 Event::KeyDown { keycode: Some(Keycode::Backspace), .. } => return InputEvent::Backspace,
                 Event::KeyDown { keycode: Some(Keycode::Return), .. } => return InputEvent::Submit,
+                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => return InputEvent::ExitCapturingInput,
                 Event::KeyDown { keycode: Some(keycode), keymod, .. } => 
                 {
                     let alt_held = keymod.intersects(Mod::LALTMOD | Mod::RALTMOD);
@@ -67,7 +69,6 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
         {
             let link_to_docs= "https://docs.rs/rust_page_system/0.1.7/rust_page_system/system/page_system/struct.PageData.html#method.populate_and_update_all_pages".to_string();
             let warning = format!("Warning!!! Pages is not populated or update, Please populate/update it, for instructions see:\n{link_to_docs}");
-            println!("{warning}");
             let text_warning = vec! [(20.0, (100, 500), warning, Color::WHITE)];
             page_data.populate_and_update_all_pages
             (vec![
@@ -91,6 +92,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
             InputEvent::Submit                  => self.submit_input(app_state),
             InputEvent::Front                   => self.manage_history(true, app_state, page_data),
             InputEvent::Back                    => self.manage_history(false, app_state, page_data),
+            InputEvent::ExitCapturingInput      => app_state.capturing_input = (false, None),
             InputEvent::AltPressed              => {},
             InputEvent::Quit                    => exit(0),
             InputEvent::None                    => {}

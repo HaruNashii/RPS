@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, process::exit};
 use crate::{system::page_system::PageData, AppState};
 use sdl3::
 {
@@ -26,6 +26,7 @@ pub struct InputHandler<PageId, ButtonId> { _pageid: Option<PageId>, _buttonid: 
 impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Default for InputHandler<PageId, ButtonId> { fn default() -> Self { Self::new() } }
 impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId, ButtonId>
 {
+    /// Create a new
     pub fn new() -> Self { Self { _pageid: None, _buttonid: None}}
 
     pub fn poll(&self, event_pump: &mut EventPump) -> InputEvent 
@@ -43,6 +44,20 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
             }
         }
         InputEvent::None
+    }
+
+    /// Handle every event called
+    pub fn handle_input(&mut self, event_pump: &mut EventPump, page_data: &mut PageData<PageId, ButtonId>, app_state: &mut AppState<PageId, ButtonId>, button_action: fn(&mut AppState<PageId, ButtonId>, &ButtonId))
+    {
+        match self.poll(event_pump) 
+        {
+            InputEvent::Click(x, y)   => if let Some(button_id) = page_data.page_button_at(app_state, x, y) { button_action(app_state, &button_id); },
+            InputEvent::Text(string)    => self.handle_text(string, app_state, page_data),
+            InputEvent::Backspace               => self.handle_backspace(app_state, page_data),
+            InputEvent::Submit                  => self.submit_input(app_state),
+            InputEvent::Quit                    => exit(0),
+            InputEvent::None                    => {}
+        }
     }
 
     /// Called when user presses Enter or finishes typing

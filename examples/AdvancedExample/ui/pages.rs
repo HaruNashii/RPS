@@ -2,7 +2,7 @@ use std::env;
 use sdl3::rect::Rect;
 use rust_page_system::
 {
-    misc::center_elements::get_center, system::{page_system::{Button, Page, PageData}, window::WINDOW_DEFAULT_SCALE}
+    misc::center_elements::get_center, system::{page_system::{Button, Page}, window::WINDOW_DEFAULT_SCALE}
 };
 use crate::ui::style::{BACKGROUND_COLOR, BLACK_COLOR, ORANGE_COLOR, PINK_COLOR, PURPLE_COLOR, RED_COLOR, SUBTEXT_COLOR, TEXT_COLOR};
 
@@ -36,35 +36,6 @@ pub enum ButtonId
 }
 
 
-
-pub fn populate_page_data(page_data: &mut PageData<PageId, ButtonId>)
-{
-    //Populate Vec_Of_User_input With Page And Buttons That Receives User_Input
-    page_data.push_vec_user_input(vec!
-    [
-        (PageId::Page1, ButtonId::ButtonPurpleInputStartPage1),
-        (PageId::Page1, ButtonId::ButtonRedInputStartPage1),
-        (PageId::Page2, ButtonId::ButtonPurpleInputStartPage2),
-    ]);
-
-    //Populate Persistent Elements with your defined persistent elements, (If your Persistent
-    //Elements have runtime changing elements, like: Userinput, you need to place this definition inside an loop)
-    page_data.define_persistent_elements(vec!
-    [
-        persistent_elements1(),
-        persistent_elements2()
-    ]);
-}
-pub fn update_page_data(page_data: &mut PageData<PageId, ButtonId>)
-{
-    //Populate PageData allpages vector
-    page_data.populate_and_update_all_pages(vec!
-    [
-        page_1(&page_data.vec_user_input_string),
-        page_2(&page_data.vec_user_input_string),
-        subpage_page2(),
-    ]);
-}
 
 
 

@@ -7,7 +7,7 @@ use rust_page_system::
     misc::center_elements::get_center, 
     system::
     {
-        input_handler::{InputEvent, InputHandler}, 
+        input_handler::InputHandler, 
         page_system::{Page, PageData}, 
         state::AppState, 
         window::{create_window, get_monitor_refresh_rate, WindowConfig}
@@ -48,24 +48,16 @@ fn main()
 
     populate_page_data(&mut page_data);
 
-    let refresh_rate = get_monitor_refresh_rate();
-    'running: loop 
+    loop 
     {
-        std::thread::sleep(Duration::from_millis(1000 / refresh_rate));
-        match input_handler.poll(&mut window_modules.event_pump) 
-        {
-            InputEvent::Click(x, y)   => if let Some(button_id) = page_data.page_button_at(&app_state, x, y) { button_action(&mut app_state, &button_id); },
-            InputEvent::Text(string)    => input_handler.handle_text(string, &mut app_state, &mut page_data),
-            InputEvent::Backspace               => input_handler.handle_backspace(&mut app_state, &mut page_data),
-            InputEvent::Submit                  => input_handler.submit_input(&mut app_state),
-            InputEvent::Quit                    => break 'running,
-            InputEvent::None                    => {}
-        }
+        std::thread::sleep(Duration::from_millis(1000 / get_monitor_refresh_rate()));
+        input_handler.handle_input(&mut window_modules.event_pump, &mut page_data, &mut app_state, button_action);
         app_state.update_window_size(renderer.canvas.window().size());
         update_page_data(&mut page_data);
-        renderer.render(&app_state, &page_data);
+        renderer.render(&app_state, &mut page_data);
     }
 }
+
 
 
 
@@ -86,9 +78,12 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
 
 
 
+
+
 //==========================================================================================================================================================================
 //===============================================================# can be a different file, like: setup_page_data.rs #======================================================
 //==========================================================================================================================================================================
+/// put here pages that is static and don't need to be updated every frame
 pub fn populate_page_data(page_data: &mut PageData<PageId, ButtonId>)
 {
     //Populate Vec_Of_User_input With Page And Buttons That Receives User_Input
@@ -97,13 +92,14 @@ pub fn populate_page_data(page_data: &mut PageData<PageId, ButtonId>)
         (PageId::Page1, ButtonId::ButtonPurpleInputStartPage1),
     ]);
     //Populate Persistent Elements with your defined persistent elements, (If your Persistent
-    //Elements have runtime changing elements, like: Userinput, you need to place this definition inside an loop)
+    //Elements have runtime changing elements, like: Userinput, you need to place this definition (update_page_data) that must be inside an loop)
     page_data.define_persistent_elements(vec! 
     [
         persistent_elements(),
     ]);
-    
 }
+
+/// put here pages that need constant update logic
 pub fn update_page_data(page_data: &mut PageData<PageId, ButtonId>)
 {
     //Populate PageData allpages vector

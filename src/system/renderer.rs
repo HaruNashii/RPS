@@ -39,9 +39,12 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
             if current_page.0 == page.id && page.has_persistent_elements.0 && let Some(vec_of_pageid) = &page.has_persistent_elements.1
             {
                 let mut vec_persistent_elements = Vec::new();
-                for (index, pageid) in vec_of_pageid.iter().enumerate()
+                for pageid in vec_of_pageid
                 {
-                    if *pageid == persistent_elements[index].id { vec_persistent_elements.push(&persistent_elements[index]); }
+                    for persistent_element in persistent_elements
+                    {
+                        if *pageid == persistent_element.id {vec_persistent_elements.push(persistent_element); }
+                    }
                 }
                 Renderer::render_page(self, page, Some(vec_persistent_elements));
             }
@@ -101,7 +104,7 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
             }
         }
         Self::render_elements(self, page);
-        if let Some(new_persistent_page) = persistent_page { for result in new_persistent_page {Self::render_elements(self, result);} }
+        if let Some(new_persistent_page) = persistent_page {  for result in new_persistent_page {Self::render_elements(self, result);} }
         self.canvas.present();
     }
 }

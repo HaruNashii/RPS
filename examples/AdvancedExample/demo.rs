@@ -4,7 +4,7 @@ use rust_page_system::
     Renderer,
     system::
     {
-        input_handler::{InputEvent, InputHandler},
+        input_handler::InputHandler,
         page_system::PageData,
         state::AppState,
         window::{create_window, get_monitor_refresh_rate, WindowConfig}
@@ -61,21 +61,12 @@ fn main()
 
     populate_page_data(&mut page_data);
 
-    let refresh_rate = get_monitor_refresh_rate();
-    'running: loop 
+    loop 
     {
-        std::thread::sleep(Duration::from_millis(1000 / refresh_rate));
-        match input_handler.poll(&mut window_modules.event_pump) 
-        {
-            InputEvent::Click(x, y)   => if let Some(button_id) = page_data.page_button_at(&app_state, x, y) { button_action(&mut app_state, &button_id); },
-            InputEvent::Text(string)    => input_handler.handle_text(string, &mut app_state, &mut page_data),
-            InputEvent::Backspace               => input_handler.handle_backspace(&mut app_state, &mut page_data),
-            InputEvent::Submit                  => input_handler.submit_input(&mut app_state),
-            InputEvent::Quit                    => break 'running,
-            InputEvent::None                    => {}
-        }
-        update_page_data(&mut page_data);
+        std::thread::sleep(Duration::from_millis(1000 / get_monitor_refresh_rate()));
+        input_handler.handle_input(&mut window_modules.event_pump, &mut page_data, &mut app_state, button_action);
         app_state.update_window_size(renderer.canvas.window().size());
+        update_page_data(&mut page_data);
         renderer.render(&app_state, &page_data);
     }
 }

@@ -44,7 +44,7 @@ impl<PageId: Copy + Eq, ButtonId: Copy + Eq + Debug> PageData<PageId, ButtonId>
     pub fn define_persistent_elements(&mut self, persistent_elements: Vec<Page<PageId, ButtonId>>) { self.persistent_elements = persistent_elements }
 
     /// Populate all_buttons
-    pub fn populate_and_update_all_pages(&mut self, all_pages: Vec<Page<PageId, ButtonId>>) { self.all_pages = all_pages }
+    pub fn populate_and_update_all_pages(&mut self, all_pages: Vec<Page<PageId, ButtonId>>) { self.all_pages = all_pages; }
 
     /// Populate vec_user_input
     pub fn push_vec_user_input(&mut self, user_input_needed: Vec<(PageId, ButtonId)>) 

@@ -90,7 +90,7 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
             None => 
             {
                 println!("Page, Without Background Color, Using Default Color: Black");
-                self.canvas.set_draw_color(Color::RGB(0, 0, 0));
+                self.canvas.set_draw_color(Color::BLACK);
                 self.canvas.clear();
             }
         }

@@ -21,18 +21,26 @@ impl GenText for (&Vec<(f64, (i32, i32), String, Color)>, &TextureCreator<Window
     {
         let mut vector_to_send = Vec::new();
         for font_content in self.0 
-        {
-            let text_content = if font_content.2.is_empty() { &String::from(" ") } else { &font_content.2 };
+        { 
+            let text_content = if font_content.2.is_empty() { " " } else { &font_content.2 };
             let font_config = Fontconfig::new().expect("Failed To Start FontConfig");
-            let font = font_config.find("JetBrainsMono", Some("Bold")).expect("Failed Find And Set Font With FontConfig");
-            let font_path = font.path.display().to_string();
+            let font_info = font_config.find("JetBrainsMono", Some("Bold")).expect("Failed Find And Set Font With FontConfig");
+            let font_path = font_info.path.display().to_string();
             let font = self.2.load_font(font_path, font_content.0 as f32).expect("Failed to load font");
-            let surface = font.render(text_content).blended(font_content.3).expect("Failed to blend font");
-            let texture = self.1.create_texture_from_surface(&surface).expect("Failed to create font texture");
-            let rect = Rect::new(font_content.1.0, font_content.1.1, surface.width(), surface.height());
 
-            vector_to_send.push((texture, rect));
+            let lines: Vec<&str> = text_content.split('\n').collect();
+            let mut current_y = font_content.1.1;
+            for line in lines 
+            {
+                let render_text = if line.is_empty() { " " } else { line };
+                let surface = font.render(render_text).blended(font_content.3).expect("Failed to blend font");
+                let texture = self.1.create_texture_from_surface(&surface).expect("Failed to create font texture");
+                let rect = Rect::new(font_content.1.0, current_y, surface.width(), surface.height(),);
+                vector_to_send.push((texture, rect));
+                current_y += surface.height() as i32;
+            }
         }
+
         vector_to_send
     }
 }

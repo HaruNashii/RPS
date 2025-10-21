@@ -2,7 +2,7 @@ use std::env;
 use sdl3::rect::Rect;
 use rust_page_system::
 {
-    misc::center_elements::get_center, system::{page_system::{Button, Page}, window::WINDOW_DEFAULT_SCALE}
+    misc::center_elements::get_center, system::{page_system::{Button, Page}, window::WINDOW_DEFAULT_SCALE}, PersistentElements
 };
 use crate::ui::style::{BACKGROUND_COLOR, BLACK_COLOR, ORANGE_COLOR, PINK_COLOR, PURPLE_COLOR, RED_COLOR, SUBTEXT_COLOR, TEXT_COLOR};
 
@@ -39,7 +39,7 @@ pub enum ButtonId
 
 
 
-pub fn persistent_elements1() -> Page<PageId, ButtonId>
+pub fn persistent_elements1() -> PersistentElements<PageId, ButtonId>
 {
     //===================== variables =========================
     let padding_x = 200;
@@ -74,10 +74,10 @@ pub fn persistent_elements1() -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (false, None), id: PageId::Persistent1, background_color: None, rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
+    PersistentElements { id: PageId::Persistent1, background_color: None, rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
 }
 
-pub fn persistent_elements2() -> Page<PageId, ButtonId>
+pub fn persistent_elements2() -> PersistentElements<PageId, ButtonId>
 {
     let window_center = get_center((800, 999), WINDOW_DEFAULT_SCALE);
     //===================== rects =========================
@@ -93,7 +93,7 @@ pub fn persistent_elements2() -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (false, None), id: PageId::Persistent2, background_color: None, rects: Some(all_rects), buttons: None, texts: Some(all_text), images: None }
+    PersistentElements { id: PageId::Persistent2, background_color: None, rects: Some(all_rects), buttons: None, texts: Some(all_text), images: None }
 }
 
 pub fn page_1(user_input: &[String]) -> Page<PageId, ButtonId>

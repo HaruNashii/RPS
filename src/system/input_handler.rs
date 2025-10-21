@@ -127,7 +127,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
 
     pub fn manage_history(&self, front: bool, app_state: &mut AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>)
     {
-        if !page_data.page_history.0.is_empty()
+        if !page_data.page_history.0.is_empty() && !app_state.capturing_input.0
         {
             while page_data.page_history.0.len() > 10 { page_data.page_history.0.pop_front(); };
             if front

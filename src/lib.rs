@@ -6,7 +6,7 @@ pub use crate::
         renderer::Renderer,
         input_handler::{InputEvent, InputHandler},
         window::{create_window, get_monitor_refresh_rate, WINDOW_DEFAULT_SCALE},
-        page_system::{Button, Page},
+        page_system::{Button, Page, PersistentElements},
         state::AppState,
     },
 };

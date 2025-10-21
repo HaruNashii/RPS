@@ -2,7 +2,7 @@ use std::fmt::Debug;
 use crate::
 {
     sdl::sdl3_generators::{GenImage, GenText},
-    system::page_system::{Page, PageData}, AppState,
+    system::page_system::{Page, PageData, PersistentElements}, AppState,
 };
 use sdl3::
 {
@@ -59,34 +59,25 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
         for &(ox, oy) in &[(r, r), (w - r - 1, r), (r, h - r - 1), (w - r - 1, h - r - 1)] { for cy in -r..=r { for cx in -r..=r { if cx * cx + cy * cy <= r * r { canvas.draw_point((x + ox + cx, y + oy + cy)).unwrap(); } } } }
     }
     
-    fn render_elements(&mut self, page: &Page<PageId, ButtonId>)
+    fn render_elements(&mut self, page: Option<&Page<PageId, ButtonId>>, persistent_elements: Option<&PersistentElements<PageId, ButtonId>>)
     {
-        if let Some(rects) = &page.rects 
-        {
-            for (color, (rect, radius)) in rects 
-            {
-                self.canvas.set_draw_color(*color);
-                Self::draw_rounded_box(self.canvas, rect.x(), rect.y(), rect.width() as i32, rect.height() as i32, *radius, *color);
-            }
+        if let Some(page) = page
+        { 
+            if let Some(rects) = &page.rects { for (color, (rect, radius)) in rects { self.canvas.set_draw_color(*color); Self::draw_rounded_box(self.canvas, rect.x(), rect.y(), rect.width() as i32, rect.height() as i32, *radius, *color); } }
+            if let Some(buttons) = &page.buttons { for tuple in buttons { if tuple.enabled { self.canvas.set_draw_color(tuple.color); Self::draw_rounded_box(self.canvas, tuple.rect.x(), tuple.rect.y(), tuple.rect.width() as i32, tuple.rect.height() as i32, tuple.radius, tuple.color); } } }
+            if let Some(texts) = &page.texts { for tuple in (texts, self.texture_creator, self.ttf_context).generate_text() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap(); } }
+            if let Some(images) = &page.images { for tuple in (images, self.texture_creator).generate_image() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap(); } }
         }
-    
-        if let Some(buttons) = &page.buttons 
+        if let Some(persistent_elements) = persistent_elements
         {
-            for tuple in buttons 
-            {
-                if tuple.enabled 
-                {
-                    self.canvas.set_draw_color(tuple.color);
-                    Self::draw_rounded_box(self.canvas, tuple.rect.x(), tuple.rect.y(), tuple.rect.width() as i32, tuple.rect.height() as i32, tuple.radius, tuple.color);
-                }
-            }
+            if let Some(rects) = &persistent_elements.rects { for (color, (rect, radius)) in rects { self.canvas.set_draw_color(*color); Self::draw_rounded_box(self.canvas, rect.x(), rect.y(), rect.width() as i32, rect.height() as i32, *radius, *color); } }
+            if let Some(buttons) = &persistent_elements.buttons { for tuple in buttons { if tuple.enabled { self.canvas.set_draw_color(tuple.color); Self::draw_rounded_box(self.canvas, tuple.rect.x(), tuple.rect.y(), tuple.rect.width() as i32, tuple.rect.height() as i32, tuple.radius, tuple.color); } } }
+            if let Some(texts) = &persistent_elements.texts { for tuple in (texts, self.texture_creator, self.ttf_context).generate_text() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap(); } }
+            if let Some(images) = &persistent_elements.images { for tuple in (images, self.texture_creator).generate_image() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap(); } }
         }
-    
-        if let Some(texts) = &page.texts { for tuple in (texts, self.texture_creator, self.ttf_context).generate_text() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap(); } }
-        if let Some(images) = &page.images { for tuple in (images, self.texture_creator).generate_image() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap(); } }
     }
     
-    pub fn render_page(&mut self, page: &Page<PageId, ButtonId>, persistent_page: Option<Vec<&Page<PageId, ButtonId>>>) 
+    pub fn render_page(&mut self, page: &Page<PageId, ButtonId>, persistent_elements: Option<Vec<&PersistentElements<PageId, ButtonId>>>) 
     {
         match page.background_color 
         {
@@ -103,8 +94,8 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
                 self.canvas.clear();
             }
         }
-        Self::render_elements(self, page);
-        if let Some(new_persistent_page) = persistent_page {  for result in new_persistent_page {Self::render_elements(self, result);} }
+        Self::render_elements(self, Some(page), None);
+        if let Some(new_persistent_elements) = persistent_elements {  for result in new_persistent_elements {Self::render_elements(self, None, Some(result));} }
         self.canvas.present();
     }
 }

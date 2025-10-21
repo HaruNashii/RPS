@@ -79,7 +79,7 @@ use rust_page_system::
     system::
     {
         input_handler::InputHandler, 
-        page_system::{Page, PageData}, 
+        page_system::{Page, PersistentElements, PageData}, 
         state::AppState, 
         window::{create_window, get_monitor_refresh_rate, WindowConfig}
     }
@@ -105,7 +105,7 @@ fn main()
         hint_sdl3_vsync: true
     };
     let mut window_modules = create_window(window_config);
-    //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys")
+    //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys") | (false = Page Rollback On), (true = Page Rollback Off)
     let mut input_handler = InputHandler::new(false);
     let mut app_state = AppState::new(PageId::Page1);
     let mut page_data = PageData::new(&app_state);
@@ -178,7 +178,7 @@ pub fn update_page_data(page_data: &mut PageData<PageId, ButtonId>)
 
 
 //==========================================================================================================================================================================
-//====================================================================# can be a different file, like: style.rs #===========================================================
+//====================================================================# can be a different file, like: style.rs (or not even exist) #=======================================
 //==========================================================================================================================================================================
 pub const BACKGROUND_COLOR: Color = Color::RGB(30, 30, 46);
 pub const TEXT_COLOR: Color = Color::RGB(255, 255, 255);
@@ -214,9 +214,8 @@ pub enum ButtonId
 }
 
 
-
 // Define Your Pages Here:
-pub fn persistent_elements() -> Page<PageId, ButtonId>
+pub fn persistent_elements() -> PersistentElements<PageId, ButtonId>
 {
     //===================== rects =========================
     let all_rects = vec! [ (BLACK_COLOR, (Rect::new(0, 0, 1920, 100), 0)) ];
@@ -231,7 +230,7 @@ pub fn persistent_elements() -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (false, None), id: PageId::Persistent, background_color: None, rects: Some(all_rects), buttons: None, texts: Some(all_text), images: Some(all_images) }
+    PersistentElements { id: PageId::Persistent, background_color: None, rects: Some(all_rects), buttons: None, texts: Some(all_text), images: Some(all_images) }
 }
 
 pub fn page_1(user_input: &[String]) -> Page<PageId, ButtonId>
@@ -339,7 +338,7 @@ Runtime errors on Windows
 ---
 
 ## License
-This Project are licensed under the MIT licence. Please see the [license](https://github.com/HaruNashii/RPS/blob/main/LICENSE) file for more information. tl;dr you can do whatever you want as long as you include the original copyright and license notice in any copy of the software/source.
+This Project are licensed under the MIT licence. Please see the [license](https://github.com/HaruNashii/RPS/blob/main/LICENSE) file for more information. tl;dr you can do whatever you want. :)
 
 ---
 

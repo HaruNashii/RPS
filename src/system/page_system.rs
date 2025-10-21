@@ -21,6 +21,16 @@ pub struct Page<PageId, ButtonId>
     pub texts: Texts,
     pub images: Images,
 }
+#[derive(PartialEq, Debug, Clone)]
+pub struct PersistentElements<PageId, ButtonId> 
+{
+    pub id: PageId,
+    pub background_color: Option<Color>,
+    pub rects: Rects,
+    pub buttons: Buttons<ButtonId>,
+    pub texts: Texts,
+    pub images: Images,
+}
 
 
 
@@ -31,7 +41,7 @@ pub struct PageData<PageId, ButtonId>
 {
     pub vec_user_input: Vec<(PageId, ButtonId, String)>,
     pub vec_user_input_string: Vec<String>,
-    pub persistent_elements: Vec<Page<PageId, ButtonId>>,
+    pub persistent_elements: Vec<PersistentElements<PageId, ButtonId>>,
     pub all_pages: Vec<Page<PageId, ButtonId>>,
     pub page_history: (VecDeque<PageId>, usize),
 }
@@ -41,7 +51,7 @@ impl<PageId: Copy + Eq, ButtonId: Copy + Eq + Debug> PageData<PageId, ButtonId>
     pub fn new(app_state: &AppState<PageId, ButtonId>) -> Self { Self {vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), persistent_elements: Vec::new(), all_pages: Vec::new(), page_history: (VecDeque::from([app_state.current_page]),  0)} }
 
     /// Define Persistant Page
-    pub fn define_persistent_elements(&mut self, persistent_elements: Vec<Page<PageId, ButtonId>>) { self.persistent_elements = persistent_elements }
+    pub fn define_persistent_elements(&mut self, persistent_elements: Vec<PersistentElements<PageId, ButtonId>>) { self.persistent_elements = persistent_elements }
 
     /// Populate all_buttons
     pub fn populate_and_update_all_pages(&mut self, all_pages: Vec<Page<PageId, ButtonId>>) { self.all_pages = all_pages; }

@@ -4,7 +4,7 @@ use rust_page_system::
     get_center,
     system::{page_system::PageData, state::AppState},
     Button,
-    Page
+    Page, PersistentElements
 };
 
 
@@ -112,7 +112,7 @@ pub fn populate_or_update_app_state(page_data: &mut PageData<PageId, ButtonId>, 
     ]);
 }
 
-pub fn persistent_elements1() -> Page<PageId, ButtonId>
+pub fn persistent_elements1() -> PersistentElements<PageId, ButtonId>
 {
     //===================== variables =========================
     let padding_x = 200;
@@ -141,10 +141,10 @@ pub fn persistent_elements1() -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (false, None), id: PageId::Persistent1, background_color: None, rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    PersistentElements { id: PageId::Persistent1, background_color: None, rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 
-pub fn persistent_elements2() -> Page<PageId, ButtonId>
+pub fn persistent_elements2() -> PersistentElements<PageId, ButtonId>
 {
     //===================== rects =========================
     let all_rects = vec!
@@ -159,7 +159,7 @@ pub fn persistent_elements2() -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (false, None), id: PageId::Persistent2, background_color: None, rects: Some(all_rects), buttons: None, texts: Some(all_text), images: None }
+    PersistentElements { id: PageId::Persistent2, background_color: None, rects: Some(all_rects), buttons: None, texts: Some(all_text), images: None }
 }
 
 pub fn page_1(_: &[String]) -> Page<PageId, ButtonId>

@@ -8,7 +8,7 @@ use rust_page_system::
     system::
     {
         input_handler::InputHandler, 
-        page_system::{Page, PageData}, 
+        page_system::{Page, PersistentElements, PageData}, 
         state::AppState, 
         window::{create_window, get_monitor_refresh_rate, WindowConfig}
     }
@@ -150,9 +150,8 @@ pub enum ButtonId
 }
 
 
-
 // Define Your Pages Here:
-pub fn persistent_elements() -> Page<PageId, ButtonId>
+pub fn persistent_elements() -> PersistentElements<PageId, ButtonId>
 {
     //===================== rects =========================
     let all_rects = vec! [ (BLACK_COLOR, (Rect::new(0, 0, 1920, 100), 0)) ];
@@ -167,7 +166,7 @@ pub fn persistent_elements() -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (false, None), id: PageId::Persistent, background_color: None, rects: Some(all_rects), buttons: None, texts: Some(all_text), images: Some(all_images) }
+    PersistentElements { id: PageId::Persistent, background_color: None, rects: Some(all_rects), buttons: None, texts: Some(all_text), images: Some(all_images) }
 }
 
 pub fn page_1(user_input: &[String]) -> Page<PageId, ButtonId>

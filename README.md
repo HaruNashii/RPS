@@ -70,7 +70,7 @@ for more accurate examples you can see them [here](https://github.com/HaruNashii
 
 ```rust
 use std::{env, time::Duration};
-use sdl3::{pixels::Color, rect::Rect};
+use sdl3::{pixels::Color, rect::Rect, sys::render::SDL_LOGICAL_PRESENTATION_STRETCH};
 use rust_page_system::
 {
     Button,
@@ -102,10 +102,12 @@ fn main()
         window_minimum_size: (800, 450),
         resizable: true,
         centered: true,
-        hint_sdl3_vsync: true
+        hint_sdl3_vsync: true,
+        // By Default SDL_LOGICAL_PRESENTATION_STRETCH Is Set, Only Setting It Here For Demonstration Purpose 
+        different_sdl_presentation_mode: Some(SDL_LOGICAL_PRESENTATION_STRETCH)
     };
     let mut window_modules = create_window(window_config);
-    //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys") | (false = Page Rollback On), (true = Page Rollback Off)
+    //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys")
     let mut input_handler = InputHandler::new(false);
     let mut app_state = AppState::new(PageId::Page1);
     let mut page_data = PageData::new(&app_state);
@@ -125,7 +127,6 @@ fn main()
 
 
 
-
 //==========================================================================================================================================================================
 //===============================================================# can be a different file, like: buttons_actions.rs #======================================================
 //==========================================================================================================================================================================
@@ -140,8 +141,6 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
         app_state.capturing_input = (true, Some(*button_id));
     }
 }
-
-
 
 
 
@@ -178,7 +177,7 @@ pub fn update_page_data(page_data: &mut PageData<PageId, ButtonId>)
 
 
 //==========================================================================================================================================================================
-//====================================================================# can be a different file, like: style.rs (or not even exist) #=======================================
+//====================================================================# can be a different file, like: style.rs #===========================================================
 //==========================================================================================================================================================================
 pub const BACKGROUND_COLOR: Color = Color::RGB(30, 30, 46);
 pub const TEXT_COLOR: Color = Color::RGB(255, 255, 255);
@@ -212,6 +211,7 @@ pub enum ButtonId
     ButtonSubPage,
     ButtonBack,
 }
+
 
 
 // Define Your Pages Here:

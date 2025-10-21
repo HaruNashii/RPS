@@ -1,5 +1,5 @@
 use std::{env, time::Duration};
-use sdl3::{pixels::Color, rect::Rect};
+use sdl3::{pixels::Color, rect::Rect, sys::render::SDL_LOGICAL_PRESENTATION_STRETCH};
 use rust_page_system::
 {
     Button,
@@ -38,7 +38,9 @@ fn main()
         window_minimum_size: (800, 450),
         resizable: true,
         centered: true,
-        hint_sdl3_vsync: true
+        hint_sdl3_vsync: true,
+        // By Default SDL_LOGICAL_PRESENTATION_STRETCH Is Set, Only Setting It Here For Demonstration Purpose 
+        different_sdl_presentation_mode: Some(SDL_LOGICAL_PRESENTATION_STRETCH)
     };
     let mut window_modules = create_window(window_config);
     //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys")

@@ -2,13 +2,7 @@ use display_info::DisplayInfo;
 use std::fs;
 use sdl3::
 {
-    surface::Surface,
-    rect::Rect,
-    render::{Canvas, TextureCreator},
-    sys::render::SDL_LOGICAL_PRESENTATION_STRETCH,
-    ttf::Sdl3TtfContext,
-    video::{Window, WindowContext},
-    EventPump,
+    rect::Rect, render::{Canvas, TextureCreator}, surface::Surface, sys::render::{SDL_RendererLogicalPresentation, SDL_LOGICAL_PRESENTATION_STRETCH}, ttf::Sdl3TtfContext, video::{Window, WindowContext}, EventPump
 };
 
 
@@ -21,7 +15,6 @@ pub const WINDOW_DEFAULT_SCALE: (u32, u32) = (1920, 1080);
 
 
 
-#[derive(Debug)]
 pub struct WindowConfig
 {
     pub window_title: String,
@@ -30,7 +23,8 @@ pub struct WindowConfig
     pub window_minimum_size: (u32, u32),
     pub resizable: bool,
     pub centered: bool,
-    pub hint_sdl3_vsync: bool
+    pub hint_sdl3_vsync: bool,
+    pub different_sdl_presentation_mode: Option<SDL_RendererLogicalPresentation>
 }
 
 pub struct WindowModules
@@ -38,7 +32,7 @@ pub struct WindowModules
     pub canvas: Canvas<Window>,
     pub event_pump: EventPump,
     pub texture_creator: TextureCreator<WindowContext>,
-    pub ttf_context: Sdl3TtfContext
+    pub ttf_context: Sdl3TtfContext,
 }
 
 
@@ -103,7 +97,11 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
     let mut canvas = window.into_canvas();
     let texture_creator = canvas.texture_creator();
 
-    canvas.set_logical_size(1920, 1080, SDL_LOGICAL_PRESENTATION_STRETCH).unwrap();
+    match window_config.different_sdl_presentation_mode
+    {
+        Some(sdl_presentation_mode) => canvas.set_logical_size(1920, 1080, sdl_presentation_mode).unwrap(),
+        None => canvas.set_logical_size(1920, 1080, SDL_LOGICAL_PRESENTATION_STRETCH).unwrap()
+    };
     canvas.set_viewport(Rect::new(0, 0, 1920, 1080));
     
     WindowModules{canvas, event_pump, texture_creator, ttf_context}

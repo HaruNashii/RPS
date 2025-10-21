@@ -65,15 +65,16 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
         { 
             if let Some(rects) = &page.rects { for (color, (rect, radius)) in rects { self.canvas.set_draw_color(*color); Self::draw_rounded_box(self.canvas, rect.x(), rect.y(), rect.width() as i32, rect.height() as i32, *radius, *color); } }
             if let Some(buttons) = &page.buttons { for tuple in buttons { if tuple.enabled { self.canvas.set_draw_color(tuple.color); Self::draw_rounded_box(self.canvas, tuple.rect.x(), tuple.rect.y(), tuple.rect.width() as i32, tuple.rect.height() as i32, tuple.radius, tuple.color); } } }
-            if let Some(texts) = &page.texts { for tuple in (texts, self.texture_creator, self.ttf_context).generate_text() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap(); } }
-            if let Some(images) = &page.images { for tuple in (images, self.texture_creator).generate_image() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap(); } }
+            if let Some(texts) = &page.texts { for tuple in (texts, self.texture_creator, self.ttf_context).generate_text() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap_or_else(|err| {println!("text creator gives an error \nerror: {}\n", err);}); } }
+            if let Some(images) = &page.images { for tuple in (images, self.texture_creator).generate_image() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap_or_else(|err| { println!("image_creator creator gives an error \nerror: {}\n", err); }); }
+            }
         }
         if let Some(persistent_elements) = persistent_elements
         {
             if let Some(rects) = &persistent_elements.rects { for (color, (rect, radius)) in rects { self.canvas.set_draw_color(*color); Self::draw_rounded_box(self.canvas, rect.x(), rect.y(), rect.width() as i32, rect.height() as i32, *radius, *color); } }
             if let Some(buttons) = &persistent_elements.buttons { for tuple in buttons { if tuple.enabled { self.canvas.set_draw_color(tuple.color); Self::draw_rounded_box(self.canvas, tuple.rect.x(), tuple.rect.y(), tuple.rect.width() as i32, tuple.rect.height() as i32, tuple.radius, tuple.color); } } }
-            if let Some(texts) = &persistent_elements.texts { for tuple in (texts, self.texture_creator, self.ttf_context).generate_text() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap(); } }
-            if let Some(images) = &persistent_elements.images { for tuple in (images, self.texture_creator).generate_image() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap(); } }
+            if let Some(texts) = &persistent_elements.texts { for tuple in (texts, self.texture_creator, self.ttf_context).generate_text() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap_or_else(|err| {println!("image_creator creator gives an error \nerror: {}\n", err); }); } }
+            if let Some(images) = &persistent_elements.images { for tuple in (images, self.texture_creator).generate_image() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap_or_else(|err| {println!("text_creator creator gives an error \nerror: {}\n", err)}) } }
         }
     }
     

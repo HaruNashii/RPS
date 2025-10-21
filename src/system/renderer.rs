@@ -35,8 +35,8 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
         let current_page = app_state.current_page;
         for page in all_pages
         {
-            if current_page.0 == page.id && !page.has_persistent_elements.0 { Renderer::render_page(self, page, None); }
-            if current_page.0 == page.id && page.has_persistent_elements.0 && let Some(vec_of_pageid) = &page.has_persistent_elements.1
+            if current_page == page.id && !page.has_persistent_elements.0 { Renderer::render_page(self, page, None); }
+            if current_page == page.id && page.has_persistent_elements.0 && let Some(vec_of_pageid) = &page.has_persistent_elements.1
             {
                 let mut vec_persistent_elements = Vec::new();
                 for pageid in vec_of_pageid

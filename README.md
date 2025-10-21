@@ -78,7 +78,7 @@ use rust_page_system::
     misc::center_elements::get_center, 
     system::
     {
-        input_handler::{InputEvent, InputHandler}, 
+        input_handler::InputHandler, 
         page_system::{Page, PageData}, 
         state::AppState, 
         window::{create_window, get_monitor_refresh_rate, WindowConfig}
@@ -104,28 +104,20 @@ fn main()
         centered: true,
         hint_sdl3_vsync: true
     };
-    let (mut canvas, mut event_pump, texture_creator, ttf_context) = create_window(window_config);
-    let mut input_handler = InputHandler::new();
-    let mut app_state = AppState::new(PageId::Page1, true);
-    let mut page_data = PageData::new();
-    let mut renderer = Renderer::new(&mut canvas, &texture_creator, &ttf_context);
+    let mut window_modules = create_window(window_config);
+    //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys")
+    let mut input_handler = InputHandler::new(false);
+    let mut app_state = AppState::new(PageId::Page1);
+    let mut page_data = PageData::new(&app_state);
+    let mut renderer = Renderer::new(&mut window_modules.canvas, &window_modules.texture_creator, &window_modules.ttf_context);
 
     populate_page_data(&mut page_data);
 
-    let refresh_rate = get_monitor_refresh_rate();
-    'running: loop 
+    loop 
     {
-        std::thread::sleep(Duration::from_millis(1000 / refresh_rate));
-        match input_handler.poll(&mut event_pump) 
-        {
-            InputEvent::Click(x, y)   => if let Some(button_id) = page_data.page_button_at(&app_state, x, y) { button_action(&mut app_state, &button_id); },
-            InputEvent::Text(string)    => input_handler.handle_text(string, &mut app_state, &mut page_data),
-            InputEvent::Backspace               => input_handler.handle_backspace(&mut app_state, &mut page_data),
-            InputEvent::Submit                  => input_handler.submit_input(&mut app_state),
-            InputEvent::Quit                    => break 'running,
-            InputEvent::None                    => {}
-        }
+        std::thread::sleep(Duration::from_millis(1000 / get_monitor_refresh_rate()));
         app_state.update_window_size(renderer.canvas.window().size());
+        input_handler.handle_input(&mut window_modules.event_pump, &mut page_data, &mut app_state, button_action);
         update_page_data(&mut page_data);
         renderer.render(&app_state, &page_data);
     }
@@ -133,16 +125,17 @@ fn main()
 
 
 
+
 //==========================================================================================================================================================================
 //===============================================================# can be a different file, like: buttons_actions.rs #======================================================
 //==========================================================================================================================================================================
-pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &ButtonId) 
+pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &ButtonId, app_data: &mut PageData<PageId, ButtonId>) 
 {
     if !app_state.capturing_input.0
     {
-        if &ButtonId::ButtonPage1    == button_id {app_state.current_page = (PageId::Page1,        true);    return};
-        if &ButtonId::ButtonSubPage  == button_id {app_state.current_page = (PageId::Page1SubPage, true);    return};
-        if &ButtonId::ButtonBack     == button_id {app_state.current_page = (PageId::Page1,        true);    return};
+        if &ButtonId::ButtonPage1    == button_id {app_state.change_current_page(app_data, PageId::Page1); return};
+        if &ButtonId::ButtonSubPage  == button_id {app_state.change_current_page(app_data, PageId::Page1SubPage); return};
+        if &ButtonId::ButtonBack     == button_id {app_state.change_current_page(app_data, PageId::Page1); return};
         // Non Handle Buttons Will Be Considered User Input Buttons
         app_state.capturing_input = (true, Some(*button_id));
     }
@@ -150,9 +143,12 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
 
 
 
+
+
 //==========================================================================================================================================================================
 //===============================================================# can be a different file, like: setup_page_data.rs #======================================================
 //==========================================================================================================================================================================
+/// put here pages that is static and don't need to be updated every frame
 pub fn populate_page_data(page_data: &mut PageData<PageId, ButtonId>)
 {
     //Populate Vec_Of_User_input With Page And Buttons That Receives User_Input
@@ -161,13 +157,14 @@ pub fn populate_page_data(page_data: &mut PageData<PageId, ButtonId>)
         (PageId::Page1, ButtonId::ButtonPurpleInputStartPage1),
     ]);
     //Populate Persistent Elements with your defined persistent elements, (If your Persistent
-    //Elements have runtime changing elements, like: Userinput, you need to place this definition inside an loop)
+    //Elements have runtime changing elements, like: Userinput, you need to place this definition on (update_page_data) that must be inside an loop)
     page_data.define_persistent_elements(vec! 
     [
         persistent_elements(),
     ]);
-    
 }
+
+/// put here pages that need constant update logic, this fn needs to be inside one loop
 pub fn update_page_data(page_data: &mut PageData<PageId, ButtonId>)
 {
     //Populate PageData allpages vector

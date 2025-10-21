@@ -41,9 +41,10 @@ fn main()
         hint_sdl3_vsync: true
     };
     let mut window_modules = create_window(window_config);
-    let mut input_handler = InputHandler::new();
-    let mut app_state = AppState::new(PageId::Page1, true);
-    let mut page_data = PageData::new();
+    //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys")
+    let mut input_handler = InputHandler::new(false);
+    let mut app_state = AppState::new(PageId::Page1);
+    let mut page_data = PageData::new(&app_state);
     let mut renderer = Renderer::new(&mut window_modules.canvas, &window_modules.texture_creator, &window_modules.ttf_context);
 
     populate_page_data(&mut page_data);
@@ -51,10 +52,10 @@ fn main()
     loop 
     {
         std::thread::sleep(Duration::from_millis(1000 / get_monitor_refresh_rate()));
-        input_handler.handle_input(&mut window_modules.event_pump, &mut page_data, &mut app_state, button_action);
         app_state.update_window_size(renderer.canvas.window().size());
+        input_handler.handle_input(&mut window_modules.event_pump, &mut page_data, &mut app_state, button_action);
         update_page_data(&mut page_data);
-        renderer.render(&app_state, &mut page_data);
+        renderer.render(&app_state, &page_data);
     }
 }
 
@@ -64,13 +65,13 @@ fn main()
 //==========================================================================================================================================================================
 //===============================================================# can be a different file, like: buttons_actions.rs #======================================================
 //==========================================================================================================================================================================
-pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &ButtonId) 
+pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &ButtonId, app_data: &mut PageData<PageId, ButtonId>) 
 {
     if !app_state.capturing_input.0
     {
-        if &ButtonId::ButtonPage1    == button_id {app_state.current_page = (PageId::Page1,        true);    return};
-        if &ButtonId::ButtonSubPage  == button_id {app_state.current_page = (PageId::Page1SubPage, true);    return};
-        if &ButtonId::ButtonBack     == button_id {app_state.current_page = (PageId::Page1,        true);    return};
+        if &ButtonId::ButtonPage1    == button_id {app_state.change_current_page(app_data, PageId::Page1); return};
+        if &ButtonId::ButtonSubPage  == button_id {app_state.change_current_page(app_data, PageId::Page1SubPage); return};
+        if &ButtonId::ButtonBack     == button_id {app_state.change_current_page(app_data, PageId::Page1); return};
         // Non Handle Buttons Will Be Considered User Input Buttons
         app_state.capturing_input = (true, Some(*button_id));
     }
@@ -92,14 +93,14 @@ pub fn populate_page_data(page_data: &mut PageData<PageId, ButtonId>)
         (PageId::Page1, ButtonId::ButtonPurpleInputStartPage1),
     ]);
     //Populate Persistent Elements with your defined persistent elements, (If your Persistent
-    //Elements have runtime changing elements, like: Userinput, you need to place this definition (update_page_data) that must be inside an loop)
+    //Elements have runtime changing elements, like: Userinput, you need to place this definition on (update_page_data) that must be inside an loop)
     page_data.define_persistent_elements(vec! 
     [
         persistent_elements(),
     ]);
 }
 
-/// put here pages that need constant update logic
+/// put here pages that need constant update logic, this fn needs to be inside one loop
 pub fn update_page_data(page_data: &mut PageData<PageId, ButtonId>)
 {
     //Populate PageData allpages vector

@@ -14,9 +14,9 @@ mod setup_tests;
 #[test]
 fn app_initialization() 
 {
-    let state = AppState::<PageId, ButtonId>::new(PageId::Page1, true);
-    let data = PageData::<PageId, ButtonId>::new();
-    assert_eq!(state.current_page, (PageId::Page1, true));
+    let state = AppState::<PageId, ButtonId>::new(PageId::Page1);
+    let data = PageData::new(&state);
+    assert_eq!(state.current_page, PageId::Page1);
     assert_eq!(data.vec_user_input.len(), 0);
     assert_eq!(data.vec_user_input_string.len(), 0);
     assert_eq!(state.capturing_input, (false, None));
@@ -26,7 +26,8 @@ fn app_initialization()
 #[test]
 pub fn app_state_define_persistent_elements()
 {
-    let mut data = PageData::<PageId, ButtonId>::new();
+    let state = AppState::new(PageId::Page1);
+    let mut data = PageData::new(&state);
     let vec_of_persistent_elementss = vec!
     [
         persistent_elements1(),
@@ -39,7 +40,8 @@ pub fn app_state_define_persistent_elements()
 #[test]
 pub fn app_state_populate_and_update_all_pages()
 {
-    let mut data = PageData::<PageId, ButtonId>::new();
+    let state = AppState::new(PageId::Page1);
+    let mut data = PageData::<PageId, ButtonId>::new(&state);
     let vec_to_populate = vec!
     [
         page_1(&data.vec_user_input_string),
@@ -53,7 +55,8 @@ pub fn app_state_populate_and_update_all_pages()
 #[test]
 fn app_state_push_vec_user_input() 
 {
-    let mut data = PageData::<PageId, ButtonId>::new();
+    let state = AppState::new(PageId::Page1);
+    let mut data = PageData::new(&state);
     data.push_vec_user_input(vec!
     [
         (PageId::Page1, ButtonId::ButtonPurpleInputStartPage1),
@@ -69,14 +72,14 @@ fn app_state_push_vec_user_input()
 #[test]
 fn app_state_handle_multiple_text_and_backspace() 
 {
-    let mut state = AppState::<PageId, ButtonId>::new(PageId::Page1, true);
-    let mut data = PageData::<PageId, ButtonId>::new();
+    let mut state = AppState::new(PageId::Page1);
+    let mut data = PageData::new(&state);
     let mut input_handler = InputHandler::<PageId, ButtonId>::new();
 
     populate_or_update_app_state(&mut data, false);
 
     // Try Pushing Input To Button Purple Page 1 And Removing One Letter
-    state.current_page = (PageId::Page1, true);
+    state.current_page = PageId::Page1;
     state.capturing_input = (true, Some(ButtonId::ButtonPurpleInputStartPage1));
     input_handler.handle_text("hello".to_string(), &mut state, &mut data);
     assert_eq!(data.vec_user_input_string[0], "hello");
@@ -84,7 +87,7 @@ fn app_state_handle_multiple_text_and_backspace()
     assert_eq!(data.vec_user_input_string[0], "hell");
 
     // Try Pushing Input To Button Red Page 1 And Removing One Letter
-    state.current_page = (PageId::Page1, true);
+    state.current_page = PageId::Page1;
     state.capturing_input = (true, Some(ButtonId::ButtonRedInputStartPage1 ));
     assert_eq!(data.vec_user_input_string[1], "");
     input_handler.handle_text("world".to_string(), &mut state, &mut data);
@@ -94,7 +97,7 @@ fn app_state_handle_multiple_text_and_backspace()
 
 
     // Try Pushing Input To Button Purple Page 2 And Removing One Letter
-    state.current_page = (PageId::Page2, true);
+    state.current_page = PageId::Page2;
     state.capturing_input = (true, Some(ButtonId::ButtonPurpleInputStartPage2 ));
     input_handler.handle_text("test".to_string(), &mut state, &mut data);
     assert_eq!(data.vec_user_input_string[2], "test");
@@ -105,7 +108,7 @@ fn app_state_handle_multiple_text_and_backspace()
 #[test]
 fn app_state_submit_input() 
 {
-    let mut state = AppState::<PageId, ButtonId>::new(PageId::Page1, true);
+    let mut state = AppState::new(PageId::Page1);
     let mut input_handler = InputHandler::<PageId, ButtonId>::new();
     state.capturing_input = (true, Some(ButtonId::ButtonPurpleInputStartPage1 ));
     input_handler.submit_input(&mut state);
@@ -116,23 +119,24 @@ fn app_state_submit_input()
 #[test]
 fn app_state_handle_action_switch_page() 
 {
-    let mut state = AppState::<PageId, ButtonId>::new(PageId::Page1, true);
+    let mut state = AppState::new(PageId::Page1);
+    let mut data = PageData::new(&state);
     // Test switching to Page2
-    button_action(&mut state, ButtonId::ButtonPage2 );
-    assert_eq!(state.current_page.0, PageId::Page2 );
+    button_action(&mut state, &ButtonId::ButtonPage2, &mut data);
+    assert_eq!(state.current_page, PageId::Page2 );
     // Test switch to subpage
-    button_action(&mut state, ButtonId::ButtonSubPage );
-    assert_eq!(state.current_page.0, PageId::Page2SubPage );
+    button_action(&mut state, &ButtonId::ButtonSubPage, &mut data);
+    assert_eq!(state.current_page, PageId::Page2SubPage );
     // Test Switch Back to Page2
-    button_action(&mut state, ButtonId::ButtonBack );
-    assert_eq!(state.current_page.0, PageId::Page2 );
+    button_action(&mut state, &ButtonId::ButtonBack, &mut data);
+    assert_eq!(state.current_page, PageId::Page2 );
 }
 
 #[test]
 fn app_state_handle_action_starts_input_capture() 
 {
-    let mut state = AppState::<PageId, ButtonId>::new(PageId::Page1, true);
-    let mut data = PageData::<PageId, ButtonId>::new();
+    let mut state = AppState::new(PageId::Page1);
+    let mut data = PageData::new(&state);
 
     //Populate Vec_Of_User_input With Page And Buttons That Receives User_Input
     data.push_vec_user_input(vec!
@@ -144,9 +148,9 @@ fn app_state_handle_action_starts_input_capture()
 
 
     //Test Starting User Input In Purple Button
-    state.current_page.0 = PageId::Page1 ;
+    state.current_page = PageId::Page1 ;
     let input_button = ButtonId::ButtonPurpleInputStartPage1 ;
-    button_action(&mut state, input_button);
+    button_action(&mut state, &input_button, &mut data);
     assert!(state.capturing_input.0);
     assert_eq!(state.capturing_input.1, Some(input_button));
     state.capturing_input.0 = false;
@@ -154,16 +158,16 @@ fn app_state_handle_action_starts_input_capture()
 
     //Test Start User Input In Red Button
     let input_button = ButtonId::ButtonRedInputStartPage1 ;
-    button_action(&mut state, input_button);
+    button_action(&mut state, &input_button, &mut data);
     assert!(state.capturing_input.0);
     assert_eq!(state.capturing_input.1, Some(input_button));
     state.capturing_input.0 = false;
     state.capturing_input.1 = None;
 
     //Test Start User Input In Purple Button In Page2
-    state.current_page.0 = PageId::Page2 ;
+    state.current_page = PageId::Page2 ;
     let input_button = ButtonId::ButtonPurpleInputStartPage2 ;
-    button_action(&mut state, input_button);
+    button_action(&mut state, &input_button, &mut data);
     assert!(state.capturing_input.0);
     assert_eq!(state.capturing_input.1, Some(input_button));
 }
@@ -171,8 +175,8 @@ fn app_state_handle_action_starts_input_capture()
 #[test]
 fn app_state_page_at_none_when_no_button() 
 {
-    let mut state = AppState::<PageId, ButtonId>::new(PageId::Page2SubPage, false);
-    let data = PageData::<PageId, ButtonId>::new();
+    let mut state = AppState::<PageId, ButtonId>::new(PageId::Page2SubPage);
+    let data = PageData::new(&state);
 
     // These coordinates are likely not on any button
     let button_on_position = data.page_button_at(&mut state, -10000.0, -10000.0);

@@ -54,9 +54,10 @@ fn main()
         hint_sdl3_vsync: true
     };
     let mut window_modules = create_window(window_config);
-    let mut input_handler = InputHandler::new();
-    let mut app_state = AppState::new(PageId::Page1, true);
-    let mut page_data = PageData::new();
+    //bool is referred to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys")
+    let mut input_handler = InputHandler::new(false);
+    let mut app_state = AppState::new(PageId::Page1);
+    let mut page_data = PageData::new(&app_state);
     let mut renderer = Renderer::new(&mut window_modules.canvas, &window_modules.texture_creator, &window_modules.ttf_context);
 
     populate_page_data(&mut page_data);

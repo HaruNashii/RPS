@@ -19,17 +19,7 @@ pub const WINDOW_DEFAULT_SCALE: (u32, u32) = (1920, 1080);
 
 
 
-pub fn get_monitor_refresh_rate() -> u64
-{
-    let display_infos = DisplayInfo::all().unwrap();
-    let mut all_monitors_refresh_rate = Vec::new();
-    for display_info in display_infos 
-    {
-        all_monitors_refresh_rate.push(display_info.frequency as u64);
-    }
 
-    *all_monitors_refresh_rate.iter().max().unwrap()
-}
 
 #[derive(Debug)]
 pub struct WindowConfig
@@ -56,27 +46,18 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
 {
     let sdl_started = sdl3::init().unwrap();
     let video_system = sdl_started.video().unwrap();
-    let mut window = if window_config.resizable
-    {
-        if window_config.centered
-        {
-            video_system.window(&window_config.window_title, window_config.start_window_size.0, window_config.start_window_size.1).resizable().position_centered().build().unwrap()
-        }
-        else 
-        {
-            video_system.window(&window_config.window_title, window_config.start_window_size.0, window_config.start_window_size.1).resizable().build().unwrap()
-        }
-    }
-    else if window_config.centered
-    {
-        video_system.window(&window_config.window_title, window_config.start_window_size.0, window_config.start_window_size.1).position_centered().build().unwrap()
-    }
-    else 
-    {
-        video_system.window(&window_config.window_title, window_config.start_window_size.0, window_config.start_window_size.1).build().unwrap()
-    };
+    let mut window_builder = video_system.window
+    (
+        &window_config.window_title,
+        window_config.start_window_size.0,
+        window_config.start_window_size.1,
+    );
 
+    if window_config.resizable { window_builder.resizable(); }
+    if window_config.centered { window_builder.position_centered(); }
     if window_config.hint_sdl3_vsync { sdl3::hint::set(sdl3::hint::names::RENDER_VSYNC, "1"); };
+    let mut window = window_builder.build().unwrap();
+
     if window_config.icon.0 
     {
         match window_config.icon.1
@@ -127,3 +108,15 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
     
     WindowModules{canvas, event_pump, texture_creator, ttf_context}
 }
+pub fn get_monitor_refresh_rate() -> u64
+{
+    let display_infos = DisplayInfo::all().unwrap();
+    let mut all_monitors_refresh_rate = Vec::new();
+    for display_info in display_infos 
+    {
+        all_monitors_refresh_rate.push(display_info.frequency as u64);
+    }
+
+    *all_monitors_refresh_rate.iter().max().unwrap()
+}
+

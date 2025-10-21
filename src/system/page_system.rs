@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::{collections::VecDeque, fmt::Debug};
 use crate::{system::window::WINDOW_DEFAULT_SCALE, AppState};
 use sdl3::{pixels::Color, rect::Rect};
 
@@ -33,12 +33,12 @@ pub struct PageData<PageId, ButtonId>
     pub vec_user_input_string: Vec<String>,
     pub persistent_elements: Vec<Page<PageId, ButtonId>>,
     pub all_pages: Vec<Page<PageId, ButtonId>>,
+    pub page_history: (VecDeque<PageId>, usize),
 }
-impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Default for PageData<PageId, ButtonId> { fn default() -> Self { Self::new() } }
 impl<PageId: Copy + Eq, ButtonId: Copy + Eq + Debug> PageData<PageId, ButtonId>
 {
     /// Define Persistant Page
-    pub fn new() -> Self { Self {vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), persistent_elements: Vec::new(), all_pages: Vec::new()} }
+    pub fn new(app_state: &AppState<PageId, ButtonId>) -> Self { Self {vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), persistent_elements: Vec::new(), all_pages: Vec::new(), page_history: (VecDeque::from([app_state.current_page]),  0)} }
 
     /// Define Persistant Page
     pub fn define_persistent_elements(&mut self, persistent_elements: Vec<Page<PageId, ButtonId>>) { self.persistent_elements = persistent_elements }
@@ -75,12 +75,12 @@ impl<PageId: Copy + Eq, ButtonId: Copy + Eq + Debug> PageData<PageId, ButtonId>
         let mut buttons_to_be_evaluated = Vec::new();
         for page in &self.all_pages
         {
-            if page.id == current_page.0
+            if page.id == current_page
             {
                 buttons_to_be_evaluated.push(&page.buttons);
             };
 
-            if page.has_persistent_elements.0 && page.id == current_page.0 && let Some(vec_of_pageid) = &page.has_persistent_elements.1
+            if page.has_persistent_elements.0 && page.id == current_page && let Some(vec_of_pageid) = &page.has_persistent_elements.1
             {
                 for (index, pageid) in vec_of_pageid.iter().enumerate()
                 {

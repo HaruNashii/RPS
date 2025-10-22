@@ -107,7 +107,7 @@ fn main()
         different_sdl_presentation_mode: Some(SDL_LOGICAL_PRESENTATION_STRETCH)
     };
     let mut window_modules = create_window(window_config);
-    //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys") | (false = Page Rollback On), (true = Page Rollback Off)
+    //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys")
     let mut input_handler = InputHandler::new(false);
     let mut app_state = AppState::new(PageId::Page1);
     let mut page_data = PageData::new(&app_state);
@@ -120,10 +120,11 @@ fn main()
         std::thread::sleep(Duration::from_millis(1000 / get_monitor_refresh_rate()));
         app_state.update_window_size(renderer.canvas.window().size());
         input_handler.handle_input(&mut window_modules.event_pump, &mut page_data, &mut app_state, button_action);
-        update_page_data(&mut page_data);
-        renderer.render(&app_state, &page_data);
+        page_data.create_current_page(&mut app_state);
+        renderer.render(&page_data);
     }
 }
+
 
 
 
@@ -144,36 +145,26 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
 
 
 
+
+
 //==========================================================================================================================================================================
 //===============================================================# can be a different file, like: setup_page_data.rs #======================================================
 //==========================================================================================================================================================================
 /// put here pages that is static and don't need to be updated every frame
 pub fn populate_page_data(page_data: &mut PageData<PageId, ButtonId>)
 {
+    page_data.push_page_link
+    (
+        Some(vec![(PageId::Page1SubPage, subpage_page1)]),
+        Some(vec![(PageId::Page1, page_1)])
+    );
+
     //Populate Vec_Of_User_input With Page And Buttons That Receives User_Input
     page_data.push_vec_user_input(vec!
     [
         (PageId::Page1, ButtonId::ButtonPurpleInputStartPage1),
     ]);
-    //Populate Persistent Elements with your defined persistent elements, (If your Persistent
-    //Elements have runtime changing elements, like: Userinput, you need to place this definition on (update_page_data) that must be inside an loop)
-    page_data.define_persistent_elements(vec! 
-    [
-        persistent_elements(),
-    ]);
 }
-
-/// put here pages that need constant update logic, this fn needs to be inside one loop
-pub fn update_page_data(page_data: &mut PageData<PageId, ButtonId>)
-{
-    //Populate PageData allpages vector
-    page_data.populate_and_update_all_pages(vec!
-    [
-        page_1(&page_data.vec_user_input_string),
-        subpage_page1(),
-    ]);
-}
-
 
 //==========================================================================================================================================================================
 //====================================================================# can be a different file, like: style.rs (or not even exist) #=======================================
@@ -210,7 +201,6 @@ pub enum ButtonId
     ButtonSubPage,
     ButtonBack,
 }
-
 
 
 // Define Your Pages Here:
@@ -254,7 +244,7 @@ pub fn page_1(user_input: &[String]) -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (true, Some(vec![PageId::Persistent])), id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_persistent_elements: Some(vec![(PageId::Persistent, persistent_elements)]), id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 
 }
 
@@ -267,7 +257,7 @@ pub fn subpage_page1() -> Page<PageId,ButtonId>
     let all_text = vec! [ (18.0, (all_buttons[0].rect.x + 10, all_buttons[0].rect.y + 7), "<-".to_string(), TEXT_COLOR) ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (false, None), id: PageId::Page1SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_persistent_elements: None, id: PageId::Page1SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 ```
 

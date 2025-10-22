@@ -1,32 +1,13 @@
 use std::time::Duration;
-use rust_page_system::
-{
-    Renderer,
-    system::
-    {
-        input_handler::InputHandler,
-        page_system::PageData,
-        state::AppState,
-        window::{create_window, get_monitor_refresh_rate, WindowConfig}
-    }
-};
+use rust_page_system::{Renderer, system::{input_handler::InputHandler, page_system::PageData, state::AppState, window::{create_window, get_monitor_refresh_rate, WindowConfig}}};
 use sdl3::sys::render::SDL_LOGICAL_PRESENTATION_STRETCH;
-use crate::
-{   
-    actions::buttons_actions::button_action, 
-    ui::pages::PageId,
-    system::setup_page_data::{populate_page_data, update_page_data} 
-};
-
-
+use crate::{actions::buttons_actions::button_action, ui::pages::PageId, system::setup_page_data::populate_page_data };
 
 
 
 // To Be Ignored, Just An Setup To Configure Some Assets
 use crate::build::setup_build;
 mod build;
-
-
 
 
 
@@ -70,7 +51,7 @@ fn main()
         std::thread::sleep(Duration::from_millis(1000 / get_monitor_refresh_rate()));
         input_handler.handle_input(&mut window_modules.event_pump, &mut page_data, &mut app_state, button_action);
         app_state.update_window_size(renderer.canvas.window().size());
-        update_page_data(&mut page_data);
-        renderer.render(&app_state, &page_data);
+        page_data.create_current_page(&mut app_state);
+        renderer.render(&page_data);
     }
 }

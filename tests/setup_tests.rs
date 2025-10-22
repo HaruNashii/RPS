@@ -85,30 +85,29 @@ pub enum ButtonId
 
 
 
-pub fn populate_or_update_app_state(page_data: &mut PageData<PageId, ButtonId>, only_update: bool)
+pub fn populate_page_data(page_data: &mut PageData<PageId, ButtonId>)
 {
-    if !only_update
-    {
-        //Populate Vec_Of_User_input With Page And Buttons That Receives User_Input
-        page_data.push_vec_user_input(vec!
+    page_data.push_page_link
+    (
+        Some
+        (vec!
         [
-            (PageId::Page1, ButtonId::ButtonPurpleInputStartPage1),
-            (PageId::Page1, ButtonId::ButtonRedInputStartPage1),
-            (PageId::Page2, ButtonId::ButtonPurpleInputStartPage2),
-        ]);
-    }
+            (PageId::Page2SubPage, subpage_page2)
+        ]),
+        Some
+        (vec!
+        [
+            (PageId::Page1, page_1),
+            (PageId::Page2, page_2)
+        ])
+    );
 
-    page_data.define_persistent_elements(vec! 
+    //Populate Vec_Of_User_input With Page And Buttons That Receives User_Input
+    page_data.push_vec_user_input(vec!
     [
-        persistent_elements1(),
-        persistent_elements2(),
-    ]);
-    
-    page_data.populate_and_update_all_pages(vec!
-    [
-        page_1(&page_data.vec_user_input_string),
-        page_2(&page_data.vec_user_input_string),
-        subpage_page2(),
+        (PageId::Page1, ButtonId::ButtonPurpleInputStartPage1),
+        (PageId::Page1, ButtonId::ButtonRedInputStartPage1),
+        (PageId::Page2, ButtonId::ButtonPurpleInputStartPage2)
     ]);
 }
 
@@ -194,7 +193,7 @@ pub fn page_1(_: &[String]) -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (true, Some(vec![PageId::Persistent1])), id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_persistent_elements: Some(vec![(PageId::Persistent1, persistent_elements1)]), id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 
 pub fn page_2(_: &[String]) -> Page<PageId, ButtonId>
@@ -217,7 +216,7 @@ pub fn page_2(_: &[String]) -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (true, Some(vec![PageId::Persistent1, PageId::Persistent2])), id: PageId::Page2, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_persistent_elements: Some(vec![(PageId::Persistent1, persistent_elements1), (PageId::Persistent2, persistent_elements2)]), id: PageId::Page2, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 
 pub fn subpage_page2() -> Page<PageId, ButtonId>
@@ -236,5 +235,5 @@ pub fn subpage_page2() -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (true, Some(vec![PageId::Persistent2])), id: PageId::Page2SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_persistent_elements: Some(vec![(PageId::Persistent2, persistent_elements2)]), id: PageId::Page2SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }

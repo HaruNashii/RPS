@@ -1,9 +1,6 @@
 use std::env;
 use sdl3::rect::Rect;
-use rust_page_system::
-{
-    misc::center_elements::get_center, system::{page_system::{Button, Page}, window::WINDOW_DEFAULT_SCALE}, PersistentElements
-};
+use rust_page_system::{misc::center_elements::get_center, system::{page_system::{Button, Page}, window::WINDOW_DEFAULT_SCALE}, PersistentElements};
 use crate::ui::style::{BACKGROUND_COLOR, BLACK_COLOR, ORANGE_COLOR, PINK_COLOR, PURPLE_COLOR, RED_COLOR, SUBTEXT_COLOR, TEXT_COLOR};
 
 
@@ -128,7 +125,7 @@ pub fn page_1(user_input: &[String]) -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (true, Some(vec![PageId::Persistent1])), id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_persistent_elements: Some(vec![(PageId::Persistent1, persistent_elements1)]), id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 
 pub fn page_2(user_input: &[String]) -> Page<PageId, ButtonId>
@@ -151,7 +148,7 @@ pub fn page_2(user_input: &[String]) -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (true, Some(vec![PageId::Persistent1, PageId::Persistent2])), id: PageId::Page2, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_persistent_elements: Some(vec![(PageId::Persistent1, persistent_elements1), (PageId::Persistent2, persistent_elements2)]), id: PageId::Page2, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 
 pub fn subpage_page2() -> Page<PageId, ButtonId>
@@ -176,5 +173,5 @@ pub fn subpage_page2() -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: (true, Some(vec![PageId::Persistent2])), id: PageId::Page2SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
+    Page { has_persistent_elements: Some(vec![(PageId::Persistent2, persistent_elements2)]), id: PageId::Page2SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
 }

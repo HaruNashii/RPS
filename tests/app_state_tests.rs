@@ -1,8 +1,5 @@
 use rust_page_system::{system::{page_system::PageData, state::AppState, window::WINDOW_DEFAULT_SCALE}, InputHandler};
-use crate::setup_tests::
-{
-    button_action, page_1, page_2, persistent_elements1, persistent_elements2, populate_or_update_app_state, subpage_page2, ButtonId, PageId
-};
+use crate::setup_tests::{button_action, populate_page_data, ButtonId, PageId};
 
 
 
@@ -21,35 +18,6 @@ fn app_initialization()
     assert_eq!(data.vec_user_input_string.len(), 0);
     assert_eq!(state.capturing_input, (false, None));
     assert_eq!(state.window_size, WINDOW_DEFAULT_SCALE);
-}
-
-#[test]
-pub fn app_state_define_persistent_elements()
-{
-    let state = AppState::new(PageId::Page1);
-    let mut data = PageData::new(&state);
-    let vec_of_persistent_elementss = vec!
-    [
-        persistent_elements1(),
-        persistent_elements2()
-    ];
-    data.define_persistent_elements(vec_of_persistent_elementss.clone());
-    assert_eq!(data.persistent_elements, vec_of_persistent_elementss);
-}
-
-#[test]
-pub fn app_state_populate_and_update_all_pages()
-{
-    let state = AppState::new(PageId::Page1);
-    let mut data = PageData::<PageId, ButtonId>::new(&state);
-    let vec_to_populate = vec!
-    [
-        page_1(&data.vec_user_input_string),
-        page_2(&data.vec_user_input_string),
-        subpage_page2(),
-    ];
-    data.populate_and_update_all_pages(vec_to_populate.clone());
-    assert_eq!(data.all_pages, vec_to_populate); 
 }
 
 #[test]
@@ -76,7 +44,7 @@ fn app_state_handle_multiple_text_and_backspace()
     let mut data = PageData::new(&state);
     let mut input_handler = InputHandler::<PageId, ButtonId>::new(true);
 
-    populate_or_update_app_state(&mut data, false);
+    populate_page_data(&mut data);
 
     // Try Pushing Input To Button Purple Page 1 And Removing One Letter
     state.current_page = PageId::Page1;

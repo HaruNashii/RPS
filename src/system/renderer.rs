@@ -2,7 +2,7 @@ use std::fmt::Debug;
 use crate::
 {
     sdl::sdl3_generators::{GenImage, GenText},
-    system::page_system::{Page, PageData, PersistentElements}, AppState,
+    system::page_system::{Page, PageData, PersistentElements},
 };
 use sdl3::
 {
@@ -28,27 +28,37 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
     pub fn new(canvas: &'a mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, ttf_context: &'a Sdl3TtfContext) -> Self { Self{ _page_id: None, _button_id: None, canvas, texture_creator, ttf_context} }
 
     /// Render All Pages
-    pub fn render(&mut self, app_state: &AppState<PageId, ButtonId>,  page_data: &PageData<PageId, ButtonId>) 
+    pub fn render(&mut self, page_data: &PageData<PageId, ButtonId>) 
     {
-        let all_pages = &page_data.all_pages;
-        let persistent_elements = &page_data.persistent_elements;
-        let current_page = app_state.current_page;
-        for page in all_pages
+        if let Some(page) = &page_data.page_to_render
         {
-            if current_page == page.id && !page.has_persistent_elements.0 { Renderer::render_page(self, page, None); }
-            if current_page == page.id && page.has_persistent_elements.0 && let Some(vec_of_pageid) = &page.has_persistent_elements.1
+            if page.has_persistent_elements.is_some() 
+            { Renderer::render_page(self, page, Some(&page_data.persistent_elements_to_render)); }
+            else
+            { Renderer::render_page(self, page, None); }
+        }
+    }
+    
+    pub fn render_page(&mut self, page: &Page<PageId, ButtonId>, persistent_elements: Option<&Vec<PersistentElements<PageId, ButtonId>>>) 
+    {
+        match page.background_color 
+        {
+            Some(background_color) => 
             {
-                let mut vec_persistent_elements = Vec::new();
-                for pageid in vec_of_pageid
-                {
-                    for persistent_element in persistent_elements
-                    {
-                        if *pageid == persistent_element.id {vec_persistent_elements.push(persistent_element); }
-                    }
-                }
-                Renderer::render_page(self, page, Some(vec_persistent_elements));
+                self.canvas.set_draw_color(background_color);
+                self.canvas.clear();
+            }
+    
+            None => 
+            {
+                println!("Page, Without Background Color, Using Default Color: Black");
+                self.canvas.set_draw_color(Color::BLACK);
+                self.canvas.clear();
             }
         }
+        Self::render_elements(self, Some(page), None);
+        if let Some(new_persistent_elements) = persistent_elements {  for result in new_persistent_elements {Self::render_elements(self, None, Some(result));} }
+        self.canvas.present();
     }
 
     fn draw_rounded_box(canvas: &mut Canvas<Window>, x: i32, y: i32, w: i32, h: i32, r: i32, color: Color) 
@@ -76,27 +86,5 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
             if let Some(texts) = &persistent_elements.texts { for tuple in (texts, self.texture_creator, self.ttf_context).generate_text() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap_or_else(|err| {println!("image_creator creator gives an error \nerror: {}\n", err); }); } }
             if let Some(images) = &persistent_elements.images { for tuple in (images, self.texture_creator).generate_image() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap_or_else(|err| {println!("text_creator creator gives an error \nerror: {}\n", err)}) } }
         }
-    }
-    
-    pub fn render_page(&mut self, page: &Page<PageId, ButtonId>, persistent_elements: Option<Vec<&PersistentElements<PageId, ButtonId>>>) 
-    {
-        match page.background_color 
-        {
-            Some(background_color) => 
-            {
-                self.canvas.set_draw_color(background_color);
-                self.canvas.clear();
-            }
-    
-            None => 
-            {
-                println!("Page, Without Background Color, Using Default Color: Black");
-                self.canvas.set_draw_color(Color::BLACK);
-                self.canvas.clear();
-            }
-        }
-        Self::render_elements(self, Some(page), None);
-        if let Some(new_persistent_elements) = persistent_elements {  for result in new_persistent_elements {Self::render_elements(self, None, Some(result));} }
-        self.canvas.present();
     }
 }

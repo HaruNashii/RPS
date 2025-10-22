@@ -1,9 +1,6 @@
 use std::{fmt::Debug, process::exit};
-use crate::{system::page_system::PageData, AppState, Page};
-use sdl3::
-{
-    event::Event, keyboard::{Keycode, Mod}, mouse::MouseButton, pixels::Color, EventPump
-};
+use crate::{system::page_system::PageData, AppState};
+use sdl3::{event::Event, keyboard::{Keycode, Mod}, mouse::MouseButton, EventPump};
 
 
 
@@ -65,25 +62,25 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
     /// Handle every event called
     pub fn handle_input(&mut self, event_pump: &mut EventPump, page_data: &mut PageData<PageId, ButtonId>, app_state: &mut AppState<PageId, ButtonId>, button_action: fn(&mut AppState<PageId, ButtonId>, &ButtonId, app_data: &mut PageData<PageId, ButtonId>))
     {
-        if page_data.all_pages.is_empty()
-        {
-            let link_to_docs= "https://docs.rs/rust_page_system/0.1.7/rust_page_system/system/page_system/struct.PageData.html#method.populate_and_update_all_pages".to_string();
-            let warning = format!("Warning!!! Pages is not populated or update, Please populate/update it, for instructions see:\n{link_to_docs}");
-            let text_warning = vec! [(20.0, (100, 500), warning, Color::WHITE)];
-            page_data.populate_and_update_all_pages
-            (vec![
-                Page
-                {
-                    has_persistent_elements: (false, None),
-                    background_color: Some(Color::BLACK),
-                    rects: None,
-                    buttons: None,
-                    texts: Some(text_warning),
-                    images: None,
-                    id: app_state.current_page,
-                }
-            ]);
-        }
+        //if page_data.all_pages.is_empty()
+        //{
+        //    let link_to_docs= "https://docs.rs/rust_page_system/0.1.7/rust_page_system/system/page_system/struct.PageData.html#method.populate_and_update_all_pages".to_string();
+        //    let warning = format!("Warning!!! Pages is not populated or update, Please populate/update it, for instructions see:\n{link_to_docs}");
+        //    let text_warning = vec! [(20.0, (100, 500), warning, Color::WHITE)];
+        //    page_data.populate_and_update_all_pages
+        //    (vec![
+        //        Page
+        //        {
+        //            has_persistent_elements: (false, None),
+        //            background_color: Some(Color::BLACK),
+        //            rects: None,
+        //            buttons: None,
+        //            texts: Some(text_warning),
+        //            images: None,
+        //            id: app_state.current_page,
+        //        }
+        //    ]);
+        //}
         match self.poll(event_pump) 
         {
             InputEvent::Click(x, y)   => if let Some(button_id) = page_data.page_button_at(app_state, x, y) { button_action(app_state, &button_id, page_data); },

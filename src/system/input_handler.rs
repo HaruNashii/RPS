@@ -97,7 +97,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
                     user_input.push_str(&text);
                 }
             }
-            page_data.update_vec_user_input_string();
+            //page_data.update_vec_user_input_string();
         }
         else 
         {
@@ -121,7 +121,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
                     user_input.pop();
                 }
             }
-            page_data.update_vec_user_input_string();
+            //page_data.update_vec_user_input_string();
         }
     }
 

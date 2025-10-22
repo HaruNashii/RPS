@@ -14,6 +14,7 @@ type Images = Option<Vec<((i32, i32), (u32, u32), String)>>;
 pub struct Page<PageId, ButtonId> 
 {
     pub has_persistent_elements: PersistentElementsType<PageId, ButtonId>,
+    pub has_userinput: Option<Vec<(PageId, ButtonId)>>,
     pub id: PageId,
     pub background_color: Option<Color>,
     pub rects: Rects,
@@ -34,9 +35,9 @@ pub struct PersistentElements<PageId, ButtonId>
 
 
 
-type OptionPageInputLinked<PageId, ButtonId> = Option<Vec<(PageId, fn(&[String]) -> Page<PageId, ButtonId>)>>;
+type OptionPageInputLinked<PageId, ButtonId> = Option<Vec<(PageId, fn(&mut Vec<String>) -> Page<PageId, ButtonId>)>>;
 type OptionPageLinked<PageId, ButtonId> = Option<Vec<(PageId, fn() -> Page<PageId, ButtonId>)>>;
-type PageInputLinked<PageId, ButtonId> = Vec<(PageId, fn(&[String]) -> Page<PageId, ButtonId>)>;
+type PageInputLinked<PageId, ButtonId> = Vec<(PageId, fn(&mut Vec<String>) -> Page<PageId, ButtonId>)>;
 type PageLinked<PageId, ButtonId> = Vec<(PageId, fn() -> Page<PageId, ButtonId>)>;
 #[derive(PartialEq, Debug, Clone)]
 pub struct PageData<PageId, ButtonId>
@@ -88,12 +89,13 @@ impl<PageId: Copy + Eq, ButtonId: Copy + Eq + Debug> PageData<PageId, ButtonId>
                 }
             }
         }
-        for page_w_input_linked in &self.page_w_input_linked
+        for page_w_input_linked in &self.page_w_input_linked.clone()
         {
             if app_state.current_page == page_w_input_linked.0 
             { 
                 app_state.current_page = page_w_input_linked.0; 
-                let created_page = page_w_input_linked.1(&self.vec_user_input_string); 
+                let mut created_page = page_w_input_linked.1(&mut self.vec_user_input_string); 
+                self.push_vec_user_input(&mut created_page);
                 self.page_to_render = Some(created_page.clone()); 
 
                 if let Some(result) = &created_page.has_persistent_elements
@@ -110,21 +112,21 @@ impl<PageId: Copy + Eq, ButtonId: Copy + Eq + Debug> PageData<PageId, ButtonId>
     }
 
     /// Populate vec_user_input
-    pub fn push_vec_user_input(&mut self, user_input_needed: Vec<(PageId, ButtonId)>) 
+    pub fn push_vec_user_input(&mut self, page: &mut Page<PageId, ButtonId>) 
     { 
-        for pageid_and_user_input_needed in user_input_needed 
-        { 
-            self.vec_user_input.push((pageid_and_user_input_needed.0, pageid_and_user_input_needed.1, String::new()));
-        } 
-        self.update_vec_user_input_string();
+        if let Some(has_userinput) = &page.has_userinput 
+        {
+            for (pageid, buttonid) in has_userinput 
+            {
+                let exists = self.vec_user_input.iter().any(|(pid, bid, _)| pid == pageid && bid == buttonid);
+                if !exists { self.vec_user_input.push((*pageid, *buttonid, String::new())); }
+            }
+            self.update_vec_user_input_string();
+        }
     }
 
     /// Update vec_user_input_string
-    pub fn update_vec_user_input_string(&mut self)
-    {
-        let strings: Vec<String> = self.vec_user_input.iter().map(|(_, _, s)| s.to_string()).collect();
-        self.vec_user_input_string = strings;
-    }
+    pub fn update_vec_user_input_string(&mut self) { self.vec_user_input_string = self.vec_user_input.iter().map(|(_, _, s)| s.to_string()).collect(); }
 
     /// Returns the button ID under the cursor (if any)
     pub fn page_button_at(&self, app_state: &AppState<PageId, ButtonId>, mouse_pos_x: f32, mouse_pos_y: f32) -> Option<ButtonId> 

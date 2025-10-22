@@ -1,6 +1,10 @@
 pub use crate::
 {
-    misc::center_elements::get_center,
+    misc::
+    {
+        center_elements::get_center,
+        vec::GetOrCreate
+    },
     system::
     {
         renderer::Renderer,

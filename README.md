@@ -75,7 +75,7 @@ use rust_page_system::
 {
     Button,
     Renderer,
-    misc::center_elements::get_center, 
+    misc::{vec::GetOrCreate, center_elements::get_center}, 
     system::
     {
         input_handler::InputHandler, 
@@ -150,7 +150,6 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
 //==========================================================================================================================================================================
 //===============================================================# can be a different file, like: setup_page_data.rs #======================================================
 //==========================================================================================================================================================================
-/// put here pages that is static and don't need to be updated every frame
 pub fn populate_page_data(page_data: &mut PageData<PageId, ButtonId>)
 {
     page_data.push_page_link
@@ -158,13 +157,9 @@ pub fn populate_page_data(page_data: &mut PageData<PageId, ButtonId>)
         Some(vec![(PageId::Page1SubPage, subpage_page1)]),
         Some(vec![(PageId::Page1, page_1)])
     );
-
-    //Populate Vec_Of_User_input With Page And Buttons That Receives User_Input
-    page_data.push_vec_user_input(vec!
-    [
-        (PageId::Page1, ButtonId::ButtonPurpleInputStartPage1),
-    ]);
 }
+
+
 
 //==========================================================================================================================================================================
 //====================================================================# can be a different file, like: style.rs (or not even exist) #=======================================
@@ -213,16 +208,13 @@ pub fn persistent_elements() -> PersistentElements<PageId, ButtonId>
     let all_text = vec! [ (17.0, (825, 34), "This Is A Persistent Element".to_string(), TEXT_COLOR), ];
 
     //===================== images =========================
-    let all_images = vec!
-    [
-        ((10, 10), (50, 50), format!("{}/.cache/page_system/example_1.jpg", env::home_dir().unwrap().display()))
-    ];
+    let all_images = vec! [ ((10, 10), (50, 50), format!("{}/.cache/page_system/example_1.jpg", env::home_dir().unwrap().display())) ];
 
     //===================== page creation =========================
     PersistentElements { id: PageId::Persistent, background_color: None, rects: Some(all_rects), buttons: None, texts: Some(all_text), images: Some(all_images) }
 }
 
-pub fn page_1(user_input: &[String]) -> Page<PageId, ButtonId>
+pub fn page_1(user_input: &mut Vec<String>) -> Page<PageId, ButtonId>
 {
     //===================== variables =========================
     let purple_button_data = get_center((600, 100), (1920, 1080));
@@ -240,11 +232,11 @@ pub fn page_1(user_input: &[String]) -> Page<PageId, ButtonId>
     [
         (18.0, (all_buttons[0].rect.x + 10, all_buttons[0].rect.y + 7), "Go To subpage_page1".to_string(), TEXT_COLOR),
         (18.0, (all_buttons[1].rect.x + 75, all_buttons[1].rect.y - 25), "Click the Button To Start Getting Input".to_string(), SUBTEXT_COLOR),
-        (25.0, (all_buttons[1].rect.x + 15, all_buttons[1].rect.y + 35), user_input[0].to_string(), BLACK_COLOR),
+        (25.0, (all_buttons[1].rect.x + 15, all_buttons[1].rect.y + 35), user_input.get_or_create(0), BLACK_COLOR),
     ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: Some(vec![(PageId::Persistent, persistent_elements)]), id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_userinput: Some(vec![(PageId::Page1, ButtonId::ButtonPurpleInputStartPage1)]), has_persistent_elements: Some(vec![(PageId::Persistent, persistent_elements)]), id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 
 }
 
@@ -257,7 +249,7 @@ pub fn subpage_page1() -> Page<PageId,ButtonId>
     let all_text = vec! [ (18.0, (all_buttons[0].rect.x + 10, all_buttons[0].rect.y + 7), "<-".to_string(), TEXT_COLOR) ];
 
     //===================== page creation =========================
-    Page { has_persistent_elements: None, id: PageId::Page1SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_userinput: None, has_persistent_elements: None, id: PageId::Page1SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 ```
 

@@ -107,7 +107,7 @@ fn main()
         different_sdl_presentation_mode: Some(SDL_LOGICAL_PRESENTATION_STRETCH)
     };
     let mut window_modules = create_window(window_config);
-    //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys")
+    //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys") | (false = Page Rollback On), (true = Page Rollback Off)
     let mut input_handler = InputHandler::new(false);
     let mut app_state = AppState::new(PageId::Page1);
     let mut page_data = PageData::new(&app_state);

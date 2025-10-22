@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use std::f64::consts::PI;
 use crate::
 {
     sdl::sdl3_generators::{GenImage, GenText},
@@ -61,14 +62,30 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
         self.canvas.present();
     }
 
-    fn draw_rounded_box(canvas: &mut Canvas<Window>, x: i32, y: i32, w: i32, h: i32, r: i32, color: Color) 
-    {
+     pub fn draw_rounded_box(canvas: &mut Canvas<Window>, x: i32, y: i32, w: i32, h: i32, r: i32, color: Color,) 
+     {
         canvas.set_draw_color(color);
         canvas.fill_rect(Rect::new(x + r, y, (w - 2 * r) as u32, h as u32)).unwrap();
-        for &dx in &[0, w - r] { canvas.fill_rect(Rect::new(x + dx, y + r, r as u32, (h - 2 * r) as u32)).unwrap(); }
-        for &(ox, oy) in &[(r, r), (w - r - 1, r), (r, h - r - 1), (w - r - 1, h - r - 1)] { for cy in -r..=r { for cx in -r..=r { if cx * cx + cy * cy <= r * r { canvas.draw_point((x + ox + cx, y + oy + cy)).unwrap(); } } } }
-    }
-    
+        for &dx in &[0, w - r] {canvas.fill_rect(Rect::new(x + dx, y + r, r as u32, (h - 2 * r) as u32)).unwrap();}
+        let steps = r * 4; 
+
+        for i in 0..=steps 
+        {
+            let theta = (i as f64 / steps as f64) * (PI / 2.0);
+            let offset_x = (r as f64 * theta.cos()).round() as i32;
+            let offset_y = (r as f64 * theta.sin()).round() as i32;
+
+            // Top-left
+            canvas.draw_line((x + r - offset_x, y + r - offset_y),(x + r, y + r - offset_y),).unwrap();
+            // Top-right
+            canvas.draw_line((x + w - r - 1, y + r - offset_y),(x + w - r - 1 + offset_x, y + r - offset_y),).unwrap();
+            // Bottom-left
+            canvas.draw_line((x + r - offset_x, y + h - r - 1 + offset_y),(x + r, y + h - r - 1 + offset_y),).unwrap();
+            // Bottom-right
+            canvas.draw_line((x + w - r - 1, y + h - r - 1 + offset_y),(x + w - r - 1 + offset_x, y + h - r - 1 + offset_y),).unwrap();
+        }
+    }   
+
     fn render_elements(&mut self, page: Option<&Page<PageId, ButtonId>>, persistent_elements: Option<&PersistentElements<PageId, ButtonId>>)
     {
         if let Some(page) = page
@@ -76,8 +93,7 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
             if let Some(rects) = &page.rects { for (color, (rect, radius)) in rects { self.canvas.set_draw_color(*color); Self::draw_rounded_box(self.canvas, rect.x(), rect.y(), rect.width() as i32, rect.height() as i32, *radius, *color); } }
             if let Some(buttons) = &page.buttons { for tuple in buttons { if tuple.enabled { self.canvas.set_draw_color(tuple.color); Self::draw_rounded_box(self.canvas, tuple.rect.x(), tuple.rect.y(), tuple.rect.width() as i32, tuple.rect.height() as i32, tuple.radius, tuple.color); } } }
             if let Some(texts) = &page.texts { for tuple in (texts, self.texture_creator, self.ttf_context).generate_text() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap_or_else(|err| {println!("text creator gives an error \nerror: {}\n", err);}); } }
-            if let Some(images) = &page.images { for tuple in (images, self.texture_creator).generate_image() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap_or_else(|err| { println!("image_creator creator gives an error \nerror: {}\n", err); }); }
-            }
+            if let Some(images) = &page.images { for tuple in (images, self.texture_creator).generate_image() { self.canvas.copy(&tuple.0, None, tuple.1).unwrap_or_else(|err| { println!("image_creator creator gives an error \nerror: {}\n", err); }); } }
         }
         if let Some(persistent_elements) = persistent_elements
         {

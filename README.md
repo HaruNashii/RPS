@@ -104,7 +104,8 @@ fn main()
         centered: true,
         hint_sdl3_vsync: true,
         // By Default SDL_LOGICAL_PRESENTATION_STRETCH Is Set, Only Setting It Here For Demonstration Purpose 
-        different_sdl_presentation_mode: Some(SDL_LOGICAL_PRESENTATION_STRETCH)
+        different_sdl_presentation_mode: Some(SDL_LOGICAL_PRESENTATION_STRETCH), 
+        font: ("JetBrains".to_string(), Some("Bold".to_string()))
     };
     let mut window_modules = create_window(window_config);
     //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys") | (false = Page Rollback On), (true = Page Rollback Off)
@@ -121,10 +122,9 @@ fn main()
         app_state.update_window_size(renderer.canvas.window().size());
         input_handler.handle_input(&mut window_modules.event_pump, &mut page_data, &mut app_state, button_action);
         page_data.create_current_page(&mut app_state);
-        renderer.render(&page_data);
+        renderer.render(&page_data, &window_modules.font_path);
     }
 }
-
 
 
 
@@ -142,8 +142,6 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
         app_state.capturing_input = (true, Some(*button_id));
     }
 }
-
-
 
 
 
@@ -208,7 +206,10 @@ pub fn persistent_elements() -> PersistentElements<PageId, ButtonId>
     let all_text = vec! [ (17.0, (825, 34), "This Is A Persistent Element".to_string(), TEXT_COLOR), ];
 
     //===================== images =========================
-    let all_images = vec! [ ((10, 10), (50, 50), format!("{}/.cache/page_system/example_1.jpg", env::home_dir().unwrap().display())) ];
+    let all_images = vec!
+    [
+        ((10, 10), (50, 50), format!("{}/.cache/page_system/example_1.jpg", env::home_dir().unwrap().display()))
+    ];
 
     //===================== page creation =========================
     PersistentElements { id: PageId::Persistent, background_color: None, rects: Some(all_rects), buttons: None, texts: Some(all_text), images: Some(all_images) }

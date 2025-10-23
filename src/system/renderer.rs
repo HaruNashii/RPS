@@ -29,7 +29,7 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
     pub fn new(canvas: &'a mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, ttf_context: &'a Sdl3TtfContext) -> Self { Self{ _page_id: None, _button_id: None, canvas, texture_creator, ttf_context} }
 
     /// Render All Pages
-    pub fn render(&mut self, page_data: &PageData<PageId, ButtonId>, font_path: &String) 
+    pub fn render(&mut self, page_data: &PageData<PageId, ButtonId>, font_path: &str) 
     {
         if let Some(page) = &page_data.page_to_render
         {
@@ -40,7 +40,7 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
         }
     }
     
-    pub fn render_page(&mut self, page: &Page<PageId, ButtonId>, persistent_elements: Option<&Vec<PersistentElements<PageId, ButtonId>>>, font_path: &String) 
+    pub fn render_page(&mut self, page: &Page<PageId, ButtonId>, persistent_elements: Option<&Vec<PersistentElements<PageId, ButtonId>>>, font_path: &str) 
     {
         match page.background_color 
         {
@@ -86,7 +86,7 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
         }
     }   
 
-    fn render_elements(&mut self, page: Option<&Page<PageId, ButtonId>>, persistent_elements: Option<&PersistentElements<PageId, ButtonId>>, font_path: &String)
+    fn render_elements(&mut self, page: Option<&Page<PageId, ButtonId>>, persistent_elements: Option<&PersistentElements<PageId, ButtonId>>, font_path: &str)
     {
         if let Some(page) = page
         { 

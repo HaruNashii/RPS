@@ -13,10 +13,10 @@ use sdl3::
 
 
 
-pub trait GenText { fn generate_text(&self, font_path: &String) -> Vec<(Texture<'_>, Rect)>; }
+pub trait GenText { fn generate_text(&self, font_path: &str) -> Vec<(Texture<'_>, Rect)>; }
 impl GenText for (&Vec<(f64, (i32, i32), String, Color)>, &TextureCreator<WindowContext>, &Sdl3TtfContext) 
 {
-    fn generate_text(&self, font_path: &String) -> Vec<(Texture<'_>, Rect)> 
+    fn generate_text(&self, font_path: &str) -> Vec<(Texture<'_>, Rect)> 
     {
         let mut vector_to_send = Vec::new();
         for font_content in self.0 

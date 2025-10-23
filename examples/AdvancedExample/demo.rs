@@ -35,7 +35,8 @@ fn main()
         centered: true,
         hint_sdl3_vsync: true,
         // By Default SDL_LOGICAL_PRESENTATION_STRETCH Is Set, Only Setting It Here For Demonstration Purpose 
-        different_sdl_presentation_mode: Some(SDL_LOGICAL_PRESENTATION_STRETCH)
+        different_sdl_presentation_mode: Some(SDL_LOGICAL_PRESENTATION_STRETCH),
+        font: ("JetBrainsMono".to_string(), Some("Bold".to_string()))
     };
     let mut window_modules = create_window(window_config);
     // bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys") | (false = Page Rollback On), (true = Page Rollback Off)
@@ -44,17 +45,16 @@ fn main()
     let mut page_data = PageData::new(&app_state);
     let mut renderer = Renderer::new(&mut window_modules.canvas, &window_modules.texture_creator, &window_modules.ttf_context);
 
-
     populate_page_data(&mut page_data);
 
     loop 
     {
-        println!("\n{:?}\n", app_state);
-        println!("\n{:?}\n", page_data);
         std::thread::sleep(Duration::from_millis(1000 / get_monitor_refresh_rate()));
+        //println!("\n====# app_state #====\n {:?}\n", app_state);
+        //println!("\n====# page_data #====\n {:?}\n", page_data);
         input_handler.handle_input(&mut window_modules.event_pump, &mut page_data, &mut app_state, button_action);
         app_state.update_window_size(renderer.canvas.window().size());
         page_data.create_current_page(&mut app_state);
-        renderer.render(&page_data);
+        renderer.render(&page_data, &window_modules.font_path);
     }
 }

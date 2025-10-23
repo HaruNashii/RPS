@@ -40,7 +40,8 @@ fn main()
         centered: true,
         hint_sdl3_vsync: true,
         // By Default SDL_LOGICAL_PRESENTATION_STRETCH Is Set, Only Setting It Here For Demonstration Purpose 
-        different_sdl_presentation_mode: Some(SDL_LOGICAL_PRESENTATION_STRETCH)
+        different_sdl_presentation_mode: Some(SDL_LOGICAL_PRESENTATION_STRETCH), 
+        font: ("JetBrains".to_string(), Some("Bold".to_string()))
     };
     let mut window_modules = create_window(window_config);
     //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys") | (false = Page Rollback On), (true = Page Rollback Off)
@@ -57,7 +58,7 @@ fn main()
         app_state.update_window_size(renderer.canvas.window().size());
         input_handler.handle_input(&mut window_modules.event_pump, &mut page_data, &mut app_state, button_action);
         page_data.create_current_page(&mut app_state);
-        renderer.render(&page_data);
+        renderer.render(&page_data, &window_modules.font_path);
     }
 }
 

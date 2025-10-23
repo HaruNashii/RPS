@@ -4,7 +4,6 @@ use sdl3::{pixels::Color, rect::Rect};
 
 
 
-
 type PersistentElementsType<PageId, ButtonId> = Option<Vec<(PageId, fn() -> PersistentElements<PageId, ButtonId>)>>;
 type Rects = Option<Vec<(Color, (Rect, i32))>>;
 type Texts = Option<Vec<(f64, (i32, i32), String, Color)>>;
@@ -49,9 +48,8 @@ pub struct PageData<PageId, ButtonId>
     pub page_w_input_linked: PageInputLinked<PageId, ButtonId>,
     pub page_to_render: Option<Page<PageId, ButtonId>>,
     pub persistent_elements_to_render: Vec<PersistentElements<PageId, ButtonId>>,
-
 }
-impl<PageId: Copy + Eq, ButtonId: Copy + Eq + Debug> PageData<PageId, ButtonId>
+impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, ButtonId>
 {
     /// Define Persistant Page
     pub fn new(app_state: &AppState<PageId, ButtonId>) -> Self { Self {vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), persistent_elements_to_render: Vec::new(), page_history: (VecDeque::from([app_state.current_page]),  0), page_linked: Vec::new(), page_w_input_linked: Vec::new(), page_to_render: None} }
@@ -70,12 +68,14 @@ impl<PageId: Copy + Eq, ButtonId: Copy + Eq + Debug> PageData<PageId, ButtonId>
 
     pub fn create_current_page(&mut self, app_state: &mut AppState<PageId, ButtonId>) 
     {
+        while self.page_history.0.len() > 10 { self.page_history.0.pop_front(); };
         for page in &self.page_linked
         {
             if app_state.current_page == page.0 
             { 
                 app_state.current_page = page.0; 
                 let created_page = page.1(); 
+                //println!("\n====# page #====\n {:?}\n", created_page);
                 self.page_to_render = Some(created_page.clone()); 
 
                 if let Some(result) = &created_page.has_persistent_elements
@@ -95,6 +95,7 @@ impl<PageId: Copy + Eq, ButtonId: Copy + Eq + Debug> PageData<PageId, ButtonId>
             { 
                 app_state.current_page = page_w_input_linked.0; 
                 let mut created_page = page_w_input_linked.1(&mut self.vec_user_input_string); 
+                //println!("\n====# page #====\n {:?}\n", created_page);
                 self.push_vec_user_input(&mut created_page);
                 self.page_to_render = Some(created_page.clone()); 
 
@@ -109,6 +110,13 @@ impl<PageId: Copy + Eq, ButtonId: Copy + Eq + Debug> PageData<PageId, ButtonId>
                 }
             }
         }
+
+        //println!("\n====# persistent elements to render #=====\n {}", self.persistent_elements_to_render.len());
+        //println!("\n====# page_linked_received #====\n {}", self.page_linked.len());
+        //println!("\n====# page_w_input_linked_received #====\n {}", self.page_w_input_linked.len());
+        //println!("\n====# page_history #====\n {}", self.page_history.0.len());
+        //println!("\n====# vec_user_input #====\n {}", self.vec_user_input.len());
+        //println!("\n====# vec_user_input_string #====\n {} \n \n \n \n \n \n \n \n \n", self.vec_user_input_string.len());
     }
 
     /// Populate vec_user_input

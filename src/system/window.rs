@@ -1,4 +1,5 @@
 use display_info::DisplayInfo;
+use fontconfig::Fontconfig;
 use std::fs;
 use sdl3::
 {
@@ -24,7 +25,8 @@ pub struct WindowConfig
     pub resizable: bool,
     pub centered: bool,
     pub hint_sdl3_vsync: bool,
-    pub different_sdl_presentation_mode: Option<SDL_RendererLogicalPresentation>
+    pub different_sdl_presentation_mode: Option<SDL_RendererLogicalPresentation>,
+    pub font: (String, Option<String>)
 }
 
 pub struct WindowModules
@@ -33,6 +35,7 @@ pub struct WindowModules
     pub event_pump: EventPump,
     pub texture_creator: TextureCreator<WindowContext>,
     pub ttf_context: Sdl3TtfContext,
+    pub font_path: String, 
 }
 
 
@@ -40,6 +43,9 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
 {
     let sdl_started = sdl3::init().unwrap();
     let video_system = sdl_started.video().unwrap();
+    let font_config = Fontconfig::new().expect("Failed To Start FontConfig");
+    let font_info = font_config.find(&window_config.font.0, window_config.font.1.as_deref()).expect("Failed Find And Set Font With FontConfig");
+    let font_path = font_info.path.display().to_string();
     let mut window_builder = video_system.window
     (
         &window_config.window_title,
@@ -65,7 +71,8 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
                         if after == "bpm"
                         {
                             let icon_surface = Surface::load_bmp(icon_path).unwrap();
-                            window.set_icon(icon_surface);
+                            window.set_icon(&icon_surface);
+                            drop(icon_surface); // Explicitly drop the surface
                         }
                         else 
                         {
@@ -104,7 +111,7 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
     };
     canvas.set_viewport(Rect::new(0, 0, 1920, 1080));
     
-    WindowModules{canvas, event_pump, texture_creator, ttf_context}
+    WindowModules{canvas, event_pump, texture_creator, ttf_context, font_path}
 }
 pub fn get_monitor_refresh_rate() -> u64
 {

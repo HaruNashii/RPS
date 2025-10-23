@@ -97,7 +97,6 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
                     user_input.push_str(&text);
                 }
             }
-            //page_data.update_vec_user_input_string();
         }
         else 
         {
@@ -121,7 +120,6 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
                     user_input.pop();
                 }
             }
-            //page_data.update_vec_user_input_string();
         }
     }
 
@@ -129,7 +127,6 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
     {
         if !page_data.page_history.0.is_empty() && !app_state.capturing_input.0
         {
-            while page_data.page_history.0.len() > 10 { page_data.page_history.0.pop_front(); };
             if front
             {    
                 if page_data.page_history.1 + 1 < page_data.page_history.0.len() { page_data.page_history.1 += 1; }; 

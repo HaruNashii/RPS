@@ -75,7 +75,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
             { 
                 let mut created_page = page.1(); 
                 self.page_to_render = Some(created_page.clone()); 
-                self.push_vec_user_input(&mut created_page);
+                self.push_vec_user_input_per_page(&mut created_page);
                 if let Some(result) = &created_page.has_persistent_elements
                 {
                     let mut vec_persistent_element = Vec::new();
@@ -90,7 +90,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
             { 
                 let mut created_page = page_w_input_linked.1(&mut self.vec_user_input_string); 
                 self.page_to_render = Some(created_page.clone()); 
-                self.push_vec_user_input(&mut created_page);
+                self.push_vec_user_input_per_page(&mut created_page);
                 if let Some(result) = &created_page.has_persistent_elements
                 {
                     let mut vec_persistent_element = Vec::new();
@@ -101,8 +101,8 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
         }
     }
 
-    /// Populate vec_user_input
-    pub fn push_vec_user_input(&mut self, page: &mut Page<PageId, ButtonId>) 
+    /// Populate vec_user_input per page
+    pub fn push_vec_user_input_per_page(&mut self, page: &mut Page<PageId, ButtonId>) 
     { 
         if let Some(has_userinput) = &page.has_userinput 
         {
@@ -112,6 +112,24 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
                 if !exists { self.vec_user_input.push((*pageid, *buttonid, String::new())); }
             }
             self.update_vec_user_input_string();
+        }
+    }
+
+    /// Populate vec_user_input per vector of pages
+    pub fn push_vec_user_input_per_vec(&mut self) 
+    { 
+        for tuple_page in self.page_w_input_linked.clone()
+        {
+            let page = tuple_page.1(&mut self.vec_user_input_string);
+            if let Some(has_userinput) = &page.has_userinput 
+            {
+                for (pageid, buttonid) in has_userinput 
+                {
+                    let exists = self.vec_user_input.iter().any(|(pid, bid, _)| pid == pageid && bid == buttonid);
+                    if !exists { self.vec_user_input.push((*pageid, *buttonid, String::new())); }
+                }
+                self.update_vec_user_input_string();
+            }
         }
     }
 

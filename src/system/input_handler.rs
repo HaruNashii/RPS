@@ -84,20 +84,18 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
     pub fn handle_text(&mut self, text: String, app_state: &AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>) 
     { 
         let capturing_input = app_state.capturing_input;
-        println!("vec_user_input: {:?}", page_data.vec_user_input);
         if !capturing_input.0 { return; }
         if let Some(current_buttonid) = capturing_input.1 
         {
             let current_page = app_state.current_page;
-            let vec_user_input = &mut page_data.vec_user_input;
-
-            for (pageid, buttonid, user_input) in vec_user_input
+            for (pageid, buttonid, user_input) in &mut page_data.vec_user_input
             {
                 if *pageid == current_page && *buttonid == current_buttonid 
                 { 
                     user_input.push_str(&text);
                 }
             }
+            page_data.update_vec_user_input_string();
         }
         else 
         {
@@ -121,6 +119,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
                     user_input.pop();
                 }
             }
+            page_data.update_vec_user_input_string();
         }
     }
 

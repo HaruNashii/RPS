@@ -21,41 +21,43 @@ fn app_initialization()
 }
 
 // Current Commented Bc Of Continuos refactory that breaks this test
-//#[test]
-//fn app_state_handle_multiple_text_and_backspace() 
-//{
-//    let mut state = AppState::new(PageId::Page1);
-//    let mut data = PageData::new(&state);
-//    let mut input_handler = InputHandler::<PageId, ButtonId>::new(true);
-//
-//    populate_page_data(&mut data);
-//
-//    // Try Pushing Input To Button Purple Page 1 And Removing One Letter
-//    state.current_page = PageId::Page1;
-//    state.capturing_input = (true, Some(ButtonId::ButtonPurpleInputStartPage1));
-//    input_handler.handle_text("hello".to_string(), &mut state, &mut data);
-//    assert_eq!(data.vec_user_input_string[0], "hello");
-//    input_handler.handle_backspace(&mut state, &mut data);
-//    assert_eq!(data.vec_user_input_string[0], "hell");
-//
-//    // Try Pushing Input To Button Red Page 1 And Removing One Letter
-//    state.current_page = PageId::Page1;
-//    state.capturing_input = (true, Some(ButtonId::ButtonRedInputStartPage1 ));
-//    assert_eq!(data.vec_user_input_string[1], "");
-//    input_handler.handle_text("world".to_string(), &mut state, &mut data);
-//    assert_eq!(data.vec_user_input_string[1], "world");
-//    input_handler.handle_backspace(&mut state, &mut data);
-//    assert_eq!(data.vec_user_input_string[1], "worl");
-//
-//
-//    // Try Pushing Input To Button Purple Page 2 And Removing One Letter
-//    state.current_page = PageId::Page2;
-//    state.capturing_input = (true, Some(ButtonId::ButtonPurpleInputStartPage2 ));
-//    input_handler.handle_text("test".to_string(), &mut state, &mut data);
-//    assert_eq!(data.vec_user_input_string[2], "test");
-//    input_handler.handle_backspace(&mut state, &mut data);
-//    assert_eq!(data.vec_user_input_string[2], "tes");
-//}
+#[test]
+fn app_state_handle_multiple_text_and_backspace() 
+{
+    let mut state = AppState::new(PageId::Page1);
+    let mut data = PageData::new(&state);
+    let mut input_handler = InputHandler::<PageId, ButtonId>::new(true);
+
+    populate_page_data(&mut data);
+    data.push_vec_user_input_per_vec();
+
+
+    // Try Pushing Input To Button Purple Page 1 And Removing One Letter
+    state.capturing_input = (true, Some(ButtonId::ButtonPurpleInputStartPage1));
+    input_handler.handle_text("hello".to_string(), &mut state, &mut data);
+    assert_eq!(data.vec_user_input_string[0], "hello");
+
+    input_handler.handle_backspace(&mut state, &mut data);
+    assert_eq!(data.vec_user_input_string[0], "hell");
+
+    // Try Pushing Input To Button Red Page 1 And Removing One Letter
+    state.current_page = PageId::Page1;
+    state.capturing_input = (true, Some(ButtonId::ButtonRedInputStartPage1 ));
+    assert_eq!(data.vec_user_input_string[1], "");
+    input_handler.handle_text("world".to_string(), &mut state, &mut data);
+    assert_eq!(data.vec_user_input_string[1], "world");
+    input_handler.handle_backspace(&mut state, &mut data);
+    assert_eq!(data.vec_user_input_string[1], "worl");
+
+
+    // Try Pushing Input To Button Purple Page 2 And Removing One Letter
+    state.current_page = PageId::Page2;
+    state.capturing_input = (true, Some(ButtonId::ButtonPurpleInputStartPage2 ));
+    input_handler.handle_text("test".to_string(), &mut state, &mut data);
+    assert_eq!(data.vec_user_input_string[2], "test");
+    input_handler.handle_backspace(&mut state, &mut data);
+    assert_eq!(data.vec_user_input_string[2], "tes");
+}
 
 #[test]
 fn app_state_submit_input() 

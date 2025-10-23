@@ -24,7 +24,7 @@ pub struct WindowConfig
     pub window_minimum_size: (u32, u32),
     pub resizable: bool,
     pub centered: bool,
-    pub hint_sdl3_vsync: bool,
+    // pub hint_sdl3_vsync: bool,
     pub different_sdl_presentation_mode: Option<SDL_RendererLogicalPresentation>,
     pub font: (String, Option<String>)
 }
@@ -55,7 +55,9 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
 
     if window_config.resizable { window_builder.resizable(); }
     if window_config.centered { window_builder.position_centered(); }
-    if window_config.hint_sdl3_vsync { sdl3::hint::set(sdl3::hint::names::RENDER_VSYNC, "1"); };
+    // WARNING!!!: Current version of SDL3 is making the window have weird black bars when
+    // resized in SDL_LOGICAL_PRESENTATION_STRETCH, please maintain it in false for now
+    //if window_config.hint_sdl3_vsync { sdl3::hint::set(sdl3::hint::names::RENDER_VSYNC, "1"); };
     let mut window = window_builder.build().unwrap();
 
     if window_config.icon.0 

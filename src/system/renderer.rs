@@ -23,24 +23,25 @@ pub struct Renderer<'a, PageId, ButtonId>
     pub canvas: &'a mut Canvas<Window>,
     pub texture_creator: &'a TextureCreator<WindowContext>,
     pub ttf_context: &'a Sdl3TtfContext,
+    pub font_path: &'a String,
 }
 impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, PageId, ButtonId> 
 {
-    pub fn new(canvas: &'a mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, ttf_context: &'a Sdl3TtfContext) -> Self { Self{ _page_id: None, _button_id: None, canvas, texture_creator, ttf_context} }
+    pub fn new(canvas: &'a mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, ttf_context: &'a Sdl3TtfContext, font_path: &'a String) -> Self { Self{ _page_id: None, _button_id: None, canvas, texture_creator, ttf_context, font_path} }
 
     /// Render All Pages
-    pub fn render(&mut self, page_data: &PageData<PageId, ButtonId>, font_path: &str) 
+    pub fn render(&mut self, page_data: &PageData<PageId, ButtonId>) 
     {
         if let Some(page) = &page_data.page_to_render
         {
             if page.has_persistent_elements.is_some() 
-            { Renderer::render_page(self, page, Some(&page_data.persistent_elements_to_render), font_path);}
+            { Renderer::render_page(self, page, Some(&page_data.persistent_elements_to_render));}
             else
-            { Renderer::render_page(self, page, None, font_path); }
+            { Renderer::render_page(self, page, None); }
         }
     }
     
-    pub fn render_page(&mut self, page: &Page<PageId, ButtonId>, persistent_elements: Option<&Vec<PersistentElements<PageId, ButtonId>>>, font_path: &str) 
+    pub fn render_page(&mut self, page: &Page<PageId, ButtonId>, persistent_elements: Option<&Vec<PersistentElements<PageId, ButtonId>>>) 
     {
         match page.background_color 
         {
@@ -57,8 +58,13 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
                 self.canvas.clear();
             }
         }
-        Self::render_elements(self, Some(page), None, font_path);
-        if let Some(new_persistent_elements) = persistent_elements {  for result in new_persistent_elements {Self::render_elements(self, None, Some(result), font_path);} }
+        if let Some(new_persistent_elements) = persistent_elements 
+        {  
+            for result in new_persistent_elements {Self::render_elements(self, Some(page), Some(result));} } 
+        else 
+        {
+            Self::render_elements(self, Some(page), None);
+        }
         self.canvas.present();
     }
 
@@ -86,7 +92,7 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
         }
     }   
 
-    fn render_elements(&mut self, page: Option<&Page<PageId, ButtonId>>, persistent_elements: Option<&PersistentElements<PageId, ButtonId>>, font_path: &str)
+    fn render_elements(&mut self, page: Option<&Page<PageId, ButtonId>>, persistent_elements: Option<&PersistentElements<PageId, ButtonId>>)
     {
         if let Some(page) = page
         { 
@@ -95,7 +101,7 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
             if let Some(texts) = &page.texts 
             {
                 let requisites = (texts, self.texture_creator, self.ttf_context);
-                for tuple in requisites.generate_text(font_path)
+                for tuple in requisites.generate_text(self.font_path)
                 { 
                     self.canvas.copy(&tuple.0, None, tuple.1).unwrap_or_else(|err| {println!("text creator gives an error \nerror: {}\n", err);}); 
                 }
@@ -117,7 +123,7 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
             if let Some(texts) = &persistent_elements.texts 
             {
                 let requisites = (texts, self.texture_creator, self.ttf_context);
-                for tuple in requisites.generate_text(font_path)
+                for tuple in requisites.generate_text(self.font_path)
                 { 
                     self.canvas.copy(&tuple.0, None, tuple.1).unwrap_or_else(|err| {println!("text creator gives an error \nerror: {}\n", err);}); 
                 }

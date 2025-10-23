@@ -33,7 +33,6 @@ fn main()
         window_minimum_size: (800, 450),
         resizable: true,
         centered: true,
-        hint_sdl3_vsync: true,
         // By Default SDL_LOGICAL_PRESENTATION_STRETCH Is Set, Only Setting It Here For Demonstration Purpose 
         different_sdl_presentation_mode: Some(SDL_LOGICAL_PRESENTATION_STRETCH),
         font: ("JetBrainsMono".to_string(), Some("Bold".to_string()))
@@ -43,18 +42,21 @@ fn main()
     let mut input_handler = InputHandler::new(false);
     let mut app_state = AppState::new(PageId::Page1);
     let mut page_data = PageData::new(&app_state);
-    let mut renderer = Renderer::new(&mut window_modules.canvas, &window_modules.texture_creator, &window_modules.ttf_context);
+    let mut renderer = Renderer::new(&mut window_modules.canvas, &window_modules.texture_creator, &window_modules.ttf_context, &window_modules.font_path);
 
     populate_page_data(&mut page_data);
 
     loop 
     {
-        std::thread::sleep(Duration::from_millis(1000 / get_monitor_refresh_rate()));
-        //println!("\n====# app_state #====\n {:?}\n", app_state);
-        //println!("\n====# page_data #====\n {:?}\n", page_data);
+        println!("page_data: \n{:?}\n", page_data);
+        println!("page_to_render: \n{:?}\n", page_data.page_to_render);
+        println!("app_state: \n{:?}\n", app_state);
+        println!("vec_user_input: {:?}", page_data.vec_user_input);
+        //using 900 / your_refresh_rate to a very crispy experience
+        std::thread::sleep(Duration::from_millis(900 / get_monitor_refresh_rate()));
         input_handler.handle_input(&mut window_modules.event_pump, &mut page_data, &mut app_state, button_action);
         app_state.update_window_size(renderer.canvas.window().size());
         page_data.create_current_page(&mut app_state);
-        renderer.render(&page_data, &window_modules.font_path);
+        renderer.render(&page_data);
     }
 }

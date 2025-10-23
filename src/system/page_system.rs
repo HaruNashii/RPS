@@ -69,22 +69,17 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
     pub fn create_current_page(&mut self, app_state: &mut AppState<PageId, ButtonId>) 
     {
         while self.page_history.0.len() > 10 { self.page_history.0.pop_front(); };
-        for page in &self.page_linked
+        for page in &self.page_linked.clone()
         {
             if app_state.current_page == page.0 
             { 
-                app_state.current_page = page.0; 
-                let created_page = page.1(); 
-                //println!("\n====# page #====\n {:?}\n", created_page);
+                let mut created_page = page.1(); 
                 self.page_to_render = Some(created_page.clone()); 
-
+                self.push_vec_user_input(&mut created_page);
                 if let Some(result) = &created_page.has_persistent_elements
                 {
                     let mut vec_persistent_element = Vec::new();
-                    for (_, persistent_element) in result 
-                    {
-                        vec_persistent_element.push(persistent_element());
-                    }
+                    for (_, persistent_element) in result { vec_persistent_element.push(persistent_element()); }
                     self.persistent_elements_to_render = vec_persistent_element;
                 }
             }
@@ -93,30 +88,17 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
         {
             if app_state.current_page == page_w_input_linked.0 
             { 
-                app_state.current_page = page_w_input_linked.0; 
                 let mut created_page = page_w_input_linked.1(&mut self.vec_user_input_string); 
-                //println!("\n====# page #====\n {:?}\n", created_page);
-                self.push_vec_user_input(&mut created_page);
                 self.page_to_render = Some(created_page.clone()); 
-
+                self.push_vec_user_input(&mut created_page);
                 if let Some(result) = &created_page.has_persistent_elements
                 {
                     let mut vec_persistent_element = Vec::new();
-                    for (_, persistent_element) in result 
-                    {
-                        vec_persistent_element.push(persistent_element());
-                    }
+                    for (_, persistent_element) in result { vec_persistent_element.push(persistent_element()); }
                     self.persistent_elements_to_render = vec_persistent_element;
                 }
             }
         }
-
-        //println!("\n====# persistent elements to render #=====\n {}", self.persistent_elements_to_render.len());
-        //println!("\n====# page_linked_received #====\n {}", self.page_linked.len());
-        //println!("\n====# page_w_input_linked_received #====\n {}", self.page_w_input_linked.len());
-        //println!("\n====# page_history #====\n {}", self.page_history.0.len());
-        //println!("\n====# vec_user_input #====\n {}", self.vec_user_input.len());
-        //println!("\n====# vec_user_input_string #====\n {} \n \n \n \n \n \n \n \n \n", self.vec_user_input_string.len());
     }
 
     /// Populate vec_user_input

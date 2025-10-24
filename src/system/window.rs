@@ -3,7 +3,7 @@ use fontconfig::Fontconfig;
 use std::fs;
 use sdl3::
 {
-    rect::Rect, render::{Canvas, TextureCreator}, surface::Surface, sys::render::{SDL_RendererLogicalPresentation, SDL_LOGICAL_PRESENTATION_STRETCH}, ttf::Sdl3TtfContext, video::{Window, WindowContext}, EventPump
+    clipboard::ClipboardUtil, rect::Rect, render::{Canvas, TextureCreator}, surface::Surface, sys::render::{SDL_RendererLogicalPresentation, SDL_LOGICAL_PRESENTATION_STRETCH}, ttf::Sdl3TtfContext, video::{Window, WindowContext}, EventPump
 };
 
 
@@ -36,6 +36,7 @@ pub struct WindowModules
     pub texture_creator: TextureCreator<WindowContext>,
     pub ttf_context: Sdl3TtfContext,
     pub font_path: String, 
+    pub clipboard_system: ClipboardUtil
 }
 
 
@@ -43,6 +44,7 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
 {
     let sdl_started = sdl3::init().unwrap();
     let video_system = sdl_started.video().unwrap();
+    let clipboard_system = video_system.clipboard();
     let font_config = Fontconfig::new().expect("Failed To Start FontConfig");
     let font_info = font_config.find(&window_config.font.0, window_config.font.1.as_deref()).expect("Failed Find And Set Font With FontConfig");
     let font_path = font_info.path.display().to_string();
@@ -113,7 +115,7 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
     };
     canvas.set_viewport(Rect::new(0, 0, 1920, 1080));
     
-    WindowModules{canvas, event_pump, texture_creator, ttf_context, font_path}
+    WindowModules{canvas, event_pump, texture_creator, ttf_context, font_path, clipboard_system}
 }
 pub fn get_monitor_refresh_rate() -> u64
 {

@@ -53,9 +53,10 @@ fn main()
 
     loop 
     {
-        std::thread::sleep(Duration::from_millis(1000 / get_monitor_refresh_rate()));
+        //using 900 / your_refresh_rate to a very crispy experience
+        std::thread::sleep(Duration::from_millis(900 / get_monitor_refresh_rate()));
         app_state.update_window_size(renderer.canvas.window().size());
-        input_handler.handle_input(&mut window_modules.event_pump, &mut page_data, &mut app_state, button_action);
+        input_handler.handle_input(&mut window_modules.event_pump, &mut window_modules.clipboard_system, &mut page_data, &mut app_state, button_action);
         page_data.create_current_page(&mut app_state);
         renderer.render(&page_data);
     }

@@ -34,7 +34,7 @@ fn app_state_handle_multiple_text_and_backspace()
 
     // Try Pushing Input To Button Purple Page 1 And Removing One Letter
     state.capturing_input = (true, Some(ButtonId::ButtonPurpleInputStartPage1));
-    input_handler.handle_text("hello".to_string(), &mut state, &mut data);
+    input_handler.handle_text("hello".to_string(), &mut state, &mut data, None, 0);
     assert_eq!(data.vec_user_input_string[0], "hello");
 
     input_handler.handle_backspace(&mut state, &mut data);
@@ -44,7 +44,7 @@ fn app_state_handle_multiple_text_and_backspace()
     state.current_page = PageId::Page1;
     state.capturing_input = (true, Some(ButtonId::ButtonRedInputStartPage1 ));
     assert_eq!(data.vec_user_input_string[1], "");
-    input_handler.handle_text("world".to_string(), &mut state, &mut data);
+    input_handler.handle_text("world".to_string(), &mut state, &mut data, None, 0);
     assert_eq!(data.vec_user_input_string[1], "world");
     input_handler.handle_backspace(&mut state, &mut data);
     assert_eq!(data.vec_user_input_string[1], "worl");
@@ -53,7 +53,7 @@ fn app_state_handle_multiple_text_and_backspace()
     // Try Pushing Input To Button Purple Page 2 And Removing One Letter
     state.current_page = PageId::Page2;
     state.capturing_input = (true, Some(ButtonId::ButtonPurpleInputStartPage2 ));
-    input_handler.handle_text("test".to_string(), &mut state, &mut data);
+    input_handler.handle_text("test".to_string(), &mut state, &mut data, None, 0);
     assert_eq!(data.vec_user_input_string[2], "test");
     input_handler.handle_backspace(&mut state, &mut data);
     assert_eq!(data.vec_user_input_string[2], "tes");

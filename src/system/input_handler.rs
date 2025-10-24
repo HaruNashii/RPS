@@ -1,6 +1,6 @@
 use std::{fmt::Debug, process::exit};
 use crate::{system::page_system::PageData, AppState};
-use sdl3::{event::Event, keyboard::{Keycode, Mod}, mouse::MouseButton, EventPump};
+use sdl3::{clipboard::ClipboardUtil, event::Event, keyboard::{Keycode, Mod}, mouse::MouseButton, EventPump};
 
 
 
@@ -13,8 +13,10 @@ pub enum InputEvent
     Text(String),    
     Backspace,       
     Submit,          
-    Back,
     Front,
+    Back,
+    Paste,
+    Copy,
     ExitCapturingInput,
     AltPressed,
     Quit,
@@ -39,11 +41,12 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
                 Event::TextInput { text, .. } => return InputEvent::Text(text),
                 Event::KeyDown { keycode: Some(Keycode::Backspace), .. } => return InputEvent::Backspace,
                 Event::KeyDown { keycode: Some(Keycode::Return), .. } => return InputEvent::Submit,
+                Event::KeyDown { keycode: Some(Keycode::C), keymod, .. } => { if keymod.intersects(Mod::LCTRLMOD | Mod::RCTRLMOD) { return InputEvent::Copy } },
+                Event::KeyDown { keycode: Some(Keycode::V), keymod, .. } => { if keymod.intersects(Mod::LCTRLMOD | Mod::RCTRLMOD) { return InputEvent::Paste } },
                 Event::KeyDown { keycode: Some(Keycode::Escape), .. } => return InputEvent::ExitCapturingInput,
                 Event::KeyDown { keycode: Some(keycode), keymod, .. } => 
                 {
-                    let alt_held = keymod.intersects(Mod::LALTMOD | Mod::RALTMOD);
-                    if alt_held 
+                    if keymod.intersects(Mod::LALTMOD | Mod::RALTMOD)
                     {
                         match keycode 
                         {
@@ -60,16 +63,18 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
     }
 
     /// Handle every event called
-    pub fn handle_input(&mut self, event_pump: &mut EventPump, page_data: &mut PageData<PageId, ButtonId>, app_state: &mut AppState<PageId, ButtonId>, button_action: fn(&mut AppState<PageId, ButtonId>, &ButtonId, app_data: &mut PageData<PageId, ButtonId>))
+    pub fn handle_input(&mut self, event_pump: &mut EventPump, clipboard_system: &mut ClipboardUtil, page_data: &mut PageData<PageId, ButtonId>, app_state: &mut AppState<PageId, ButtonId>, button_action: fn(&mut AppState<PageId, ButtonId>, &ButtonId, app_data: &mut PageData<PageId, ButtonId>))
     {
         match self.poll(event_pump) 
         {
             InputEvent::Click(x, y)   => if let Some(button_id) = page_data.page_button_at(app_state, x, y) { button_action(app_state, &button_id, page_data); },
-            InputEvent::Text(string)    => self.handle_text(string, app_state, page_data),
+            InputEvent::Text(string)    => self.handle_text(string, app_state, page_data, None, 0),
             InputEvent::Backspace               => self.handle_backspace(app_state, page_data),
             InputEvent::Submit                  => self.submit_input(app_state),
             InputEvent::Front                   => self.manage_history(true, app_state, page_data),
             InputEvent::Back                    => self.manage_history(false, app_state, page_data),
+            InputEvent::Paste                   => self.handle_text(String::new(), app_state, page_data, Some(clipboard_system), 1),
+            InputEvent::Copy                    => self.handle_text(String::new(), app_state, page_data, Some(clipboard_system), 2),
             InputEvent::ExitCapturingInput      => app_state.capturing_input = (false, None),
             InputEvent::AltPressed              => {},
             InputEvent::Quit                    => exit(0),
@@ -81,8 +86,8 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
     pub fn submit_input(&mut self, app_state: &mut AppState<PageId, ButtonId>) { app_state.capturing_input = (false, None); }
 
     /// Append typed text into the current page's input slot(s).
-    pub fn handle_text(&mut self, text: String, app_state: &AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>) 
-    { 
+    pub fn handle_text(&mut self, text: String, app_state: &AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>, option_clipboard_system: Option<&mut ClipboardUtil>, clipboard_action: u8) 
+    {
         let capturing_input = app_state.capturing_input;
         if !capturing_input.0 { return; }
         if let Some(current_buttonid) = capturing_input.1 
@@ -91,8 +96,23 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
             for (pageid, buttonid, user_input) in &mut page_data.vec_user_input
             {
                 if *pageid == current_page && *buttonid == current_buttonid 
-                { 
-                    user_input.push_str(&text);
+                {
+                    //paste
+                    if clipboard_action == 1 && let Some(ref clipboard_system) = option_clipboard_system 
+                    { 
+                        let clipboard_text = clipboard_system.clipboard_text().unwrap_or_else(|_| String::new());
+                        user_input.push_str(&clipboard_text);
+                    };
+                    //copy
+                    if clipboard_action == 2 && let Some(ref clipboard_system) = option_clipboard_system 
+                    { 
+                        clipboard_system.set_clipboard_text(user_input).unwrap_or_else(|err| println!("sdl3 clipboard copy err: {}", err));
+                    };
+                    //no clipboard action
+                    if clipboard_action == 0
+                    {
+                        user_input.push_str(&text);
+                    }
                 }
             }
             page_data.update_vec_user_input_string();

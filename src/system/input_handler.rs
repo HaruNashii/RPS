@@ -138,8 +138,8 @@ impl<PageId: Copy+Eq+Debug, ButtonId: Copy+Eq+Debug> InputHandler<PageId,ButtonI
             {
                 if let Some((s,e)) = self.selection.take()
                 {
-                    let s=s.min(string.len());
-                    let e=e.min(string.len());
+                    let s = s.min(string.len());
+                    let e = e.min(string.len());
                     string.replace_range(s..e,"");
                     self.cursor_pos=s
                 }
@@ -169,8 +169,8 @@ impl<PageId: Copy+Eq+Debug, ButtonId: Copy+Eq+Debug> InputHandler<PageId,ButtonI
                 {
                     let (character_selected,e)=self.selection.unwrap_or((0, string.len()));
                     let character_selected= character_selected.min(string.len());
-                    let e=e.min(string.len());
-                    let sub= string[character_selected..e].to_string();
+                    let e = e.min(string.len());
+                    let sub = string[character_selected..e].to_string();
                     clipboard_util.set_clipboard_text(&sub.clone()).unwrap_or(());
                     if cut
                     {

@@ -15,7 +15,8 @@ pub struct Renderer<'a, PageId, ButtonId>
     pub texture_creator: &'a TextureCreator<WindowContext>,
     pub ttf_context: &'a Sdl3TtfContext,
     pub font_path: &'a String,
-    pub decrease_color_when_selected: Option<(u8, u8, u8)>
+    pub decrease_color_when_selected: Option<(u8, u8, u8)>,
+    pub selection_color: Option<(u8, u8, u8)>
 }
 
 
@@ -24,7 +25,7 @@ pub struct Renderer<'a, PageId, ButtonId>
 
 impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, PageId, ButtonId> 
 {
-    pub fn new(canvas: &'a mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, ttf_context: &'a Sdl3TtfContext, font_path: &'a String, decrease_color_when_selected: Option<(u8, u8, u8)>) -> Self { Self{_page_id: None, _button_id: None, canvas, texture_creator, ttf_context, font_path, decrease_color_when_selected} }
+    pub fn new(canvas: &'a mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, ttf_context: &'a Sdl3TtfContext, font_path: &'a String, decrease_color_when_selected: Option<(u8, u8, u8)>, selection_color: Option<(u8, u8, u8)>) -> Self { Self{_page_id: None, _button_id: None, canvas, texture_creator, ttf_context, font_path, decrease_color_when_selected, selection_color} }
 
     pub fn render(&mut self, page_data: &PageData<PageId, ButtonId>, app_state: &AppState<PageId, ButtonId>, input_handler: &InputHandler<PageId, ButtonId>) 
     {
@@ -96,38 +97,32 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
             {
                 let text_resources = (text_elements,self.texture_creator,self.ttf_context);
                 let rendered_texts = text_resources.generate_text(self.font_path);
-                let mut rendered_index=0usize;
+                let mut rendered_index = 0usize;
                 for text_spec in text_elements
                 {
                     let text_content = if text_spec.2.is_empty() { " " } else { &text_spec.2 };
                     let font_px = text_spec.0 as f32;
-                    let lines:Vec<&str>=text_content.split('\n').collect();
-                    let mut first_line_rect:Option<Rect>=None;
-                    let mut line_rects:Vec<Rect>=Vec::with_capacity(lines.len());
+                    let lines: Vec<&str> = text_content.split('\n').collect();
+                    let mut first_line_rect: Option<Rect> = None;
+                    let mut line_rects: Vec<Rect> = Vec::with_capacity(lines.len());
                     for _ in &lines
                     {
                         let (texture,rect) = &rendered_texts[rendered_index];
                         let _ = self.canvas.copy(texture,None,*rect);
-                        if first_line_rect.is_none() { first_line_rect=Some(*rect); }
+                        if first_line_rect.is_none() { first_line_rect = Some(*rect); }
                         line_rects.push(*rect);
                         rendered_index += 1;
                     }
                     if app_state.capturing_input.0 && let Some(active_button_id) = app_state.capturing_input.1 && let Some(active_input_text) = self.find_active_input_text(page_data,app_state,active_button_id)
                     {
-                        let mut target_rect_opt:Option<Rect>=None;
+                        let mut target_rect_opt: Option<Rect> = None;
                         if let Some(persistent_elements) = persistent && let Some(button_rect) = self.find_active_button_rect(page,Some(persistent_elements),active_button_id)
                         {
-                            for rect in &line_rects
-                            {
-                                if rect.has_intersection(button_rect) || (rect.y() - button_rect.y()).abs() < 10 { target_rect_opt = Some(*rect); break; }
-                            }
+                            for rect in &line_rects { if rect.has_intersection(button_rect) || (rect.y() - button_rect.y()).abs() < 10 { target_rect_opt = Some(*rect); break; } }
                         } 
                         else if let Some(button_rect) = self.find_active_button_rect(page,None,active_button_id)
                         {
-                            for rect in &line_rects
-                            {
-                                if rect.has_intersection(button_rect) || (rect.y() - button_rect.y()).abs() < 10 { target_rect_opt = Some(*rect); break; }
-                            }
+                            for rect in &line_rects { if rect.has_intersection(button_rect) || (rect.y() - button_rect.y()).abs() < 10 { target_rect_opt = Some(*rect); break; } }
                         }
                         if target_rect_opt.is_none() && active_input_text == text_content && let Some(rect) = first_line_rect { target_rect_opt = Some(rect); }
                         if let Some(target_rect) = target_rect_opt { self.draw_input_overlay(&target_rect, active_input_text, font_px, input_handler); }
@@ -137,7 +132,7 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
             if let Some(images)=&page.images
             {
                 let image_data=(images,self.texture_creator);
-                for (image_texture, image_rect) in image_data.generate_image(){ let _ = self.canvas.copy(&image_texture,None,image_rect); }
+                for (image_texture, image_rect) in image_data.generate_image() { let _ = self.canvas.copy(&image_texture,None,image_rect); }
             }
 
 
@@ -162,10 +157,7 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
                 if let Some(texts) = &persistent.texts 
                 {
                     let requisites = (texts, self.texture_creator, self.ttf_context);
-                    for tuple in requisites.generate_text(self.font_path)
-                    { 
-                        self.canvas.copy(&tuple.0, None, tuple.1).unwrap_or_else(|err| {println!("text creator gives an error \nerror: {}\n", err);}); 
-                    }
+                    for tuple in requisites.generate_text(self.font_path) { self.canvas.copy(&tuple.0, None, tuple.1).unwrap_or_else(|err| {println!("text creator gives an error \nerror: {}\n", err);}); }
                 }
                 if let Some(images) = &persistent.images
                 {
@@ -234,7 +226,8 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
             let x1 = measure_text_x(selection_start);
             let x2 = measure_text_x(selection_end);
             let selection_width = (x2-x1).max(1) as u32;
-            self.canvas.set_draw_color(Color::RGB(20,120,220));
+            let selection_color = self.selection_color.unwrap_or((0, 0, 255));
+            self.canvas.set_draw_color(Color::RGB(selection_color.0, selection_color.1, selection_color.2));
             let _ = self.canvas.fill_rect(Rect::new(x1,baseline_y,selection_width,text_height));
         }
         else

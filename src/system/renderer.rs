@@ -16,7 +16,7 @@ pub struct Renderer<'a, PageId, ButtonId>
     pub ttf_context: &'a Sdl3TtfContext,
     pub font_path: &'a String,
     pub decrease_color_when_selected: Option<(u8, u8, u8)>,
-    pub selection_color: Option<(u8, u8, u8)>
+    pub selection_color: Option<(u8, u8, u8, u8)>
 }
 
 
@@ -25,7 +25,7 @@ pub struct Renderer<'a, PageId, ButtonId>
 
 impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, PageId, ButtonId> 
 {
-    pub fn new(canvas: &'a mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, ttf_context: &'a Sdl3TtfContext, font_path: &'a String, decrease_color_when_selected: Option<(u8, u8, u8)>, selection_color: Option<(u8, u8, u8)>) -> Self { Self{_page_id: None, _button_id: None, canvas, texture_creator, ttf_context, font_path, decrease_color_when_selected, selection_color} }
+    pub fn new(canvas: &'a mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, ttf_context: &'a Sdl3TtfContext, font_path: &'a String, decrease_color_when_selected: Option<(u8, u8, u8)>, selection_color: Option<(u8, u8, u8, u8)>) -> Self { Self{_page_id: None, _button_id: None, canvas, texture_creator, ttf_context, font_path, decrease_color_when_selected, selection_color} }
 
     pub fn render(&mut self, page_data: &PageData<PageId, ButtonId>, app_state: &AppState<PageId, ButtonId>, input_handler: &InputHandler<PageId, ButtonId>) 
     {
@@ -226,8 +226,8 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
             let x1 = measure_text_x(selection_start);
             let x2 = measure_text_x(selection_end);
             let selection_width = (x2-x1).max(1) as u32;
-            let selection_color = self.selection_color.unwrap_or((0, 0, 255));
-            self.canvas.set_draw_color(Color::RGB(selection_color.0, selection_color.1, selection_color.2));
+            let selection_color = self.selection_color.unwrap_or((0, 0, 255, 125));
+            self.canvas.set_draw_color(Color::RGBA(selection_color.0, selection_color.1, selection_color.2, selection_color.3));
             let _ = self.canvas.fill_rect(Rect::new(x1,baseline_y,selection_width,text_height));
         }
         else

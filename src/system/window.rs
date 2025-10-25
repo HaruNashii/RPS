@@ -112,7 +112,7 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
         None => canvas.set_logical_size(1920, 1080, SDL_LOGICAL_PRESENTATION_STRETCH).unwrap()
     };
     canvas.set_viewport(Rect::new(0, 0, 1920, 1080));
-    
+    canvas.set_blend_mode(sdl3::render::BlendMode::Blend);
     WindowModules{sdl_init, canvas, event_pump, texture_creator, ttf_context, font_path, clipboard_system}
 }
 pub fn get_monitor_refresh_rate() -> u64

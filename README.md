@@ -102,27 +102,27 @@ fn main()
         window_minimum_size: (800, 450),
         resizable: true,
         centered: true,
-        hint_sdl3_vsync: true,
         // By Default SDL_LOGICAL_PRESENTATION_STRETCH Is Set, Only Setting It Here For Demonstration Purpose 
         different_sdl_presentation_mode: Some(SDL_LOGICAL_PRESENTATION_STRETCH), 
-        font: ("JetBrains".to_string(), Some("Bold".to_string()))
+        font: ("JetBrainsMono".to_string(), Some("Bold".to_string()))
     };
     let mut window_modules = create_window(window_config);
     //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys") | (false = Page Rollback On), (true = Page Rollback Off)
     let mut input_handler = InputHandler::new(false);
     let mut app_state = AppState::new(PageId::Page1);
     let mut page_data = PageData::new(&app_state);
-    let mut renderer = Renderer::new(&mut window_modules.canvas, &window_modules.texture_creator, &window_modules.ttf_context);
+    let mut renderer = Renderer::new(&mut window_modules.canvas, &window_modules.texture_creator, &window_modules.ttf_context, &window_modules.font_path);
 
     populate_page_data(&mut page_data);
 
     loop 
     {
-        std::thread::sleep(Duration::from_millis(1000 / get_monitor_refresh_rate()));
+        //using 900 / your_refresh_rate to a very crispy experience
+        std::thread::sleep(Duration::from_millis(900 / get_monitor_refresh_rate()));
         app_state.update_window_size(renderer.canvas.window().size());
-        input_handler.handle_input(&mut window_modules.event_pump, &mut page_data, &mut app_state, button_action);
+        input_handler.handle_input(&mut window_modules.event_pump, &mut window_modules.clipboard_system, &mut page_data, &mut app_state, button_action);
         page_data.create_current_page(&mut app_state);
-        renderer.render(&page_data, &window_modules.font_path);
+        renderer.render(&page_data, &app_state, &input_handler);
     }
 }
 
@@ -194,7 +194,6 @@ pub enum ButtonId
     ButtonSubPage,
     ButtonBack,
 }
-
 
 // Define Your Pages Here:
 pub fn persistent_elements() -> PersistentElements<PageId, ButtonId>
@@ -290,7 +289,8 @@ Suggested Cargo features (example)
 - Fork the repository, create a feature branch, and open a pull request.
 - When opening PRs:
   - Include a short description of the change
-  - Don't Run cargo fmt and run cargo clippy
+  - Don't run cargo fmt 
+  - Always run cargo clippy
 - For larger proposals, open an issue first to discuss the design.
 
 ---

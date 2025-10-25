@@ -34,6 +34,8 @@ pub struct PersistentElements<PageId, ButtonId>
 
 
 
+
+
 type OptionPageInputLinked<PageId, ButtonId> = Option<Vec<(PageId, fn(&mut Vec<String>) -> Page<PageId, ButtonId>)>>;
 type OptionPageLinked<PageId, ButtonId> = Option<Vec<(PageId, fn() -> Page<PageId, ButtonId>)>>;
 type PageInputLinked<PageId, ButtonId> = Vec<(PageId, fn(&mut Vec<String>) -> Page<PageId, ButtonId>)>;

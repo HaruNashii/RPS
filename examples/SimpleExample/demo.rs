@@ -58,7 +58,7 @@ fn main()
         app_state.update_window_size(renderer.canvas.window().size());
         input_handler.handle_input(&mut window_modules.event_pump, &mut window_modules.clipboard_system, &mut page_data, &mut app_state, button_action);
         page_data.create_current_page(&mut app_state);
-        renderer.render(&page_data);
+        renderer.render(&page_data, &app_state, &input_handler);
     }
 }
 

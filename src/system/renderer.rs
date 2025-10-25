@@ -15,6 +15,7 @@ pub struct Renderer<'a, PageId, ButtonId>
     pub texture_creator: &'a TextureCreator<WindowContext>,
     pub ttf_context: &'a Sdl3TtfContext,
     pub font_path: &'a String,
+    pub decrease_color_when_selected: Option<(u8, u8, u8)>
 }
 
 
@@ -23,7 +24,7 @@ pub struct Renderer<'a, PageId, ButtonId>
 
 impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, PageId, ButtonId> 
 {
-    pub fn new(canvas: &'a mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, ttf_context: &'a Sdl3TtfContext, font_path: &'a String) -> Self { Self{_page_id: None, _button_id: None, canvas, texture_creator, ttf_context, font_path} }
+    pub fn new(canvas: &'a mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, ttf_context: &'a Sdl3TtfContext, font_path: &'a String, decrease_color_when_selected: Option<(u8, u8, u8)>) -> Self { Self{_page_id: None, _button_id: None, canvas, texture_creator, ttf_context, font_path, decrease_color_when_selected} }
 
     pub fn render(&mut self, page_data: &PageData<PageId, ButtonId>, app_state: &AppState<PageId, ButtonId>, input_handler: &InputHandler<PageId, ButtonId>) 
     {
@@ -77,7 +78,19 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
         if let Some(page) = page
         {
             if let Some(rects) = &page.rects { for (color,(r,rad)) in rects{ self.canvas.set_draw_color(*color); Self::draw_rounded_box(self.canvas,r.x(),r.y(),r.width() as i32,r.height() as i32,*rad,*color);} }
-            if let Some(buttons) = &page.buttons{ for b in buttons{ if b.enabled{ self.canvas.set_draw_color(b.color); Self::draw_rounded_box(self.canvas,b.rect.x(),b.rect.y(),b.rect.width() as i32,b.rect.height() as i32,b.radius,b.color);} } }
+            if let Some(buttons) = &page.buttons
+            { 
+                for button in buttons
+                { 
+                    if button.enabled
+                    { 
+                        let mut color = button.color;
+                        if let Some(button_selected) = input_handler.button_selected && let Some(amount_to_substract) = self.decrease_color_when_selected && button.id == button_selected {color = Color::RGB(button.color.r.saturating_sub(amount_to_substract.0), button.color.g.saturating_sub(amount_to_substract.1), button.color.b.saturating_sub(amount_to_substract.2)); };
+                        self.canvas.set_draw_color(color);
+                        Self::draw_rounded_box(self.canvas, button.rect.x(), button.rect.y(), button.rect.width() as i32, button.rect.height() as i32, button.radius, color);
+                    } 
+                } 
+            }
 
             if let Some(text_elements) = &page.texts
             {
@@ -133,7 +146,19 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
             if let Some(persistent) = persistent
             {
                 if let Some(rects) = &persistent.rects { for (color, (rect, border_radius)) in rects { self.canvas.set_draw_color(*color); Self::draw_rounded_box(self.canvas, rect.x(), rect.y(), rect.width() as i32,rect.height() as i32, *border_radius, *color);} }
-                if let Some(buttons) = &persistent.buttons { for button in buttons { if button.enabled { self.canvas.set_draw_color(button.color); Self::draw_rounded_box(self.canvas, button.rect.x(), button.rect.y(), button.rect.width() as i32, button.rect.height() as i32, button.radius, button.color);} } }
+                if let Some(buttons) = &persistent.buttons 
+                { 
+                    for button in buttons 
+                    { 
+                        if button.enabled 
+                        { 
+                            let mut color = button.color;
+                            if let Some(button_selected) = input_handler.button_selected && let Some(amount_to_substract) = self.decrease_color_when_selected && button.id == button_selected {color = Color::RGB(button.color.r.saturating_sub(amount_to_substract.0), button.color.g.saturating_sub(amount_to_substract.1), button.color.b.saturating_sub(amount_to_substract.2)); };
+                            self.canvas.set_draw_color(color);
+                            Self::draw_rounded_box(self.canvas, button.rect.x(), button.rect.y(), button.rect.width() as i32, button.rect.height() as i32, button.radius, color);
+                        } 
+                    } 
+                }
                 if let Some(texts) = &persistent.texts 
                 {
                     let requisites = (texts, self.texture_creator, self.ttf_context);

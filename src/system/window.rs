@@ -1,10 +1,7 @@
 use display_info::DisplayInfo;
 use fontconfig::Fontconfig;
 use std::fs;
-use sdl3::
-{
-    clipboard::ClipboardUtil, rect::Rect, render::{Canvas, TextureCreator}, surface::Surface, sys::render::{SDL_RendererLogicalPresentation, SDL_LOGICAL_PRESENTATION_STRETCH}, ttf::Sdl3TtfContext, video::{Window, WindowContext}, EventPump
-};
+use sdl3::{clipboard::ClipboardUtil, rect::Rect, render::{Canvas, TextureCreator}, surface::Surface, sys::render::{SDL_RendererLogicalPresentation, SDL_LOGICAL_PRESENTATION_STRETCH}, ttf::Sdl3TtfContext, video::{Window, WindowContext}, EventPump, Sdl};
 
 
 
@@ -31,6 +28,7 @@ pub struct WindowConfig
 
 pub struct WindowModules
 {
+    pub sdl_init: Sdl,
     pub canvas: Canvas<Window>,
     pub event_pump: EventPump,
     pub texture_creator: TextureCreator<WindowContext>,
@@ -42,8 +40,8 @@ pub struct WindowModules
 
 pub fn create_window(window_config: WindowConfig) -> WindowModules
 {
-    let sdl_started = sdl3::init().unwrap();
-    let video_system = sdl_started.video().unwrap();
+    let sdl_init = sdl3::init().unwrap();
+    let video_system = sdl_init.video().unwrap();
     let clipboard_system = video_system.clipboard();
     let font_config = Fontconfig::new().expect("Failed To Start FontConfig");
     let font_info = font_config.find(&window_config.font.0, window_config.font.1.as_deref()).expect("Failed Find And Set Font With FontConfig");
@@ -104,7 +102,7 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
     video_system.text_input().start(&window);
 
     let ttf_context = sdl3::ttf::init().unwrap();
-    let event_pump = sdl_started.event_pump().unwrap();
+    let event_pump = sdl_init.event_pump().unwrap();
     let mut canvas = window.into_canvas();
     let texture_creator = canvas.texture_creator();
 
@@ -115,7 +113,7 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
     };
     canvas.set_viewport(Rect::new(0, 0, 1920, 1080));
     
-    WindowModules{canvas, event_pump, texture_creator, ttf_context, font_path, clipboard_system}
+    WindowModules{sdl_init, canvas, event_pump, texture_creator, ttf_context, font_path, clipboard_system}
 }
 pub fn get_monitor_refresh_rate() -> u64
 {

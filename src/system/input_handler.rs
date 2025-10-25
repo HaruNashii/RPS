@@ -9,7 +9,7 @@ use sdl3::{clipboard::ClipboardUtil,event::Event,keyboard::{Keycode,Mod},mouse::
 #[derive(Debug,Clone)]
 pub enum InputEvent
 {
-    Click(f32,f32),
+    Click,
     Text(String),
     Backspace,
     Submit,
@@ -28,11 +28,13 @@ pub enum InputEvent
 }
 pub struct InputHandler<PageId,ButtonId>
 {
-    pub cursor_pos:usize,
-    pub selection:Option<(usize,usize)>,
-    disable_rollback_pages:bool,
-    _pageid:Option<PageId>,
-    _buttonid:Option<ButtonId>,
+    pub button_selected: Option<ButtonId>,
+    pub mouse_pos: (f32, f32),
+    pub cursor_pos: usize,
+    pub selection: Option<(usize,usize)>,
+    disable_rollback_pages: bool,
+    _pageid: Option<PageId>,
+    _buttonid: Option<ButtonId>,
 }
 
 
@@ -41,7 +43,7 @@ pub struct InputHandler<PageId,ButtonId>
 
 impl<PageId: Copy+Eq+Debug, ButtonId: Copy+Eq+Debug> InputHandler<PageId,ButtonId>
 {
-    pub fn new(disable_rollback_pages: bool)->Self { Self {cursor_pos: 0, selection: None, disable_rollback_pages, _pageid:None, _buttonid:None} }
+    pub fn new(disable_rollback_pages: bool)->Self { Self {cursor_pos: 0, selection: None, disable_rollback_pages, _pageid:None, _buttonid:None, mouse_pos: (0., 0.), button_selected: None} }
 
     pub fn poll(&self, event_pump: &mut EventPump)-> InputEvent
     {
@@ -49,20 +51,25 @@ impl<PageId: Copy+Eq+Debug, ButtonId: Copy+Eq+Debug> InputHandler<PageId,ButtonI
         {
             match event
             {
-                Event::Quit{..}                                                         => return InputEvent::Quit,
-                Event::TextInput{text,..}                                       => return InputEvent::Text(text),
-                Event::MouseButtonDown{mouse_btn:MouseButton::Left,x,y,..}    => return InputEvent::Click(x,y),
-                Event::MouseButtonDown{mouse_btn:MouseButton::X1,..}                    => {if !self.disable_rollback_pages{return InputEvent::Back}},
-                Event::MouseButtonDown{mouse_btn:MouseButton::X2,..}                    => {if !self.disable_rollback_pages{return InputEvent::Front}},
-                Event::KeyDown{keycode:Some(Keycode::Backspace),keymod,..}         => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::DeleteAll}else{return InputEvent::Backspace}},
-                Event::KeyDown{keycode:Some(Keycode::Return),..}                        => return InputEvent::Submit,
-                Event::KeyDown{keycode:Some(Keycode::C),keymod,..}                 => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::Copy}},
-                Event::KeyDown{keycode:Some(Keycode::X),keymod,..}                 => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::Cut}},
-                Event::KeyDown{keycode:Some(Keycode::V),keymod,..}                 => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::Paste}},
-                Event::KeyDown{keycode:Some(Keycode::A),keymod,..}                 => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::SelectAll}},
-                Event::KeyDown{keycode:Some(Keycode::Left),keymod,..}              => return InputEvent::CursorLeft(keymod.intersects(Mod::LSHIFTMOD|Mod::RSHIFTMOD)),
-                Event::KeyDown{keycode:Some(Keycode::Right),keymod,..}             => return InputEvent::CursorRight(keymod.intersects(Mod::LSHIFTMOD|Mod::RSHIFTMOD)),
-                Event::KeyDown{keycode:Some(Keycode::Escape),..}                        => return InputEvent::ExitCapturingInput,
+                //Mouse Input
+                Event::MouseButtonDown{mouse_btn: MouseButton::Left, ..}                 => return InputEvent::Click,
+                Event::MouseButtonDown{mouse_btn: MouseButton::X1, ..}                   => {if !self.disable_rollback_pages{return InputEvent::Back}},
+                Event::MouseButtonDown{mouse_btn: MouseButton::X2, ..}                   => {if !self.disable_rollback_pages{return InputEvent::Front}},
+
+                // Keyboard Input
+                Event::TextInput{text,..}                                        => return InputEvent::Text(text),
+                Event::KeyDown{keycode: Some(Keycode::Backspace),keymod,..}         => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::DeleteAll}else{return InputEvent::Backspace}},
+                Event::KeyDown{keycode: Some(Keycode::Return),..}                        => return InputEvent::Submit,
+                Event::KeyDown{keycode: Some(Keycode::C),keymod,..}                 => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::Copy}},
+                Event::KeyDown{keycode: Some(Keycode::X),keymod,..}                 => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::Cut}},
+                Event::KeyDown{keycode: Some(Keycode::V),keymod,..}                 => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::Paste}},
+                Event::KeyDown{keycode: Some(Keycode::A),keymod,..}                 => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::SelectAll}},
+                Event::KeyDown{keycode: Some(Keycode::Left),keymod,..}              => return InputEvent::CursorLeft(keymod.intersects(Mod::LSHIFTMOD|Mod::RSHIFTMOD)),
+                Event::KeyDown{keycode: Some(Keycode::Right),keymod,..}             => return InputEvent::CursorRight(keymod.intersects(Mod::LSHIFTMOD|Mod::RSHIFTMOD)),
+                Event::KeyDown{keycode: Some(Keycode::Escape),..}                        => return InputEvent::ExitCapturingInput,
+
+                //Window Event Handler
+                Event::Quit{..}                                                          => return InputEvent::Quit,
                 _=>{}
             }
         }
@@ -71,9 +78,11 @@ impl<PageId: Copy+Eq+Debug, ButtonId: Copy+Eq+Debug> InputHandler<PageId,ButtonI
 
     pub fn handle_input(&mut self, event_pump: &mut EventPump, clipboard: &mut ClipboardUtil, page_data: &mut PageData<PageId, ButtonId>, app_state: &mut AppState<PageId,ButtonId>, button_action: fn(&mut AppState<PageId, ButtonId>, &ButtonId, &mut PageData<PageId, ButtonId>))
     {
+        self.button_selected = page_data.page_button_at(app_state, event_pump.mouse_state().x(), event_pump.mouse_state().y());
+        if let Some(button_being_writed) = app_state.capturing_input.1 { self.button_selected = Some(button_being_writed) };
         match self.poll(event_pump)
         {
-            InputEvent::Click(x,y)        => {if let Some(id)=page_data.page_button_at(app_state,x,y){button_action(app_state,&id,page_data);if app_state.capturing_input.0{self.cursor_pos=self.len_of_current_input(app_state,page_data,id);self.selection=None}}else{app_state.capturing_input=(false,None);self.selection=None}},
+            InputEvent::Click        => {if let Some(id) = self.button_selected {button_action(app_state, &id, page_data); if app_state.capturing_input.0 {self.cursor_pos = self.len_of_current_input(app_state, page_data, id); self.selection = None} } else {app_state.capturing_input = (false, None); self.selection = None}},
             InputEvent::Text(s)             => self.insert_text(&s,app_state,page_data),
             InputEvent::Backspace                   => self.backspace(app_state,page_data),
             InputEvent::Submit                      => app_state.capturing_input=(false,None),

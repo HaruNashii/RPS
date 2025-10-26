@@ -43,7 +43,7 @@ pub struct InputHandler<PageId,ButtonId>
 
 impl<PageId: Copy+Eq+Debug, ButtonId: Copy+Eq+Debug> InputHandler<PageId,ButtonId>
 {
-    pub fn new(disable_rollback_pages: bool)->Self { Self {cursor_pos: 0, selection: None, disable_rollback_pages, _pageid:None, _buttonid:None, mouse_pos: (0., 0.), button_selected: None} }
+    pub fn new(disable_rollback_pages: bool)->Self { Self {cursor_pos: 0, selection: None, disable_rollback_pages, _pageid: None, _buttonid: None, mouse_pos: (0., 0.), button_selected: None} }
 
     pub fn poll(&self, event_pump: &mut EventPump)-> InputEvent
     {
@@ -58,8 +58,8 @@ impl<PageId: Copy+Eq+Debug, ButtonId: Copy+Eq+Debug> InputHandler<PageId,ButtonI
 
                 // Keyboard Input
                 Event::TextInput{text,..}                                        => return InputEvent::Text(text),
-                Event::KeyDown{keycode: Some(Keycode::Backspace),keymod,..}         => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::DeleteAll}else{return InputEvent::Backspace}},
                 Event::KeyDown{keycode: Some(Keycode::Return),..}                        => return InputEvent::Submit,
+                Event::KeyDown{keycode: Some(Keycode::Backspace),keymod,..}         => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::DeleteAll}else{return InputEvent::Backspace}},
                 Event::KeyDown{keycode: Some(Keycode::C),keymod,..}                 => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::Copy}},
                 Event::KeyDown{keycode: Some(Keycode::X),keymod,..}                 => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::Cut}},
                 Event::KeyDown{keycode: Some(Keycode::V),keymod,..}                 => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::Paste}},
@@ -82,7 +82,7 @@ impl<PageId: Copy+Eq+Debug, ButtonId: Copy+Eq+Debug> InputHandler<PageId,ButtonI
         if let Some(button_being_writed) = app_state.capturing_input.1 { self.button_selected = Some(button_being_writed) };
         match self.poll(event_pump)
         {
-            InputEvent::Click        => {if let Some(id) = self.button_selected {button_action(app_state, &id, page_data); if app_state.capturing_input.0 {self.cursor_pos = self.len_of_current_input(app_state, page_data, id); self.selection = None} } else {app_state.capturing_input = (false, None); self.selection = None}},
+            InputEvent::Click                       => {if let Some(id) = self.button_selected {button_action(app_state, &id, page_data); if app_state.capturing_input.0 {self.cursor_pos = self.len_of_current_input(app_state, page_data, id); self.selection = None} } else {app_state.capturing_input = (false, None); self.selection = None}},
             InputEvent::Text(s)             => self.insert_text(&s,app_state,page_data),
             InputEvent::Backspace                   => self.backspace(app_state,page_data),
             InputEvent::Submit                      => app_state.capturing_input=(false,None),
@@ -111,16 +111,16 @@ impl<PageId: Copy+Eq+Debug, ButtonId: Copy+Eq+Debug> InputHandler<PageId,ButtonI
             {
                 if let Some((s,e)) = self.selection.take()
                 {
-                    let s=s.min(string.len());
-                    let e=e.min(string.len());
+                    let s = s.min(string.len());
+                    let e = e.min(string.len());
                     string.replace_range(s..e,text);
-                    self.cursor_pos=s+text.len()
+                    self.cursor_pos = s + text.len()
                 }
                 else
                 {
-                    let i=self.cursor_pos.min(string.len());
-                    string.insert_str(i,text);
-                    self.cursor_pos=i+text.len()
+                    let i = self.cursor_pos.min(string.len());
+                    string.insert_str(i, text);
+                    self.cursor_pos = i + text.len()
                 }
                 break;
             }
@@ -131,7 +131,7 @@ impl<PageId: Copy+Eq+Debug, ButtonId: Copy+Eq+Debug> InputHandler<PageId,ButtonI
     pub fn backspace(&mut self, app: &mut AppState<PageId, ButtonId>, data: &mut PageData<PageId, ButtonId>)
     {
         if !app.capturing_input.0 {return} 
-        let Some(id)=app.capturing_input.1 else {return};
+        let Some(id) = app.capturing_input.1 else {return};
         for(page_id,button_id, string)in &mut data.vec_user_input
         {
             if *page_id == app.current_page && *button_id == id
@@ -141,9 +141,9 @@ impl<PageId: Copy+Eq+Debug, ButtonId: Copy+Eq+Debug> InputHandler<PageId,ButtonI
                     let s = s.min(string.len());
                     let e = e.min(string.len());
                     string.replace_range(s..e,"");
-                    self.cursor_pos=s
+                    self.cursor_pos = s
                 }
-                else if self.cursor_pos>0
+                else if self.cursor_pos > 0
                 {
                     string.remove(self.cursor_pos-1);self.cursor_pos-=1
                 }
@@ -160,25 +160,36 @@ impl<PageId: Copy+Eq+Debug, ButtonId: Copy+Eq+Debug> InputHandler<PageId,ButtonI
 
     pub fn copy(&mut self, option_clipboard_util: Option<&mut ClipboardUtil>, app: &AppState<PageId, ButtonId>, data: &mut PageData<PageId, ButtonId>, cut: bool)
     {
-        if !app.capturing_input.0{return}let Some(id)=app.capturing_input.1 else{return};
+        if !app.capturing_input.0 { return }
+        let Some(id) = app.capturing_input.1 else { return };
         if let Some(clipboard_util)= option_clipboard_util
         {
             for(page_id,button_id, string) in &mut data.vec_user_input
             {
-                if *page_id == app.current_page && *button_id == id
+                if *page_id == app.current_page && *button_id == id && !string.is_empty() && let Some((start_of_selection, end_of_selection)) = self.selection
                 {
-                    let (character_selected,e)=self.selection.unwrap_or((0, string.len()));
-                    let character_selected= character_selected.min(string.len());
-                    let e = e.min(string.len());
-                    let sub = string[character_selected..e].to_string();
-                    clipboard_util.set_clipboard_text(&sub.clone()).unwrap_or(());
-                    if cut
+                    let (start_of_selection, end_of_selection) = if start_of_selection <= end_of_selection 
                     {
-                        string.replace_range(character_selected..e,"");
-                        self.cursor_pos= character_selected;
-                        self.selection= None
+                        (start_of_selection, end_of_selection)
+                    } 
+                    else 
+                    {
+                        (end_of_selection, start_of_selection)
+                    };
+                    let start_of_selection = start_of_selection.min(string.len());
+                    if start_of_selection.abs_diff(end_of_selection) >= 1
+                    {
+                        let end_of_string = end_of_selection.min(string.len());
+                        let sub = string[start_of_selection..end_of_string].to_string();
+                        clipboard_util.set_clipboard_text(&sub.clone()).unwrap_or(());
+                        if cut
+                        {
+                            string.replace_range(start_of_selection..end_of_selection,"");
+                            self.cursor_pos = start_of_selection;
+                            self.selection = None
+                        }
+                        break;
                     }
-                    break;
                 }
             }
         }
@@ -194,7 +205,7 @@ impl<PageId: Copy+Eq+Debug, ButtonId: Copy+Eq+Debug> InputHandler<PageId,ButtonI
             if *page_id == app.current_page && *button_id == id
             {
                 self.selection = Some((0, string.len()));
-                self.cursor_pos= string.len();
+                self.cursor_pos = string.len();
                 break;
             }
         }
@@ -219,55 +230,40 @@ impl<PageId: Copy+Eq+Debug, ButtonId: Copy+Eq+Debug> InputHandler<PageId,ButtonI
 
     pub fn move_cursor(&mut self, right: bool, shift_held: bool, app: &AppState<PageId, ButtonId>, data: &mut PageData<PageId, ButtonId>)
     {
-        if !app.capturing_input.0{return};
-        let Some(id)=app.capturing_input.1 else{return};
+        if !app.capturing_input.0 { return; }
+        let Some(id) = app.capturing_input.1 else { return; };
+    
         let mut text_length = 0;
-        for(page_id, button_id, string) in &mut data.vec_user_input
+        for (page_id, button_id, string) in &mut data.vec_user_input
         {
-            if *page_id == app.current_page && *button_id == id 
+            if *page_id == app.current_page && *button_id == id
             {
                 text_length = string.len();
                 break;
             }
         }
     
-        // SHIFT is held → selection mode
         if shift_held
         {
-            if self.selection.is_none()
-            {
-                // Start a new selection from the current cursor position
-                self.selection = Some((self.cursor_pos, self.cursor_pos));
-            }
+            if self.selection.is_none() {self.selection = Some((self.cursor_pos, self.cursor_pos));}
     
-            if let Some((start, end)) = self.selection
+            if let Some((anchor, _cursor)) = self.selection
             {
-                // Compute new position based on direction
-                let new_position = if right
+                let new_cursor = if right
                 {
-                    end.saturating_add(1).min(text_length)
+                    (self.cursor_pos + 1).min(text_length)
                 }
                 else
                 {
-                    start.saturating_sub(1)
+                    self.cursor_pos.saturating_sub(1)
                 };
     
-                // Update selection range and cursor
-                if right
-                {
-                    self.selection = Some((start, new_position));
-                    self.cursor_pos = new_position;
-                }
-                else
-                {
-                    self.selection = Some((new_position, end));
-                    self.cursor_pos = new_position;
-                }
+                self.selection = Some((anchor, new_cursor));
+                self.cursor_pos = new_cursor;
             }
         }
         else
         {
-            // No SHIFT pressed → normal cursor movement
             self.selection = None;
             self.cursor_pos = if right
             {

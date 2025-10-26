@@ -73,16 +73,10 @@ use std::{env, time::Duration};
 use sdl3::{pixels::Color, rect::Rect, sys::render::SDL_LOGICAL_PRESENTATION_STRETCH};
 use rust_page_system::
 {
-    Button,
-    Renderer,
-    misc::{vec::GetOrCreate, center_elements::get_center}, 
-    system::
+    misc::{center_elements::get_center, vec::GetOrCreate}, system::
     {
-        input_handler::InputHandler, 
-        page_system::{Page, PersistentElements, PageData}, 
-        state::AppState, 
-        window::{create_window, get_monitor_refresh_rate, WindowConfig}
-    }
+        input_handler::InputHandler, page_system::{Page, PageData, PersistentElements}, state::AppState, window::{create_window, get_monitor_refresh_rate, WindowConfig}
+    }, Button, Renderer
 };
 
 
@@ -109,9 +103,9 @@ fn main()
     let mut window_modules = create_window(window_config);
     //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys") | (false = Page Rollback On), (true = Page Rollback Off)
     let mut input_handler = InputHandler::new(false);
-    let mut app_state = AppState::new(PageId::Page1);
+    let mut app_state = AppState::new(PageId::Page1, window_modules.canvas.window().size());
     let mut page_data = PageData::new(&app_state);
-    let mut renderer = Renderer::new(&mut window_modules.canvas, &window_modules.texture_creator, &window_modules.ttf_context, &window_modules.font_path, Some((25, 25, 25)), Some((0, 0, 200, 125)));
+    let mut renderer = Renderer::new(window_modules.canvas, &window_modules.texture_creator, &window_modules.ttf_context, &window_modules.font_path, Some((25, 25, 25)), Some((0, 0, 200, 125)));
 
     populate_page_data(&mut page_data);
 
@@ -119,12 +113,13 @@ fn main()
     {
         //using 900 / your_refresh_rate to a very crispy experience
         std::thread::sleep(Duration::from_millis(900 / get_monitor_refresh_rate()));
-        app_state.update_window_size(renderer.canvas.window().size());
+        app_state.update_window_size(renderer.canvas.window().size().0, renderer.canvas.window().size().1);
         input_handler.handle_input(&mut window_modules.event_pump, &mut window_modules.clipboard_system, &mut page_data, &mut app_state, button_action);
         page_data.create_current_page(&mut app_state);
-        renderer.render(&page_data, &app_state, &input_handler);
+        renderer.render(&page_data, &mut app_state, &input_handler);
     }
 }
+
 
 
 
@@ -142,6 +137,8 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
         app_state.capturing_input = (true, Some(*button_id));
     }
 }
+
+
 
 
 
@@ -195,6 +192,7 @@ pub enum ButtonId
     ButtonBack,
 }
 
+
 // Define Your Pages Here:
 pub fn persistent_elements() -> PersistentElements<PageId, ButtonId>
 {
@@ -236,7 +234,7 @@ pub fn page_1(user_input: &mut Vec<String>) -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_userinput: Some(vec![(PageId::Page1, ButtonId::ButtonPurpleInputStartPage1)]), has_persistent_elements: Some(vec![(PageId::Persistent, persistent_elements)]), id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_userinput: Some(vec![(PageId::Page1, ButtonId::ButtonPurpleInputStartPage1)]), has_persistent_elements: Some(vec![(PageId::Persistent, persistent_elements)]), has_transition: None, id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 
 }
 
@@ -249,7 +247,7 @@ pub fn subpage_page1() -> Page<PageId,ButtonId>
     let all_text = vec! [ (18.0, (all_buttons[0].rect.x + 10, all_buttons[0].rect.y + 7), "<-".to_string(), TEXT_COLOR) ];
 
     //===================== page creation =========================
-    Page { has_userinput: None, has_persistent_elements: None, id: PageId::Page1SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_userinput: None, has_persistent_elements: None, has_transition: None, id: PageId::Page1SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 ```
 

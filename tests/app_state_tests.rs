@@ -256,7 +256,7 @@ fn input_handler_moves_cursor_right()
 
     input_handler.move_cursor(true, false, &application_state, &mut page_data);
 
-    assert_eq!(input_handler.cursor_pos, 1);
+    assert_eq!(input_handler.cursor_position, 1);
 }
 
 #[test]
@@ -268,10 +268,10 @@ fn input_handler_moves_cursor_left_without_underflow()
     application_state.capturing_input = (true, Some(TestButton::A));
 
     let mut input_handler = create_input_handler();
-    input_handler.cursor_pos = 0;
+    input_handler.cursor_position = 0;
     input_handler.move_cursor(false, false, &application_state, &mut page_data);
 
-    assert_eq!(input_handler.cursor_pos, 0);
+    assert_eq!(input_handler.cursor_position, 0);
 }
 
 #[test]
@@ -283,10 +283,10 @@ fn input_handler_creates_selection_with_shift_key()
     application_state.capturing_input = (true, Some(TestButton::A));
 
     let mut input_handler = create_input_handler();
-    input_handler.cursor_pos = 2;
+    input_handler.cursor_position = 2;
     input_handler.move_cursor(true, true, &application_state, &mut page_data);
 
-    assert!(input_handler.selection.is_some());
+    assert!(input_handler.text_selection_range.is_some());
 }
 
 #[test]
@@ -298,10 +298,10 @@ fn input_handler_clears_selection_when_shift_not_pressed()
     application_state.capturing_input = (true, Some(TestButton::A));
 
     let mut input_handler = create_input_handler();
-    input_handler.selection = Some((1, 3));
+    input_handler.text_selection_range = Some((1, 3));
     input_handler.move_cursor(true, false, &application_state, &mut page_data);
 
-    assert!(input_handler.selection.is_none());
+    assert!(input_handler.text_selection_range.is_none());
 }
 
 #[test]
@@ -313,8 +313,8 @@ fn input_handler_len_of_current_input_returns_proper_values()
     application_state.capturing_input = (true, Some(TestButton::A));
 
     let input_handler = create_input_handler();
-    let active_length = input_handler.len_of_current_input(&application_state, &page_data, TestButton::A);
-    let missing_length = input_handler.len_of_current_input(&application_state, &page_data, TestButton::B);
+    let active_length = input_handler.get_current_input_length(&application_state, &page_data, TestButton::A);
+    let missing_length = input_handler.get_current_input_length(&application_state, &page_data, TestButton::B);
 
     assert_eq!(active_length, 3);
     assert_eq!(missing_length, 0);
@@ -343,14 +343,14 @@ fn input_handler_backspace_deletes_character_to_left_of_cursor()
     application_state.capturing_input = (true, Some(TestButton::A));
 
     let mut input_handler = create_input_handler();
-    input_handler.cursor_pos = 3; // cursor at end of text
+    input_handler.cursor_position = 3; // cursor at end of text
     input_handler.backspace(&mut application_state, &mut page_data);
 
     assert_eq!(page_data.vec_user_input[0].2, "ab");
 }
 
 #[test]
-fn input_handler_insert_text_respects_cursor_position()
+fn input_handler_insert_text_respects_cursor_positionition()
 {
     let (mut application_state, mut page_data) = create_state();
 
@@ -358,7 +358,7 @@ fn input_handler_insert_text_respects_cursor_position()
     application_state.capturing_input = (true, Some(TestButton::A));
 
     let mut input_handler = create_input_handler();
-    input_handler.cursor_pos = 2; // after "hi"
+    input_handler.cursor_position = 2; // after "hi"
     input_handler.insert_text(" there", &application_state, &mut page_data);
 
     assert_eq!(page_data.vec_user_input[0].2, "hi there");

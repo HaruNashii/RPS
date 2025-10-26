@@ -205,7 +205,7 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
         let total_chars = text_content.chars().count();
         let clamp_to_text = |n:usize| n.min(total_chars);
     
-        let (selection_start, selection_end) = match input_state.selection
+        let (selection_start, selection_end) = match input_state.text_selection_range
         {
             Some((a,b))=>
             {
@@ -215,7 +215,7 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
             }
             None=>
             {
-                let pos = input_state.cursor_pos.min(total_chars);
+                let pos = input_state.cursor_position.min(total_chars);
                 (pos,pos)
             }
         };

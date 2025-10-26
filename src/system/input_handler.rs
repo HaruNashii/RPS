@@ -1,305 +1,272 @@
-use std::{fmt::Debug,process::exit};
-use crate::{system::page_system::PageData,AppState};
-use sdl3::{clipboard::ClipboardUtil,event::Event,keyboard::{Keycode,Mod},mouse::MouseButton,EventPump};
+use std::{fmt::Debug, process::exit};
+use sdl3::{clipboard::ClipboardUtil, event::Event, keyboard::{Keycode, Mod}, mouse::MouseButton, EventPump};
+use crate::{system::page_system::PageData, AppState};
 
 
 
 
 
-#[derive(Debug,Clone)]
-pub enum InputEvent
-{
-    Click,
-    Text(String),
-    Backspace,
-    Submit,
-    Front,
-    Back,
-    Paste,
-    Copy,
-    Cut,
-    SelectAll,
-    DeleteAll,
-    CursorLeft(bool),
-    CursorRight(bool),
-    ExitCapturingInput,
-    Quit,
-    None,
+#[derive(Debug, Clone)]
+pub enum InputEvent 
+{ 
+    Click, 
+    Text(String), 
+    Backspace, 
+    Submit, 
+    Front, 
+    Back, 
+    Paste, 
+    Copy, 
+    Cut, 
+    Undo, 
+    SelectAll, 
+    DeleteAll, 
+    CursorLeft(bool), 
+    CursorRight(bool), 
+    ExitCapturingInput, 
+    Quit, 
+    None 
 }
-pub struct InputHandler<PageId,ButtonId>
+
+pub struct InputHandler<PageId, ButtonId>
 {
     pub button_selected: Option<ButtonId>,
-    pub mouse_pos: (f32, f32),
-    pub cursor_pos: usize,
-    pub selection: Option<(usize,usize)>,
+    pub mouse_position: (f32, f32),
+    pub cursor_position: usize,
+    pub text_selection_range: Option<(usize, usize)>,
     disable_rollback_pages: bool,
-    _pageid: Option<PageId>,
-    _buttonid: Option<ButtonId>,
+    input_history_stack: Vec<Vec<(PageId, ButtonId, String)>>,
 }
 
 
 
 
 
-impl<PageId: Copy+Eq+Debug, ButtonId: Copy+Eq+Debug> InputHandler<PageId,ButtonId>
+impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId, ButtonId>
 {
-    pub fn new(disable_rollback_pages: bool)->Self { Self {cursor_pos: 0, selection: None, disable_rollback_pages, _pageid: None, _buttonid: None, mouse_pos: (0., 0.), button_selected: None} }
+    pub fn new(disable_rollback_pages: bool) -> Self 
+    { 
+        Self 
+        { 
+            cursor_position: 0, 
+            text_selection_range: None, 
+            disable_rollback_pages, 
+            mouse_position: (0., 0.), 
+            button_selected: None, 
+            input_history_stack: Vec::new() 
+        } 
+    }
 
-    pub fn poll(&self, event_pump: &mut EventPump)-> InputEvent
+    pub fn poll(&self, event_pump: &mut EventPump) -> InputEvent
     {
         for event in event_pump.poll_iter()
         {
             match event
             {
-                //Mouse Input
-                Event::MouseButtonDown{mouse_btn: MouseButton::Left, ..}                 => return InputEvent::Click,
-                Event::MouseButtonDown{mouse_btn: MouseButton::X1, ..}                   => {if !self.disable_rollback_pages{return InputEvent::Back}},
-                Event::MouseButtonDown{mouse_btn: MouseButton::X2, ..}                   => {if !self.disable_rollback_pages{return InputEvent::Front}},
+                //mouse events
+                Event::MouseButtonDown { mouse_btn: MouseButton::Left, .. }             => return InputEvent::Click,
+                Event::MouseButtonDown { mouse_btn: MouseButton::X1, .. }               => { if !self.disable_rollback_pages { return InputEvent::Back } },
+                Event::MouseButtonDown { mouse_btn: MouseButton::X2, .. }               => { if !self.disable_rollback_pages { return InputEvent::Front } },
 
-                // Keyboard Input
-                Event::TextInput{text,..}                                        => return InputEvent::Text(text),
-                Event::KeyDown{keycode: Some(Keycode::Return),..}                        => return InputEvent::Submit,
-                Event::KeyDown{keycode: Some(Keycode::Backspace),keymod,..}         => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::DeleteAll}else{return InputEvent::Backspace}},
-                Event::KeyDown{keycode: Some(Keycode::C),keymod,..}                 => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::Copy}},
-                Event::KeyDown{keycode: Some(Keycode::X),keymod,..}                 => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::Cut}},
-                Event::KeyDown{keycode: Some(Keycode::V),keymod,..}                 => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::Paste}},
-                Event::KeyDown{keycode: Some(Keycode::A),keymod,..}                 => {if keymod.intersects(Mod::LCTRLMOD|Mod::RCTRLMOD){return InputEvent::SelectAll}},
-                Event::KeyDown{keycode: Some(Keycode::Left),keymod,..}              => return InputEvent::CursorLeft(keymod.intersects(Mod::LSHIFTMOD|Mod::RSHIFTMOD)),
-                Event::KeyDown{keycode: Some(Keycode::Right),keymod,..}             => return InputEvent::CursorRight(keymod.intersects(Mod::LSHIFTMOD|Mod::RSHIFTMOD)),
-                Event::KeyDown{keycode: Some(Keycode::Escape),..}                        => return InputEvent::ExitCapturingInput,
+                //keyboard events
+                Event::TextInput { text, .. }                                   => return InputEvent::Text(text),
+                Event::KeyDown { keycode: Some(Keycode::Return), .. }                   => return InputEvent::Submit,
+                Event::KeyDown { keycode: Some(Keycode::Backspace), keymod, .. }   => { if keymod.intersects(Mod::LCTRLMOD | Mod::RCTRLMOD) { return InputEvent::DeleteAll } else { return InputEvent::Backspace } },
+                Event::KeyDown { keycode: Some(Keycode::Z), keymod, .. }           => { if keymod.intersects(Mod::LCTRLMOD | Mod::RCTRLMOD) { return InputEvent::Undo } },
+                Event::KeyDown { keycode: Some(Keycode::C), keymod, .. }           => { if keymod.intersects(Mod::LCTRLMOD | Mod::RCTRLMOD) { return InputEvent::Copy } },
+                Event::KeyDown { keycode: Some(Keycode::X), keymod, .. }           => { if keymod.intersects(Mod::LCTRLMOD | Mod::RCTRLMOD) { return InputEvent::Cut } },
+                Event::KeyDown { keycode: Some(Keycode::V), keymod, .. }           => { if keymod.intersects(Mod::LCTRLMOD | Mod::RCTRLMOD) { return InputEvent::Paste } },
+                Event::KeyDown { keycode: Some(Keycode::A), keymod, .. }           => { if keymod.intersects(Mod::LCTRLMOD | Mod::RCTRLMOD) { return InputEvent::SelectAll } },
+                Event::KeyDown { keycode: Some(Keycode::Left), keymod, .. }        => return InputEvent::CursorLeft(keymod.intersects(Mod::LSHIFTMOD | Mod::RSHIFTMOD)),
+                Event::KeyDown { keycode: Some(Keycode::Right), keymod, .. }       => return InputEvent::CursorRight(keymod.intersects(Mod::LSHIFTMOD | Mod::RSHIFTMOD)),
+                Event::KeyDown { keycode: Some(Keycode::Escape), .. }                   => return InputEvent::ExitCapturingInput,
 
-                //Window Event Handler
-                Event::Quit{..}                                                          => return InputEvent::Quit,
-                _=>{}
+                //window events
+                Event::Quit { .. } => return InputEvent::Quit,
+                _ => {}
             }
         }
         InputEvent::None
     }
 
-    pub fn handle_input(&mut self, event_pump: &mut EventPump, clipboard: &mut ClipboardUtil, page_data: &mut PageData<PageId, ButtonId>, app_state: &mut AppState<PageId,ButtonId>, button_action: fn(&mut AppState<PageId, ButtonId>, &ButtonId, &mut PageData<PageId, ButtonId>))
+    pub fn handle_input(&mut self, event_pump: &mut EventPump, clipboard_util: &mut ClipboardUtil, page_data: &mut PageData<PageId, ButtonId>, app_state: &mut AppState<PageId, ButtonId>, button_action: fn(&mut AppState<PageId, ButtonId>, &ButtonId, &mut PageData<PageId, ButtonId>))
     {
         self.button_selected = page_data.page_button_at(app_state, event_pump.mouse_state().x(), event_pump.mouse_state().y());
-        if let Some(button_being_writed) = app_state.capturing_input.1 { self.button_selected = Some(button_being_writed) };
+        if let Some(active_button_id) = app_state.capturing_input.1 { self.button_selected = Some(active_button_id) }
+
         match self.poll(event_pump)
         {
-            InputEvent::Click                       => {if let Some(id) = self.button_selected {button_action(app_state, &id, page_data); if app_state.capturing_input.0 {self.cursor_pos = self.len_of_current_input(app_state, page_data, id); self.selection = None} } else {app_state.capturing_input = (false, None); self.selection = None}},
-            InputEvent::Text(s)             => self.insert_text(&s,app_state,page_data),
-            InputEvent::Backspace                   => self.backspace(app_state,page_data),
-            InputEvent::Submit                      => app_state.capturing_input=(false,None),
-            InputEvent::Front                       => self.history(true,app_state,page_data),
-            InputEvent::Back                        => self.history(false,app_state,page_data),
-            InputEvent::Paste                       => self.paste(Some(clipboard),app_state,page_data),
-            InputEvent::Copy                        => self.copy(Some(clipboard),app_state,page_data,false),
-            InputEvent::Cut                         => self.copy(Some(clipboard),app_state,page_data,true),
-            InputEvent::SelectAll                   => self.select_all(app_state,page_data),
-            InputEvent::DeleteAll                   => self.delete_all(app_state,page_data),
-            InputEvent::CursorLeft(shift)     => self.move_cursor(false, shift, app_state, page_data),
-            InputEvent::CursorRight(shift)    => self.move_cursor(true,  shift, app_state, page_data),
-            InputEvent::ExitCapturingInput          => app_state.capturing_input=(false,None),
-            InputEvent::Quit                        => exit(0),
-            _=>{}
+            InputEvent::Click                           => { if let Some(button_id) = self.button_selected { button_action(app_state, &button_id, page_data); if app_state.capturing_input.0 { self.cursor_position = self.get_current_input_length(app_state, page_data, button_id); self.text_selection_range = None } } else { app_state.capturing_input = (false, None); self.text_selection_range = None } }
+            InputEvent::Text(text_input)        => { self.push_state(page_data); self.insert_text(&text_input, app_state, page_data) }
+            InputEvent::Backspace                       => { self.push_state(page_data); self.backspace(app_state, page_data) }
+            InputEvent::Paste                           => { self.push_state(page_data); self.paste(Some(clipboard_util), app_state, page_data) }
+            InputEvent::Cut                             => { self.push_state(page_data); self.copy(Some(clipboard_util), app_state, page_data, true) }
+            InputEvent::DeleteAll                       => { self.push_state(page_data); self.delete_all(app_state, page_data) }
+            InputEvent::Copy                            => self.copy(Some(clipboard_util), app_state, page_data, false),
+            InputEvent::SelectAll                       => self.select_all(app_state, page_data),
+            InputEvent::Undo                            => self.undo(page_data),
+            InputEvent::CursorLeft(shift_held)    => self.move_cursor(false, shift_held, app_state, page_data),
+            InputEvent::CursorRight(shift_held)   => self.move_cursor(true, shift_held, app_state, page_data),
+            InputEvent::Submit                          => app_state.capturing_input = (false, None),
+            InputEvent::Front                           => self.navigate_history(true, app_state, page_data),
+            InputEvent::Back                            => self.navigate_history(false, app_state, page_data),
+            InputEvent::ExitCapturingInput              => app_state.capturing_input = (false, None),
+            InputEvent::Quit                            => exit(0),
+            _ => {}
         }
     }
 
-    pub fn insert_text(&mut self, text: &str, app: &AppState<PageId,ButtonId>, data: &mut PageData<PageId, ButtonId>)
+    pub fn insert_text(&mut self, text_to_insert: &str, app_state: &AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>)
     {
-        if !app.capturing_input.0{return}
-        let Some(id) = app.capturing_input.1 else {return};
-        for(page_id, button_id, string)in &mut data.vec_user_input
+        if !app_state.capturing_input.0 { return }
+        let Some(active_button_id) = app_state.capturing_input.1 else { return };
+        for (page_id, button_id, input_string) in &mut page_data.vec_user_input
         {
-            if *page_id == app.current_page && *button_id == id
+            if *page_id == app_state.current_page && *button_id == active_button_id
             {
-                if let Some((s,e)) = self.selection.take()
+                if let Some((anchor_index, cursor_index)) = self.text_selection_range.take()
                 {
-                    let s = s.min(string.len());
-                    let e = e.min(string.len());
-                    string.replace_range(s..e,text);
-                    self.cursor_pos = s + text.len()
-                }
-                else
-                {
-                    let i = self.cursor_pos.min(string.len());
-                    string.insert_str(i, text);
-                    self.cursor_pos = i + text.len()
-                }
-                break;
-            }
-        }
-        data.update_vec_user_input_string()
-    }
-
-    pub fn backspace(&mut self, app: &mut AppState<PageId, ButtonId>, data: &mut PageData<PageId, ButtonId>)
-    {
-        if !app.capturing_input.0 {return} 
-        let Some(id) = app.capturing_input.1 else {return};
-        for(page_id,button_id, string)in &mut data.vec_user_input
-        {
-            if *page_id == app.current_page && *button_id == id
-            {
-                if let Some((s,e)) = self.selection.take()
-                {
-                    let s = s.min(string.len());
-                    let e = e.min(string.len());
-                    string.replace_range(s..e,"");
-                    self.cursor_pos = s
-                }
-                else if self.cursor_pos > 0
-                {
-                    string.remove(self.cursor_pos-1);self.cursor_pos-=1
-                }
-                break;
-            }
-        }
-        data.update_vec_user_input_string()
-    }
-
-    pub fn paste(&mut self, option_clipboard_util: Option<&mut ClipboardUtil>, app: &AppState<PageId,ButtonId>, data: &mut PageData<PageId,ButtonId>)
-    {
-        if let Some(clipboard_util) = option_clipboard_util && let Ok(txt) = clipboard_util.clipboard_text() { self.insert_text(&txt, app, data); }
-    }
-
-    pub fn copy(&mut self, option_clipboard_util: Option<&mut ClipboardUtil>, app: &AppState<PageId, ButtonId>, data: &mut PageData<PageId, ButtonId>, cut: bool)
-    {
-        if !app.capturing_input.0 { return }
-        let Some(id) = app.capturing_input.1 else { return };
-        if let Some(clipboard_util)= option_clipboard_util
-        {
-            for(page_id,button_id, string) in &mut data.vec_user_input
-            {
-                if *page_id == app.current_page && *button_id == id && !string.is_empty() && let Some((start_of_selection, end_of_selection)) = self.selection
-                {
-                    let (start_of_selection, end_of_selection) = if start_of_selection <= end_of_selection 
-                    {
-                        (start_of_selection, end_of_selection)
+                    let (mut start_index, mut end_index) = if anchor_index <= cursor_index { (anchor_index, cursor_index) } else { (cursor_index, anchor_index) };
+                    start_index = start_index.min(input_string.len()); 
+                    end_index = end_index.min(input_string.len());
+                    if start_index != end_index 
+                    { 
+                        input_string.replace_range(start_index..end_index, text_to_insert); 
+                        self.cursor_position = start_index + text_to_insert.len() 
                     } 
                     else 
-                    {
-                        (end_of_selection, start_of_selection)
-                    };
-                    let start_of_selection = start_of_selection.min(string.len());
-                    if start_of_selection.abs_diff(end_of_selection) >= 1
-                    {
-                        let end_of_string = end_of_selection.min(string.len());
-                        let sub = string[start_of_selection..end_of_string].to_string();
-                        clipboard_util.set_clipboard_text(&sub.clone()).unwrap_or(());
-                        if cut
-                        {
-                            string.replace_range(start_of_selection..end_of_selection,"");
-                            self.cursor_pos = start_of_selection;
-                            self.selection = None
-                        }
-                        break;
+                    { 
+                        let insert_index = self.cursor_position.min(input_string.len());
+                        input_string.insert_str(insert_index, text_to_insert);
+                        self.cursor_position = insert_index + text_to_insert.len() 
                     }
-                }
-            }
-        }
-        data.update_vec_user_input_string()
-    }
-
-    pub fn select_all(&mut self, app: &AppState<PageId, ButtonId>, data: &mut PageData<PageId, ButtonId>)
-    {
-        if !app.capturing_input.0{return};
-        let Some(id) = app.capturing_input.1 else {return};
-        for(page_id,button_id, string) in &mut data.vec_user_input
-        {
-            if *page_id == app.current_page && *button_id == id
-            {
-                self.selection = Some((0, string.len()));
-                self.cursor_pos = string.len();
-                break;
-            }
-        }
-    }
-
-    pub fn delete_all(&mut self, app: &AppState<PageId, ButtonId>, data: &mut PageData<PageId, ButtonId>)
-    {
-        if !app.capturing_input.0{return};
-        let Some(id) = app.capturing_input.1 else {return};
-        for(page_id, button_id, string) in &mut data.vec_user_input
-        {
-            if *page_id == app.current_page && *button_id == id
-            {
-                string.clear();
-                self.cursor_pos=0;
-                self.selection=None;
-                break;
-            }
-        }
-        data.update_vec_user_input_string()
-    }
-
-    pub fn move_cursor(&mut self, right: bool, shift_held: bool, app: &AppState<PageId, ButtonId>, data: &mut PageData<PageId, ButtonId>)
-    {
-        if !app.capturing_input.0 { return; }
-        let Some(id) = app.capturing_input.1 else { return; };
-    
-        let mut text_length = 0;
-        for (page_id, button_id, string) in &mut data.vec_user_input
-        {
-            if *page_id == app.current_page && *button_id == id
-            {
-                text_length = string.len();
-                break;
-            }
-        }
-    
-        if shift_held
-        {
-            if self.selection.is_none() {self.selection = Some((self.cursor_pos, self.cursor_pos));}
-    
-            if let Some((anchor, _cursor)) = self.selection
-            {
-                let new_cursor = if right
-                {
-                    (self.cursor_pos + 1).min(text_length)
                 }
                 else
                 {
-                    self.cursor_pos.saturating_sub(1)
-                };
-    
-                self.selection = Some((anchor, new_cursor));
-                self.cursor_pos = new_cursor;
+                    let insert_index = self.cursor_position.min(input_string.len()); 
+                    input_string.insert_str(insert_index, text_to_insert); 
+                    self.cursor_position = insert_index + text_to_insert.len()
+                }
+                break;
+            }
+        }
+        page_data.update_vec_user_input_string()
+    }
+
+    pub fn backspace(&mut self, app_state: &mut AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>)
+    {
+        if !app_state.capturing_input.0 { return }
+        let Some(active_button_id) = app_state.capturing_input.1 else { return };
+        for (page_id, button_id, input_string) in &mut page_data.vec_user_input
+        {
+            if *page_id == app_state.current_page && *button_id == active_button_id
+            {
+                if let Some((anchor_index, cursor_index)) = self.text_selection_range.take()
+                {
+                    let (mut start_index, mut end_index) = if anchor_index <= cursor_index { (anchor_index, cursor_index) } else { (cursor_index, anchor_index) };
+                    start_index = start_index.min(input_string.len()); 
+                    end_index = end_index.min(input_string.len());
+                    if start_index != end_index { input_string.replace_range(start_index..end_index, ""); self.cursor_position = start_index }
+                }
+                else if self.cursor_position > 0
+                {
+                    let remove_index = self.cursor_position - 1;
+                    if remove_index < input_string.len() { input_string.remove(remove_index); self.cursor_position -= 1 }
+                }
+                break;
+            }
+        }
+        page_data.update_vec_user_input_string()
+    }
+
+
+    pub fn copy(&mut self, clipboard_util_option: Option<&mut ClipboardUtil>, app_state: &AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>, is_cut_operation: bool)
+    {
+        if !app_state.capturing_input.0 { return }
+        let Some(active_button_id) = app_state.capturing_input.1 else { return };
+        if let Some(clipboard_util) = clipboard_util_option
+        {
+            for (page_id, button_id, input_string) in &mut page_data.vec_user_input
+            {
+                if *page_id == app_state.current_page && *button_id == active_button_id && !input_string.is_empty() && let Some((anchor_index, cursor_index)) = self.text_selection_range
+                {
+                    let (mut start_index, mut end_index) = if anchor_index <= cursor_index { (anchor_index, cursor_index) } else { (cursor_index, anchor_index) };
+                    start_index = start_index.min(input_string.len()); 
+                    end_index = end_index.min(input_string.len());
+                    if start_index < end_index
+                    {
+                        let selected_text = input_string[start_index..end_index].to_string(); 
+                        let _ = clipboard_util.set_clipboard_text(&selected_text);
+                        if is_cut_operation { input_string.replace_range(start_index..end_index, ""); 
+                        self.cursor_position = start_index; 
+                        self.text_selection_range = None }
+                    }
+                    break;
+                }
+            }
+        }
+        page_data.update_vec_user_input_string()
+    }
+
+    pub fn select_all(&mut self, app_state: &AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>)
+    {
+        if !app_state.capturing_input.0 { return }
+        let Some(active_button_id) = app_state.capturing_input.1 else { return };
+        for (page_id, button_id, input_string) in &mut page_data.vec_user_input
+        {
+            if *page_id == app_state.current_page && *button_id == active_button_id { self.text_selection_range = Some((0, input_string.len())); self.cursor_position = input_string.len(); break }
+        }
+    }
+
+    pub fn delete_all(&mut self, app_state: &AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>)
+    {
+        if !app_state.capturing_input.0 { return }
+        let Some(active_button_id) = app_state.capturing_input.1 else { return };
+        for (page_id, button_id, input_string) in &mut page_data.vec_user_input
+        {
+            if *page_id == app_state.current_page && *button_id == active_button_id { input_string.clear(); self.cursor_position = 0; self.text_selection_range = None; break }
+        }
+        page_data.update_vec_user_input_string()
+    }
+
+    pub fn move_cursor(&mut self, move_right: bool, shift_held: bool, app_state: &AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>)
+    {
+        if !app_state.capturing_input.0 { return }
+        let Some(active_button_id) = app_state.capturing_input.1 else { return };
+        let mut text_length = 0;
+        for (page_id, button_id, input_string) in &mut page_data.vec_user_input { if *page_id == app_state.current_page && *button_id == active_button_id { text_length = input_string.len(); break } }
+        if shift_held
+        {
+            if self.text_selection_range.is_none() { self.text_selection_range = Some((self.cursor_position, self.cursor_position)) }
+            if let Some((anchor_index, _cursor_index)) = self.text_selection_range
+            {
+                let new_cursor_index = if move_right { (self.cursor_position + 1).min(text_length) } else { self.cursor_position.saturating_sub(1) };
+                self.text_selection_range = Some((anchor_index, new_cursor_index)); 
+                self.cursor_position = new_cursor_index;
             }
         }
         else
         {
-            self.selection = None;
-            self.cursor_pos = if right
-            {
-                (self.cursor_pos + 1).min(text_length)
-            }
-            else
-            {
-                self.cursor_pos.saturating_sub(1)
-            };
+            self.text_selection_range = None;
+            self.cursor_position = if move_right { (self.cursor_position + 1).min(text_length) } else { self.cursor_position.saturating_sub(1) };
         }
     }
 
-    pub fn len_of_current_input(&self, app: &AppState<PageId, ButtonId>, data: &PageData<PageId, ButtonId>, id: ButtonId) -> usize
+    pub fn navigate_history(&self, move_forward: bool, app_state: &mut AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>)
     {
-        for(page_id, button_id, string) in &data.vec_user_input
+        if !page_data.page_history.0.is_empty() && !app_state.capturing_input.0
         {
-            if *page_id == app.current_page && *button_id == id {return string.len()}
+            if move_forward { if page_data.page_history.1 + 1 < page_data.page_history.0.len() { page_data.page_history.1 += 1 }; if let Some(page_id) = page_data.page_history.0.get(page_data.page_history.1) { app_state.current_page = *page_id } }
+            else { if page_data.page_history.1 > 0 { page_data.page_history.1 -= 1 }; if let Some(page_id) = page_data.page_history.0.get(page_data.page_history.1) { app_state.current_page = *page_id } }
         }
-        0
     }
 
-    pub fn history(&self, front: bool, app: &mut AppState<PageId, ButtonId>, data: &mut PageData<PageId, ButtonId>)
-    {
-        if !data.page_history.0.is_empty() && !app.capturing_input.0
-        {
-            if front
-            {
-                if data.page_history.1 + 1 < data.page_history.0.len() { data.page_history.1+=1 };
-                if let Some(page_id) = data.page_history.0.get(data.page_history.1) { app.current_page= *page_id }
-            }
-            else
-            {
-                if data.page_history.1 > 0 { data.page_history.1 -= 1 };
-                if let Some(page_id) = data.page_history.0.get(data.page_history.1) { app.current_page= *page_id} 
-            }
-        }
-    }
+    pub fn paste(&mut self, clipboard_util_option: Option<&mut ClipboardUtil>, app_state: &AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>) {if let Some(clipboard_util) = clipboard_util_option && let Ok(clipboard_text) = clipboard_util.clipboard_text() { self.insert_text(&clipboard_text, app_state, page_data) } }
+
+    pub fn push_state(&mut self, page_data: &PageData<PageId, ButtonId>) { self.input_history_stack.push(page_data.vec_user_input.clone()) }
+
+    pub fn undo(&mut self, page_data: &mut PageData<PageId, ButtonId>) {if let Some(previous_input_state) = self.input_history_stack.pop() { page_data.vec_user_input = previous_input_state; page_data.update_vec_user_input_string() }}
+
+    pub fn get_current_input_length(&self, app_state: &AppState<PageId, ButtonId>, page_data: &PageData<PageId, ButtonId>, button_id: ButtonId) -> usize {for (page_id, button_id_in_vec, input_string) in &page_data.vec_user_input { if *page_id == app_state.current_page && *button_id_in_vec == button_id { return input_string.len() } } 0 }
 }
 

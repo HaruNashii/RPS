@@ -362,7 +362,7 @@ fn input_handler_insert_text_respects_cursor_positionition()
 
     let mut input_handler = create_input_handler();
     input_handler.cursor_position = 2; // after "hi"
-    input_handler.insert_text(" there", &application_state, &mut page_data);
+    input_handler.insert_text(" there", &application_state, &mut page_data, false);
 
     assert_eq!(page_data.vec_user_input[0].2, "hi there");
 }

@@ -97,7 +97,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
         match self.poll(event_pump)
         {
             InputEvent::Click                           => { if let Some(button_id) = self.button_selected { button_action(app_state, &button_id, page_data); if app_state.capturing_input.0 { self.cursor_position = self.get_current_input_length(app_state, page_data, button_id); self.text_selection_range = None } } else { app_state.capturing_input = (false, None); self.text_selection_range = None } }
-            InputEvent::Text(text_input)        => { self.push_state(page_data); self.insert_text(&text_input, app_state, page_data) }
+            InputEvent::Text(text_input)        => { self.push_state(page_data); self.insert_text(&text_input, app_state, page_data, false) }
             InputEvent::Backspace                       => { self.push_state(page_data); self.backspace(app_state, page_data) }
             InputEvent::Paste                           => { self.push_state(page_data); self.paste(Some(clipboard_util), app_state, page_data) }
             InputEvent::Cut                             => { self.push_state(page_data); self.copy(Some(clipboard_util), app_state, page_data, true) }
@@ -116,7 +116,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
         }
     }
 
-    pub fn insert_text(&mut self, text_to_insert: &str, app_state: &AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>)
+    pub fn insert_text(&mut self, text_to_insert: &str, app_state: &AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>, is_paste: bool)
     {
         if !app_state.capturing_input.0 { return }
         let Some(active_button_id) = app_state.capturing_input.1 else { return };
@@ -148,6 +148,10 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
                     self.cursor_position = insert_index + text_to_insert.len()
                 }
                 break;
+            }
+            if is_paste
+            {
+                self.cursor_position = input_string.len();
             }
         }
         page_data.update_vec_user_input_string()
@@ -261,7 +265,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
         }
     }
 
-    pub fn paste(&mut self, clipboard_util_option: Option<&mut ClipboardUtil>, app_state: &AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>) {if let Some(clipboard_util) = clipboard_util_option && let Ok(clipboard_text) = clipboard_util.clipboard_text() { self.insert_text(&clipboard_text, app_state, page_data) } }
+    pub fn paste(&mut self, clipboard_util_option: Option<&mut ClipboardUtil>, app_state: &AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>) {if let Some(clipboard_util) = clipboard_util_option && let Ok(clipboard_text) = clipboard_util.clipboard_text() { self.insert_text(&clipboard_text, app_state, page_data, true); } }
 
     pub fn push_state(&mut self, page_data: &PageData<PageId, ButtonId>) { self.input_history_stack.push(page_data.vec_user_input.clone()) }
 

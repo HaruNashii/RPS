@@ -30,7 +30,7 @@ enum TestButton
 
 fn create_state() -> (AppState<TestPage, TestButton>, PageData<TestPage, TestButton>)
 {
-    let application_state: AppState<TestPage, TestButton> = AppState::new(TestPage::Home);
+    let application_state: AppState<TestPage, TestButton> = AppState::new(TestPage::Home, None);
     let page_data: PageData<TestPage, TestButton> = PageData::new(&application_state);
     (application_state, page_data)
 }
@@ -53,7 +53,7 @@ fn create_input_handler() -> InputHandler<TestPage, TestButton>
 #[test]
 fn app_state_initialization_defaults()
 {
-    let application_state: AppState<TestPage, TestButton> = AppState::new(TestPage::Home);
+    let application_state: AppState<TestPage, TestButton> = AppState::new(TestPage::Home, None);
 
     assert_eq!(application_state.current_page, TestPage::Home);
     assert_eq!(application_state.capturing_input, (false, None));
@@ -96,7 +96,7 @@ fn app_state_tracks_multiple_page_transitions()
 #[test]
 fn app_state_window_size_can_be_updated()
 {
-    let mut application_state: AppState<TestPage, TestButton> = AppState::new(TestPage::Profile);
+    let mut application_state: AppState<TestPage, TestButton> = AppState::new(TestPage::Profile, None);
 
     application_state.update_window_size((1920, 1080));
 

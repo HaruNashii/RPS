@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 use std::f64::consts::PI;
-use crate::{AppState, sdl::sdl3_generators::{GenImage, GenText}, system::{page_system::{Page, PageData, PersistentElements, Button}, input_handler::InputHandler }};
+use crate::{sdl::sdl3_generators::{GenImage, GenText}, system::{input_handler::InputHandler, page_system::{Button, Page, PageData, PersistentElements}, scene_transition::{SceneTransition, TransitionType} }, AppState};
 use sdl3::{pixels::Color, rect::Rect, render::{Canvas, TextureCreator}, ttf::Sdl3TtfContext, video::{Window, WindowContext}};
 
 
@@ -27,7 +27,7 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
 {
     pub fn new(canvas: &'a mut Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, ttf_context: &'a Sdl3TtfContext, font_path: &'a String, decrease_color_when_selected: Option<(u8, u8, u8)>, selection_color: Option<(u8, u8, u8, u8)>) -> Self { Self{_page_id: None, _button_id: None, canvas, texture_creator, ttf_context, font_path, decrease_color_when_selected, selection_color} }
 
-    pub fn render(&mut self, page_data: &PageData<PageId, ButtonId>, app_state: &AppState<PageId, ButtonId>, input_handler: &InputHandler<PageId, ButtonId>) 
+    pub fn render(&mut self, page_data: &PageData<PageId, ButtonId>, app_state: &mut AppState<PageId, ButtonId>, input_handler: &InputHandler<PageId, ButtonId>) 
     {
         if let Some(page)=&page_data.page_to_render
         {
@@ -38,7 +38,7 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
         }
     }
 
-    pub fn render_page(&mut self, page: &Page<PageId, ButtonId>, persistent_elements: Option<&Vec<PersistentElements<PageId, ButtonId>>>, page_data: &PageData<PageId, ButtonId>, app_state: &AppState<PageId, ButtonId>, input_handler: &InputHandler<PageId, ButtonId>)
+    pub fn render_page(&mut self, page: &Page<PageId, ButtonId>, persistent_elements: Option<&Vec<PersistentElements<PageId, ButtonId>>>, page_data: &PageData<PageId, ButtonId>, app_state: &mut AppState<PageId, ButtonId>, input_handler: &InputHandler<PageId, ButtonId>)
     {
         match page.background_color
         {
@@ -53,6 +53,19 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
         { 
             self.render_elements(Some(page), None, page_data, app_state, input_handler); 
         }
+
+        // === scene transition overlay ===
+        if let Some(transition) = &mut app_state.scene_transition
+        {
+            if !transition.has_switched && transition.is_second_stage && let Some(next_page) = transition.next_page.take()
+            {
+                app_state.current_page = next_page;
+                transition.has_switched = true;
+            }
+            if transition.update(){transition.active=false;}
+            else{self.draw_transition_overlay(transition);}
+        }
+
         self.canvas.present();
     }
 
@@ -235,6 +248,21 @@ impl<'a, PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> Renderer<'a, Pa
             let caret_x = measure_text_x(selection_start);
             self.canvas.set_draw_color(Color::RGB(255,255,255));
             let _ = self.canvas.fill_rect(Rect::new(caret_x,baseline_y,2,text_height));
+        }
+    }
+
+    pub fn draw_transition_overlay(&mut self,transition: &SceneTransition<PageId>)
+    {
+        match transition.transition_type
+        {
+            TransitionType::Fade(alpha)=>
+            {
+                let a=(alpha*255.0)as u8;
+                self.canvas.set_draw_color(Color::RGBA(0,0,0,a));
+                let _=self.canvas.fill_rect(None);
+            },
+            TransitionType::Slide(_) => {},
+            _=>{}
         }
     }
 

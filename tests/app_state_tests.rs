@@ -30,7 +30,7 @@ enum TestButton
 
 fn create_state() -> (AppState<TestPage, TestButton>, PageData<TestPage, TestButton>)
 {
-    let application_state: AppState<TestPage, TestButton> = AppState::new(TestPage::Home, None);
+    let application_state: AppState<TestPage, TestButton> = AppState::new(TestPage::Home, (1920, 1080));
     let page_data: PageData<TestPage, TestButton> = PageData::new(&application_state);
     (application_state, page_data)
 }
@@ -53,7 +53,7 @@ fn create_input_handler() -> InputHandler<TestPage, TestButton>
 #[test]
 fn app_state_initialization_defaults()
 {
-    let application_state: AppState<TestPage, TestButton> = AppState::new(TestPage::Home, None);
+    let application_state: AppState<TestPage, TestButton> = AppState::new(TestPage::Home, (1920, 1080));
 
     assert_eq!(application_state.current_page, TestPage::Home);
     assert_eq!(application_state.capturing_input, (false, None));
@@ -96,9 +96,9 @@ fn app_state_tracks_multiple_page_transitions()
 #[test]
 fn app_state_window_size_can_be_updated()
 {
-    let mut application_state: AppState<TestPage, TestButton> = AppState::new(TestPage::Profile, None);
+    let mut application_state: AppState<TestPage, TestButton> = AppState::new(TestPage::Profile, (1920, 1080));
 
-    application_state.update_window_size((1920, 1080));
+    application_state.update_window_size(1920, 1080);
 
     assert_eq!(application_state.window_size, (1920, 1080));
 }
@@ -138,6 +138,7 @@ fn page_data_adds_unique_user_inputs_without_duplicates()
         buttons: None,
         texts: None,
         images: None,
+        has_transition: None,
     };
 
     page_data.push_vec_user_input_per_page(&mut single_input_page);
@@ -184,6 +185,7 @@ fn page_data_button_detection_within_bounds()
         buttons: Some(vec![clickable_button]),
         texts: None,
         images: None,
+        has_transition: None,
     };
 
     page_data.page_to_render = Some(page_with_button);
@@ -214,6 +216,7 @@ fn page_data_button_detection_out_of_bounds_returns_none()
         buttons: Some(vec![button]),
         texts: None,
         images: None,
+        has_transition: None,
     };
 
     page_data.page_to_render = Some(page);
@@ -394,18 +397,13 @@ fn renderer_button_matches_returns_correct_boolean()
 fn renderer_find_active_input_text_returns_expected_value()
 {
     let (application_state, mut page_data) = create_state();
-
     // We cannot zero-initialize Renderer because it contains lifetimes.
     // Instead, we simulate a minimal renderer mock by using MaybeUninit without assuming init.
     // This test only checks the method’s behavior, not renderer’s state.
     struct MockRenderer;
     impl MockRenderer
     {
-        fn find_active_input_text<'p>(
-            data: &'p PageData<TestPage, TestButton>,
-            _app: &AppState<TestPage, TestButton>,
-            button: TestButton
-        ) -> Option<&'p str>
+        fn find_active_input_text<'p>(data: &'p PageData<TestPage, TestButton>, _app: &AppState<TestPage, TestButton>, button: TestButton) -> Option<&'p str>
         {
             for (page, id, text) in &data.vec_user_input
             {

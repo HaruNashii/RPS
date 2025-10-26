@@ -1,12 +1,13 @@
 use std::env;
 use sdl3::rect::Rect;
-use rust_page_system::{misc::center_elements::get_center, system::{page_system::{Button, Page}, window::WINDOW_DEFAULT_SCALE}, GetOrCreate, PersistentElements};
+use rust_page_system::{misc::center_elements::get_center, system::{page_system::{Button, Page}, scene_transition::TransitionType, window::WINDOW_DEFAULT_SCALE}, GetOrCreate, PersistentElements};
 use crate::ui::style::{BACKGROUND_COLOR, BLACK_COLOR, ORANGE_COLOR, PINK_COLOR, PURPLE_COLOR, RED_COLOR, SUBTEXT_COLOR, TEXT_COLOR};
 
 
 
 
 
+// TransitionType::Slide second arg, 0 = Down \ 1 = Up \ 2 = Right \ 3 = Left
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 /// Defines The ID for your Pages
 pub enum PageId 
@@ -125,7 +126,7 @@ pub fn page_1(user_input: &mut Vec<String>) -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_userinput: Some(vec![(PageId::Page1, ButtonId::ButtonPurpleInputStartPage1), (PageId::Page1, ButtonId::ButtonRedInputStartPage1)]), has_persistent_elements: Some(vec![(PageId::Persistent1, persistent_elements1)]), id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_userinput: Some(vec![(PageId::Page1, ButtonId::ButtonPurpleInputStartPage1), (PageId::Page1, ButtonId::ButtonRedInputStartPage1)]), has_persistent_elements: Some(vec![(PageId::Persistent1, persistent_elements1)]), has_transition: Some(TransitionType::Slide(0., 2, 5000)), id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 
 pub fn page_2(user_input: &mut Vec<String>) -> Page<PageId, ButtonId>
@@ -148,7 +149,7 @@ pub fn page_2(user_input: &mut Vec<String>) -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_userinput: Some(vec![(PageId::Page2, ButtonId::ButtonPurpleInputStartPage2)]), has_persistent_elements: Some(vec![(PageId::Persistent1, persistent_elements1), (PageId::Persistent2, persistent_elements2)]), id: PageId::Page2, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_userinput: Some(vec![(PageId::Page2, ButtonId::ButtonPurpleInputStartPage2)]), has_persistent_elements: Some(vec![(PageId::Persistent1, persistent_elements1), (PageId::Persistent2, persistent_elements2)]),  has_transition: Some(TransitionType::Slide(0., 3, 5000)), id: PageId::Page2, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 
 pub fn subpage_page2() -> Page<PageId, ButtonId>
@@ -173,5 +174,5 @@ pub fn subpage_page2() -> Page<PageId, ButtonId>
     ];
 
     //===================== page creation =========================
-    Page { has_userinput: None, has_persistent_elements: Some(vec![(PageId::Persistent2, persistent_elements2)]), id: PageId::Page2SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
+    Page { has_userinput: None, has_persistent_elements: Some(vec![(PageId::Persistent2, persistent_elements2)]),   has_transition: Some(TransitionType::Fade(0.1)), id: PageId::Page2SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
 }

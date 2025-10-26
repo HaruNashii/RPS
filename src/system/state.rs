@@ -1,35 +1,86 @@
 use std::fmt::Debug;
-use crate::system::{page_system::PageData, scene_transition::{SceneTransition, TransitionType}, window::WINDOW_DEFAULT_SCALE};
+use crate::{system::page_system::PageData, system::scene_transition::{SceneTransition, TransitionType}};
 
 
 
 
 
-/// Global application state that holds the state and logic data.
-#[derive(PartialEq, Debug, Clone)]
+/// Global application state that holds page navigation,
+/// transitions, and user input tracking.
+#[derive(Debug, Clone)]
 pub struct AppState<PageId, ButtonId>
 {
     pub current_page: PageId,
-    pub capturing_input: (bool, Option<ButtonId>),
-    pub window_size: (u32, u32),
     pub scene_transition: Option<SceneTransition<PageId>>,
-    pub current_transition_type: Option<TransitionType>
+    pub current_transition_type: Option<TransitionType>,
+    pub window_size: (u32, u32),
+    pub capturing_input: (bool, Option<ButtonId>),
 }
+
 impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> AppState<PageId, ButtonId>
 {
-    /// Create The App State
-    pub fn new(page_id: PageId, current_transition_type: Option<TransitionType>) -> Self { Self { current_page: page_id, capturing_input: (false, None), window_size: (WINDOW_DEFAULT_SCALE.0, WINDOW_DEFAULT_SCALE.1), scene_transition: None, current_transition_type } }
-    pub fn update_window_size(&mut self, received_window_size: (u32, u32)) { self.window_size = received_window_size}
-    pub fn change_current_page(&mut self, app_data: &mut PageData<PageId,ButtonId>, page_to_change: PageId) 
+    /// Create a new app state with a starting page.
+    pub fn new(start_page: PageId, window_size: (u32, u32)) -> Self
     {
-        if page_to_change != self.current_page 
+        Self
         {
-            self.current_page = page_to_change; 
-            app_data.page_history.0.push_back(self.current_page); app_data.page_history.1 += 1; 
-            if let Some(transition_type) = &self.current_transition_type
-            {
-                self.scene_transition = Some(SceneTransition::new(transition_type.clone(), 500, Some(page_to_change)));
-            };
-        } 
+            current_page: start_page,
+            scene_transition: None,
+            current_transition_type: None,
+            window_size,
+            capturing_input: (false, None),
+        }
+    }
+
+    /// Change to a new page, optionally triggering a transition.
+    pub fn change_current_page(&mut self, page_data: &mut PageData<PageId, ButtonId>, next_page: PageId)
+    {
+        if next_page == self.current_page { return; }
+
+        if let Some(page_to_render) = &page_data.page_to_render && let Some(transition_type) = &page_to_render.has_transition
+        {
+            // Start a new SceneTransition
+            self.scene_transition = Some(SceneTransition::new(transition_type.clone(), 500, Some(next_page)));
+        }
+        else
+        {
+            // No transition requested → just switch directly.
+            self.current_page = next_page;
+        }
+
+        // Track history if your PageData keeps navigation stack
+        if !page_data.page_history.0.contains(&next_page) { page_data.page_history.0.push_back(next_page); }
+        page_data.page_history.1 = page_data.page_history.0.len().saturating_sub(1);
+    }
+
+    /// Returns whether a scene transition is currently active.
+    pub fn is_transition_active(&self) -> bool
+    {
+        self.scene_transition.as_ref().is_some_and(|t| t.active)
+    }
+
+    /// Update window size (e.g., on resize events)
+    pub fn update_window_size(&mut self, width: u32, height: u32)
+    {
+        self.window_size = (width, height);
+    }
+
+    /// Begin capturing user input for a specific button ID
+    pub fn begin_capturing_input(&mut self, button: ButtonId)
+    {
+        self.capturing_input = (true, Some(button));
+    }
+
+    /// Stop capturing user input
+    pub fn stop_capturing_input(&mut self)
+    {
+        self.capturing_input = (false, None);
+    }
+
+    /// Check if currently capturing input
+    pub fn is_capturing(&self) -> bool
+    {
+        self.capturing_input.0
     }
 }
+

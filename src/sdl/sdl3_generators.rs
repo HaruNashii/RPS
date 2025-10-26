@@ -12,13 +12,13 @@ use sdl3::
 
 
 
-pub trait GenText { fn generate_text(&self, font_path: &str) -> Vec<(Texture<'_>, Rect)>; }
-impl GenText for (&Vec<(f64, (i32, i32), String, Color)>, &TextureCreator<WindowContext>, &Sdl3TtfContext)
+pub trait GenText { fn generate_text(&mut self, font_path: &str) -> Vec<(Texture<'_>, Rect)>; }
+impl GenText for (&mut Vec<(f64, (i32, i32), String, Color)>, &TextureCreator<WindowContext>, &Sdl3TtfContext)
 {
-    fn generate_text(&self, font_path: &str) -> Vec<(Texture<'_>, Rect)>
+    fn generate_text(&mut self, font_path: &str) -> Vec<(Texture<'_>, Rect)>
     {
         let mut vector_to_send = Vec::new();
-        for font_content in self.0
+        for font_content in &mut *self.0
         {
             let text_content = if font_content.2.is_empty() { " " } else { &font_content.2 };
             let font = self.2.load_font(font_path, font_content.0 as f32).expect("Failed to load font");
@@ -47,13 +47,13 @@ impl GenText for (&Vec<(f64, (i32, i32), String, Color)>, &TextureCreator<Window
 
 
 
-pub trait GenImage { fn generate_image(&self) -> Vec<(Texture<'_>, Rect)>; }
-impl GenImage for (&Vec<((i32, i32), (u32, u32), String)>, &TextureCreator<WindowContext>) 
+pub trait GenImage { fn generate_image(&mut self) -> Vec<(Texture<'_>, Rect)>; }
+impl GenImage for (&mut Vec<((i32, i32), (u32, u32), String)>, &TextureCreator<WindowContext>) 
 {
-    fn generate_image(&self) -> Vec<(Texture<'_>, Rect)> 
+    fn generate_image(&mut self) -> Vec<(Texture<'_>, Rect)> 
     {
         let mut new_vec = Vec::new();
-        for text_infos in self.0 
+        for text_infos in &mut *self.0 
         {
             if fs::exists(text_infos.2.clone()).expect("Failed To Check If File Exist") 
             {

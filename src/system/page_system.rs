@@ -1,5 +1,5 @@
 use std::{collections::VecDeque, fmt::Debug};
-use crate::{system::window::WINDOW_DEFAULT_SCALE, AppState};
+use crate::{system::{scene_transition::TransitionType, window::WINDOW_DEFAULT_SCALE}, AppState};
 use sdl3::{pixels::Color, rect::Rect};
 
 
@@ -14,6 +14,7 @@ pub struct Page<PageId, ButtonId>
 {
     pub has_persistent_elements: PersistentElementsType<PageId, ButtonId>,
     pub has_userinput: Option<Vec<(PageId, ButtonId)>>,
+    pub has_transition: Option<TransitionType>,
     pub id: PageId,
     pub background_color: Option<Color>,
     pub rects: Rects,
@@ -101,6 +102,38 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
                 }
             }
         }
+    }
+
+    pub fn create_page_from_id(&mut self, page_to_create: PageId) -> Option<Page<PageId, ButtonId>>
+    {
+        let mut created_page = None;
+        for page in &self.page_linked.clone()
+        {
+            if page_to_create == page.0 
+            { 
+                created_page = Some(page.1()); 
+                if let Some(ref page_from_created_page) = created_page && let Some(result) = &page_from_created_page.has_persistent_elements
+                {
+                    let mut vec_persistent_element = Vec::new();
+                    for (_, persistent_element) in result { vec_persistent_element.push(persistent_element()); }
+                    self.persistent_elements_to_render = vec_persistent_element;
+                }
+            }
+        }
+        for page_w_input_linked in &self.page_w_input_linked.clone()
+        {
+            if page_to_create == page_w_input_linked.0 
+            { 
+                created_page = Some(page_w_input_linked.1(&mut self.vec_user_input_string)); 
+                if let Some(ref page_from_created_page) = created_page&& let Some(result) = &page_from_created_page.has_persistent_elements
+                {
+                    let mut vec_persistent_element = Vec::new();
+                    for (_, persistent_element) in result { vec_persistent_element.push(persistent_element()); }
+                    self.persistent_elements_to_render = vec_persistent_element;
+                }
+            }
+        }
+        created_page
     }
 
     /// Populate vec_user_input per page

@@ -318,7 +318,6 @@ Runtime errors on Windows
 
 ## Roadmap / Ideas
 - Deterministic update loop with fixed timestep guidance
-- Smooth transitions (fade/slide) between pages
 - Resource manager for textures/fonts/sounds
 - Input remapping and configurable controls
 - Add more unit/integration tests for the page manager logic

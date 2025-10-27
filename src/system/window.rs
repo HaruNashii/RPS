@@ -70,7 +70,7 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
                 {
                     if let Some((_, after)) = icon_path.rsplit_once('.') 
                     {
-                        if after == "bpm"
+                        if after == "bmp"
                         {
                             let icon_surface = Surface::load_bmp(icon_path).unwrap();
                             window.set_icon(&icon_surface);

@@ -73,10 +73,10 @@ use std::{env, time::Duration};
 use sdl3::{pixels::Color, rect::Rect, sys::render::SDL_LOGICAL_PRESENTATION_STRETCH};
 use rust_page_system::
 {
-    misc::{center_elements::get_center, vec::GetOrCreate}, system::
-    {
-        input_handler::InputHandler, page_system::{Page, PageData, PersistentElements}, state::AppState, window::{create_window, get_monitor_refresh_rate, WindowConfig}
-    }, Button, Renderer
+    Button, 
+    Renderer
+    misc::{center_elements::get_center, vec::GetOrCreate}, 
+    system::{input_handler::InputHandler, page_system::{Page, PageData, PersistentElements}, renderer::RendererConfig, state::AppState, window::{create_window, get_monitor_refresh_rate, WindowConfig}}, 
 };
 
 
@@ -101,11 +101,23 @@ fn main()
         font: ("JetBrainsMono".to_string(), Some("Bold".to_string()))
     };
     let mut window_modules = create_window(window_config);
+
     //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys") | (false = Page Rollback On), (true = Page Rollback Off)
     let mut input_handler = InputHandler::new(false);
     let mut app_state = AppState::new(PageId::Page1, window_modules.canvas.window().size());
     let mut page_data = PageData::new(&app_state);
-    let mut renderer = Renderer::new(window_modules.canvas, &window_modules.texture_creator, &window_modules.ttf_context, &window_modules.font_path, Some((25, 25, 25)), Some((0, 0, 200, 125)));
+
+    let renderer_config = RendererConfig
+    {
+        canvas: window_modules.canvas, 
+        texture_creator: &window_modules.texture_creator, 
+        ttf_context: &window_modules.ttf_context,
+        font_path: &window_modules.font_path,
+        decrease_color_when_selected: Some((25, 25, 25)),
+        selection_color: Some((0, 0, 200, 125)),
+
+    };
+    let mut renderer = Renderer::new(renderer_config);
 
     populate_page_data(&mut page_data);
 
@@ -119,7 +131,6 @@ fn main()
         renderer.render(&page_data, &mut app_state, &input_handler);
     }
 }
-
 
 
 
@@ -137,8 +148,6 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
         app_state.capturing_input = (true, Some(*button_id));
     }
 }
-
-
 
 
 
@@ -191,7 +200,6 @@ pub enum ButtonId
     ButtonSubPage,
     ButtonBack,
 }
-
 
 // Define Your Pages Here:
 pub fn persistent_elements() -> PersistentElements<PageId, ButtonId>

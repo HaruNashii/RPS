@@ -22,21 +22,29 @@ pub struct Renderer<'a, PageId, ButtonId>
 }
 
 
-
+pub struct RendererConfig<'a>
+{
+    pub canvas: Canvas<Window>,
+    pub texture_creator: &'a TextureCreator<WindowContext>,
+    pub ttf_context: &'a Sdl3TtfContext, 
+    pub font_path: &'a String, 
+    pub decrease_color_when_selected: Option<(u8, u8, u8)>, 
+    pub selection_color: Option<(u8, u8, u8, u8)>
+}
 
 
 impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId> 
 {
-    pub fn new(canvas: Canvas<Window>, texture_creator: &'a TextureCreator<WindowContext>, ttf_context: &'a Sdl3TtfContext, font_path: &'a String, decrease_color_when_selected: Option<(u8, u8, u8)>, selection_color: Option<(u8, u8, u8, u8)>) -> Self 
+    pub fn new(render_config: RendererConfig<'a>) -> Self 
     {
         Self 
         {
-            canvas,
-            texture_creator,
-            ttf_context,
-            font_path,
-            decrease_color_when_selected,
-            selection_color,
+            canvas: render_config.canvas,
+            texture_creator: render_config.texture_creator,
+            ttf_context: render_config.ttf_context,
+            font_path: render_config.font_path,
+            decrease_color_when_selected: render_config.decrease_color_when_selected,
+            selection_color: render_config.selection_color,
 
             cached_outgoing_page: None,
             cached_page_data_ptr: std::ptr::null(),

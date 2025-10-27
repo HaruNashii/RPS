@@ -1,5 +1,5 @@
 use std::time::Duration;
-use rust_page_system::{system::{input_handler::InputHandler, page_system::PageData, state::AppState, window::{create_window, get_monitor_refresh_rate, WindowConfig}}, Renderer};
+use rust_page_system::{system::{input_handler::InputHandler, page_system::PageData, renderer::RendererConfig, state::AppState, window::{create_window, get_monitor_refresh_rate, WindowConfig}}, Renderer};
 use sdl3::sys::render::SDL_LOGICAL_PRESENTATION_STRETCH;
 use crate::{actions::buttons_actions::button_action, ui::pages::PageId, system::setup_page_data::populate_page_data };
 
@@ -43,7 +43,18 @@ fn main()
     // TransitionType::Slide second arg, 0 = Down \ 1 = Up \ 2 = Right \ 3 = Left
     let mut app_state = AppState::new(PageId::Page1, window_modules.canvas.window().size());
     let mut page_data = PageData::new(&app_state);
-    let mut renderer = Renderer::new(window_modules.canvas, &window_modules.texture_creator, &window_modules.ttf_context, &window_modules.font_path, Some((25, 25, 25)), Some((0, 0, 200, 125)));
+
+    let renderer_config = RendererConfig
+    {
+        canvas: window_modules.canvas, 
+        texture_creator: &window_modules.texture_creator, 
+        ttf_context: &window_modules.ttf_context,
+        font_path: &window_modules.font_path,
+        decrease_color_when_selected: Some((25, 25, 25)),
+        selection_color: Some((0, 0, 200, 125)),
+
+    };
+    let mut renderer = Renderer::new(renderer_config);
 
     populate_page_data(&mut page_data);
 

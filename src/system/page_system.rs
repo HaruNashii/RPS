@@ -5,7 +5,6 @@ use crate::{
 use sdl3::{pixels::Color, rect::Rect};
 use std::{collections::VecDeque, fmt::Debug};
 
-
 type PersistentElementsType<PageId, ButtonId> = Option<Vec<(PageId, fn() -> PersistentElements<PageId, ButtonId>)>>;
 type Rects = Option<Vec<(Color, (Rect, i32))>>;
 type Texts = Option<Vec<(f64, (i32, i32), String, Color)>>;
@@ -34,7 +33,6 @@ pub struct PersistentElements<PageId, ButtonId>
     pub texts: Texts,
     pub images: Images
 }
-
 
 type OptionPageInputLinked<PageId, ButtonId> = Option<Vec<(PageId, fn(&mut Vec<String>) -> Page<PageId, ButtonId>)>>;
 type OptionPageLinked<PageId, ButtonId> = Option<Vec<(PageId, fn() -> Page<PageId, ButtonId>)>>;
@@ -85,83 +83,54 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
         {
             self.page_history.0.pop_front();
         }
-        for page in &self.page_linked.clone()
+        let mut page_to_render = self.create_page_from_id(app_state.current_page); // function call returns a new page
+        if let Some(page_to_render) = &mut page_to_render
         {
-            if app_state.current_page == page.0
+            self.push_vec_user_input_per_page(page_to_render);
+            if let Some(result) = &page_to_render.has_persistent_elements
             {
-                let mut created_page = page.1();
-                self.page_to_render = Some(created_page.clone());
-                self.push_vec_user_input_per_page(&mut created_page);
-                if let Some(result) = &created_page.has_persistent_elements
-                {
-                    let mut vec_persistent_element = Vec::new();
-                    for (_, persistent_element) in result
-                    {
-                        vec_persistent_element.push(persistent_element());
-                    }
-                    self.persistent_elements_to_render = vec_persistent_element;
-                }
+                self.persistent_elements_to_render = result.iter().map(|(_, f)| f()).collect();
             }
         }
-        for page_w_input_linked in &self.page_w_input_linked.clone()
-        {
-            if app_state.current_page == page_w_input_linked.0
-            {
-                let mut created_page = page_w_input_linked.1(&mut self.vec_user_input_string);
-                self.page_to_render = Some(created_page.clone());
-                self.push_vec_user_input_per_page(&mut created_page);
-                if let Some(result) = &created_page.has_persistent_elements
-                {
-                    let mut vec_persistent_element = Vec::new();
-                    for (_, persistent_element) in result
-                    {
-                        vec_persistent_element.push(persistent_element());
-                    }
-                    self.persistent_elements_to_render = vec_persistent_element;
-                }
-            }
-        }
+        self.page_to_render = page_to_render;
     }
 
     pub fn create_page_from_id(&mut self, page_to_create: PageId) -> Option<Page<PageId, ButtonId>>
     {
         let mut created_page = None;
-        for page in &self.page_linked.clone()
+        for (id, create_fn) in &self.page_linked
         {
-            if page_to_create == page.0
+            if *id == page_to_create
             {
-                created_page = Some(page.1());
-                if let Some(ref page_from_created_page) = created_page
-                    && let Some(result) = &page_from_created_page.has_persistent_elements
+                let page = create_fn();
+                created_page = Some(page);
+                if let Some(persistent_list) = &created_page.as_ref().unwrap().has_persistent_elements
                 {
-                    let mut vec_persistent_element = Vec::new();
-                    for (_, persistent_element) in result
-                    {
-                        vec_persistent_element.push(persistent_element());
-                    }
-                    self.persistent_elements_to_render = vec_persistent_element;
+                    self.persistent_elements_to_render = persistent_list.iter().map(|(_, make_persistent)| make_persistent()).collect();
                 }
+                break;
             }
         }
-        for page_w_input_linked in &self.page_w_input_linked.clone()
+
+        if created_page.is_none()
         {
-            if page_to_create == page_w_input_linked.0
+            for (id, create_fn_with_input) in &self.page_w_input_linked
             {
-                created_page = Some(page_w_input_linked.1(&mut self.vec_user_input_string));
-                if let Some(ref page_from_created_page) = created_page
-                    && let Some(result) = &page_from_created_page.has_persistent_elements
+                if *id == page_to_create
                 {
-                    let mut vec_persistent_element = Vec::new();
-                    for (_, persistent_element) in result
+                    let page = create_fn_with_input(&mut self.vec_user_input_string);
+                    created_page = Some(page);
+                    if let Some(persistent_list) = &created_page.as_ref().unwrap().has_persistent_elements
                     {
-                        vec_persistent_element.push(persistent_element());
+                        self.persistent_elements_to_render = persistent_list.iter().map(|(_, make_persistent)| make_persistent()).collect();
                     }
-                    self.persistent_elements_to_render = vec_persistent_element;
+                    break;
                 }
             }
         }
         created_page
     }
+
 
     /// Populate vec_user_input per page
     pub fn push_vec_user_input_per_page(&mut self, page: &mut Page<PageId, ButtonId>)
@@ -183,9 +152,10 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
     /// Populate vec_user_input per vector of pages
     pub fn push_vec_user_input_per_vec(&mut self)
     {
-        for tuple_page in self.page_w_input_linked.clone()
+        let mut changed = false;
+        for tuple_page in &self.page_w_input_linked
         {
-            let page = tuple_page.1(&mut self.vec_user_input_string);
+            let page = (tuple_page.1)(&mut self.vec_user_input_string);
             if let Some(has_userinput) = &page.has_userinput
             {
                 for (pageid, buttonid) in has_userinput
@@ -194,10 +164,14 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
                     if !exists
                     {
                         self.vec_user_input.push((*pageid, *buttonid, String::new()));
+                        changed = true;
                     }
                 }
-                self.update_vec_user_input_string();
             }
+        }
+        if changed
+        {
+            self.update_vec_user_input_string();
         }
     }
 
@@ -230,7 +204,6 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
         Button::button_at(buttons_to_be_evaluated, mouse_pos_x, mouse_pos_y, window_size)
     }
 }
-
 
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub struct Button<ButtonId>

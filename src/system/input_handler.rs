@@ -34,7 +34,7 @@ pub struct InputHandler<PageId, ButtonId>
     pub mouse_position: (f32, f32),
     pub cursor_position: usize,
     pub text_selection_range: Option<(usize, usize)>,
-    disable_rollback_pages: bool,
+    enable_rollback_pages: bool,
     input_history_stack: Vec<Vec<(PageId, ButtonId, String)>>,
 }
 
@@ -44,13 +44,13 @@ pub struct InputHandler<PageId, ButtonId>
 
 impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId, ButtonId>
 {
-    pub fn new(disable_rollback_pages: bool) -> Self 
+    pub fn new(enable_rollback_pages: bool) -> Self 
     { 
         Self 
         { 
             cursor_position: 0, 
             text_selection_range: None, 
-            disable_rollback_pages, 
+            enable_rollback_pages, 
             mouse_position: (0., 0.), 
             button_selected: None, 
             input_history_stack: Vec::new() 
@@ -65,8 +65,8 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
             {
                 //mouse events
                 Event::MouseButtonDown { mouse_btn: MouseButton::Left, .. }             => return InputEvent::Click,
-                Event::MouseButtonDown { mouse_btn: MouseButton::X1, .. }               => { if !self.disable_rollback_pages { return InputEvent::Back } },
-                Event::MouseButtonDown { mouse_btn: MouseButton::X2, .. }               => { if !self.disable_rollback_pages { return InputEvent::Front } },
+                Event::MouseButtonDown { mouse_btn: MouseButton::X1, .. }               => { if self.enable_rollback_pages { return InputEvent::Back } },
+                Event::MouseButtonDown { mouse_btn: MouseButton::X2, .. }               => { if self.enable_rollback_pages { return InputEvent::Front } },
 
                 //keyboard events
                 Event::TextInput { text, .. }                                   => return InputEvent::Text(text),

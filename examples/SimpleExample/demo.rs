@@ -38,8 +38,8 @@ fn main()
     };
     let mut window_modules = create_window(window_config);
 
-    //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys") | (false = Page Rollback On), (true = Page Rollback Off)
-    let mut input_handler = InputHandler::new(false);
+    //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys") | (true = Page Rollback On), (false = Page Rollback Off)
+    let mut input_handler = InputHandler::new(true);
     let mut app_state = AppState::new(PageId::Page1, window_modules.canvas.window().size());
     let mut page_data = PageData::new(&app_state);
 

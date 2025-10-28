@@ -1,18 +1,18 @@
-use std::fs;
-use sdl3::
-{
+use sdl3::{
     image::LoadTexture,
     pixels::Color,
     rect::Rect,
     render::{Texture, TextureCreator},
     ttf::Sdl3TtfContext,
-    video::WindowContext,
+    video::WindowContext
 };
+use std::fs;
 
 
-
-
-pub trait GenText { fn generate_text(&mut self, font_path: &str) -> Vec<(Texture<'_>, Rect)>; }
+pub trait GenText
+{
+    fn generate_text(&mut self, font_path: &str) -> Vec<(Texture<'_>, Rect)>;
+}
 impl GenText for (&mut Vec<(f64, (i32, i32), String, Color)>, &TextureCreator<WindowContext>, &Sdl3TtfContext)
 {
     fn generate_text(&mut self, font_path: &str) -> Vec<(Texture<'_>, Rect)>
@@ -43,25 +43,24 @@ impl GenText for (&mut Vec<(f64, (i32, i32), String, Color)>, &TextureCreator<Wi
 }
 
 
-
-
-
-
-pub trait GenImage { fn generate_image(&mut self) -> Vec<(Texture<'_>, Rect)>; }
-impl GenImage for (&mut Vec<((i32, i32), (u32, u32), String)>, &TextureCreator<WindowContext>) 
+pub trait GenImage
 {
-    fn generate_image(&mut self) -> Vec<(Texture<'_>, Rect)> 
+    fn generate_image(&mut self) -> Vec<(Texture<'_>, Rect)>;
+}
+impl GenImage for (&mut Vec<((i32, i32), (u32, u32), String)>, &TextureCreator<WindowContext>)
+{
+    fn generate_image(&mut self) -> Vec<(Texture<'_>, Rect)>
     {
         let mut new_vec = Vec::new();
-        for text_infos in &mut *self.0 
+        for text_infos in &mut *self.0
         {
-            if fs::exists(text_infos.2.clone()).expect("Failed To Check If File Exist") 
+            if fs::exists(text_infos.2.clone()).expect("Failed To Check If File Exist")
             {
                 let texture = self.1.load_texture(text_infos.2.clone()).expect("Failed To Create Image Texture");
                 let rect = Rect::new(text_infos.0.0, text_infos.0.1, text_infos.1.0, text_infos.1.1);
                 new_vec.push((texture, rect));
             }
-            else 
+            else
             {
                 println!("Warning!!!!! Image File '{}' Doesn't Exist", text_infos.2);
             }

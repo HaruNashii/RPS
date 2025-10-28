@@ -1,8 +1,16 @@
-use std::time::Duration;
-use rust_page_system::{system::{input_handler::InputHandler, page_system::PageData, renderer::RendererConfig, state::AppState, window::{create_window, get_monitor_refresh_rate, WindowConfig}}, Renderer};
+use crate::{actions::buttons_actions::button_action, system::setup_page_data::populate_page_data, ui::pages::PageId};
+use rust_page_system::{
+    Renderer,
+    system::{
+        input_handler::InputHandler,
+        page_system::PageData,
+        renderer::RendererConfig,
+        state::AppState,
+        window::{WindowConfig, create_window, get_monitor_refresh_rate}
+    }
+};
 use sdl3::sys::render::SDL_LOGICAL_PRESENTATION_STRETCH;
-use crate::{actions::buttons_actions::button_action, ui::pages::PageId, system::setup_page_data::populate_page_data };
-
+use std::time::Duration;
 
 
 // To Be Ignored, Just An Setup To Configure Some Assets
@@ -10,21 +18,17 @@ use crate::build::setup_build;
 mod build;
 
 
-
-pub mod system;
 pub mod actions;
+pub mod system;
 pub mod ui;
 
 
-
-
-fn main() 
+fn main()
 {
     // To Be Ignored, Just An Setup To Configure Some Assets
     setup_build();
 
-    let window_config = WindowConfig
-    {
+    let window_config = WindowConfig {
         window_title: "AdvancedExample".to_string(),
         icon: (false, None),
         // Recommended to start with 16:9 aspect ratio
@@ -33,7 +37,7 @@ fn main()
         window_minimum_size: (800, 450),
         resizable: true,
         centered: true,
-        // By Default SDL_LOGICAL_PRESENTATION_STRETCH Is Set, Only Setting It Here For Demonstration Purpose 
+        // By Default SDL_LOGICAL_PRESENTATION_STRETCH Is Set, Only Setting It Here For Demonstration Purpose
         different_sdl_presentation_mode: Some(SDL_LOGICAL_PRESENTATION_STRETCH),
         font: ("JetBrainsMono".to_string(), Some("Bold".to_string()))
     };
@@ -44,21 +48,19 @@ fn main()
     let mut app_state = AppState::new(PageId::Page1, window_modules.canvas.window().size());
     let mut page_data = PageData::new(&app_state);
 
-    let renderer_config = RendererConfig
-    {
-        canvas: window_modules.canvas, 
-        texture_creator: &window_modules.texture_creator, 
+    let renderer_config = RendererConfig {
+        canvas: window_modules.canvas,
+        texture_creator: &window_modules.texture_creator,
         ttf_context: &window_modules.ttf_context,
         font_path: &window_modules.font_path,
         decrease_color_when_selected: Some((25, 25, 25)),
-        selection_color: Some((0, 0, 200, 125)),
-
+        selection_color: Some((0, 0, 200, 125))
     };
     let mut renderer = Renderer::new(renderer_config);
 
     populate_page_data(&mut page_data);
 
-    loop 
+    loop
     {
         //using (900 / your_refresh_rate) to a very crispy experience
         std::thread::sleep(Duration::from_millis(900 / get_monitor_refresh_rate()));

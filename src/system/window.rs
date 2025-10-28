@@ -1,16 +1,19 @@
 use display_info::DisplayInfo;
 use fontconfig::Fontconfig;
+use sdl3::{
+    EventPump, Sdl,
+    clipboard::ClipboardUtil,
+    rect::Rect,
+    render::{Canvas, TextureCreator},
+    surface::Surface,
+    sys::render::{SDL_LOGICAL_PRESENTATION_STRETCH, SDL_RendererLogicalPresentation},
+    ttf::Sdl3TtfContext,
+    video::{Window, WindowContext}
+};
 use std::fs;
-use sdl3::{clipboard::ClipboardUtil, rect::Rect, render::{Canvas, TextureCreator}, surface::Surface, sys::render::{SDL_RendererLogicalPresentation, SDL_LOGICAL_PRESENTATION_STRETCH}, ttf::Sdl3TtfContext, video::{Window, WindowContext}, EventPump, Sdl};
-
-
-
 
 
 pub const WINDOW_DEFAULT_SCALE: (u32, u32) = (1920, 1080);
-
-
-
 
 
 pub struct WindowConfig
@@ -33,7 +36,7 @@ pub struct WindowModules
     pub event_pump: EventPump,
     pub texture_creator: TextureCreator<WindowContext>,
     pub ttf_context: Sdl3TtfContext,
-    pub font_path: String, 
+    pub font_path: String,
     pub clipboard_system: ClipboardUtil
 }
 
@@ -46,21 +49,22 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
     let font_config = Fontconfig::new().expect("Failed To Start FontConfig");
     let font_info = font_config.find(&window_config.font.0, window_config.font.1.as_deref()).expect("Failed Find And Set Font With FontConfig");
     let font_path = font_info.path.display().to_string();
-    let mut window_builder = video_system.window
-    (
-        &window_config.window_title,
-        window_config.start_window_size.0,
-        window_config.start_window_size.1,
-    );
+    let mut window_builder = video_system.window(&window_config.window_title, window_config.start_window_size.0, window_config.start_window_size.1);
 
-    if window_config.resizable { window_builder.resizable(); }
-    if window_config.centered { window_builder.position_centered(); }
+    if window_config.resizable
+    {
+        window_builder.resizable();
+    }
+    if window_config.centered
+    {
+        window_builder.position_centered();
+    }
     // WARNING!!!: Current version of SDL3 is making the window have weird black bars when
     // resized in SDL_LOGICAL_PRESENTATION_STRETCH, please maintain it in false for now
     //if window_config.hint_sdl3_vsync { sdl3::hint::set(sdl3::hint::names::RENDER_VSYNC, "1"); };
     let mut window = window_builder.build().unwrap();
 
-    if window_config.icon.0 
+    if window_config.icon.0
     {
         match window_config.icon.1
         {
@@ -68,7 +72,7 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
             {
                 if fs::exists(&icon_path).unwrap()
                 {
-                    if let Some((_, after)) = icon_path.rsplit_once('.') 
+                    if let Some((_, after)) = icon_path.rsplit_once('.')
                     {
                         if after == "bmp"
                         {
@@ -76,25 +80,28 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
                             window.set_icon(&icon_surface);
                             drop(icon_surface); // Explicitly drop the surface
                         }
-                        else 
+                        else
                         {
                             println!("WARNING!!!! Window is declared to have icon, but the provided icon path doesn't lead to an .bmp file");
                             println!("Icon Path Provided: {}", icon_path);
                         }
                     }
-                    else 
+                    else
                     {
                         println!("WARNING!!!! Window is declared to have icon, but the provided icon path doesn't lead to an .bmp file");
                         println!("Icon Path Provided: {}", icon_path);
                     }
                 }
-                else 
+                else
                 {
                     println!("WARNING!!!! Window is declared to have icon, but icon path parsed doesn't exist");
                     println!("Icon Path Provided: {}", icon_path);
                 }
             }
-            None => { println!("WARNING!!!! Window is declared to have icon, but no icon path was parsed!!!!") }
+            None =>
+            {
+                println!("WARNING!!!! Window is declared to have icon, but no icon path was parsed!!!!")
+            }
         }
     }
 
@@ -113,17 +120,16 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
     };
     canvas.set_viewport(Rect::new(0, 0, 1920, 1080));
     canvas.set_blend_mode(sdl3::render::BlendMode::Blend);
-    WindowModules{sdl_init, canvas, event_pump, texture_creator, ttf_context, font_path, clipboard_system}
+    WindowModules { sdl_init, canvas, event_pump, texture_creator, ttf_context, font_path, clipboard_system }
 }
 pub fn get_monitor_refresh_rate() -> u64
 {
     let display_infos = DisplayInfo::all().unwrap();
     let mut all_monitors_refresh_rate = Vec::new();
-    for display_info in display_infos 
+    for display_info in display_infos
     {
         all_monitors_refresh_rate.push(display_info.frequency as u64);
     }
 
     *all_monitors_refresh_rate.iter().max().unwrap()
 }
-

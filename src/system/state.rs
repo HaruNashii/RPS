@@ -1,8 +1,8 @@
+use crate::{
+    system::page_system::PageData,
+    system::scene_transition::{SceneTransition, TransitionType}
+};
 use std::fmt::Debug;
-use crate::{system::page_system::PageData, system::scene_transition::{SceneTransition, TransitionType}};
-
-
-
 
 
 /// Global application state that holds page navigation,
@@ -14,7 +14,7 @@ pub struct AppState<PageId, ButtonId>
     pub scene_transition: Option<SceneTransition<PageId>>,
     pub current_transition_type: Option<TransitionType>,
     pub window_size: (u32, u32),
-    pub capturing_input: (bool, Option<ButtonId>),
+    pub capturing_input: (bool, Option<ButtonId>)
 }
 
 impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> AppState<PageId, ButtonId>
@@ -22,22 +22,19 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> AppState<PageId, Bu
     /// Create a new app state with a starting page.
     pub fn new(start_page: PageId, window_size: (u32, u32)) -> Self
     {
-        Self
-        {
-            current_page: start_page,
-            scene_transition: None,
-            current_transition_type: None,
-            window_size,
-            capturing_input: (false, None),
-        }
+        Self { current_page: start_page, scene_transition: None, current_transition_type: None, window_size, capturing_input: (false, None) }
     }
 
     /// Change to a new page, optionally triggering a transition.
     pub fn change_current_page(&mut self, page_data: &mut PageData<PageId, ButtonId>, next_page: PageId)
     {
-        if next_page == self.current_page { return; }
+        if next_page == self.current_page
+        {
+            return;
+        }
 
-        if let Some(page_to_render) = &page_data.page_to_render && let Some(transition_type) = &page_to_render.has_transition
+        if let Some(page_to_render) = &page_data.page_to_render
+            && let Some(transition_type) = &page_to_render.has_transition
         {
             // Start a new SceneTransition
             self.scene_transition = Some(SceneTransition::new(transition_type.clone(), 500, Some(next_page)));
@@ -49,7 +46,10 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> AppState<PageId, Bu
         }
 
         // Track history if your PageData keeps navigation stack
-        if !page_data.page_history.0.contains(&next_page) { page_data.page_history.0.push_back(next_page); }
+        if !page_data.page_history.0.contains(&next_page)
+        {
+            page_data.page_history.0.push_back(next_page);
+        }
         page_data.page_history.1 = page_data.page_history.0.len().saturating_sub(1);
     }
 
@@ -83,4 +83,3 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> AppState<PageId, Bu
         self.capturing_input.0
     }
 }
-

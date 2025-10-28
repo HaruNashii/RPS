@@ -1,10 +1,7 @@
 use std::{env, fs};
 
 
-
-
-
-pub fn setup_build() 
+pub fn setup_build()
 {
     //Move The Image To An Tmp Folder
     let home_path = env::home_dir().unwrap().display().to_string();
@@ -18,9 +15,9 @@ pub fn setup_build()
         fs::create_dir_all(&target_image_example_dir).expect("Failed to create image directory");
     };
 
-    for (index, currently_image_example_path) in image_example_path.iter().enumerate() 
+    for (index, currently_image_example_path) in image_example_path.iter().enumerate()
     {
-        if fs::exists(currently_image_example_path).expect("failed to check currently image path") && !fs::exists(image_example_dir[index].clone()).expect("failed to check image path") 
+        if fs::exists(currently_image_example_path).expect("failed to check currently image path") && !fs::exists(image_example_dir[index].clone()).expect("failed to check image path")
         {
             fs::copy(currently_image_example_path, image_example_dir[index].clone()).expect("failed to check image dir and image");
         };

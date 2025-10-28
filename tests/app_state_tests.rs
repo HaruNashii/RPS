@@ -1,9 +1,11 @@
+use rust_page_system::system::{
+    input_handler::InputHandler,
+    page_system::{Button, Page, PageData},
+    renderer::Renderer,
+    state::AppState
+};
 use sdl3::pixels::Color;
 use sdl3::rect::Rect;
-use rust_page_system::system::{state::AppState, page_system::{Page, PageData, Button}, input_handler::InputHandler, renderer::Renderer, };
-
-
-
 
 
 //
@@ -18,14 +20,14 @@ enum TestPage
     Home,
     Settings,
     Profile,
-    Extra(u8),
+    Extra(u8)
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 enum TestButton
 {
     A,
-    B,
+    B
 }
 
 fn create_state() -> (AppState<TestPage, TestButton>, PageData<TestPage, TestButton>)
@@ -39,9 +41,6 @@ fn create_input_handler() -> InputHandler<TestPage, TestButton>
 {
     InputHandler::new(false)
 }
-
-
-
 
 
 //
@@ -104,9 +103,6 @@ fn app_state_window_size_can_be_updated()
 }
 
 
-
-
-
 //
 // ==========================================================
 // PageData tests
@@ -128,8 +124,7 @@ fn page_data_adds_unique_user_inputs_without_duplicates()
 {
     let (_application_state, mut page_data) = create_state();
 
-    let mut single_input_page = Page
-    {
+    let mut single_input_page = Page {
         has_persistent_elements: None,
         has_userinput: Some(vec![(TestPage::Home, TestButton::A)]),
         id: TestPage::Home,
@@ -138,7 +133,7 @@ fn page_data_adds_unique_user_inputs_without_duplicates()
         buttons: None,
         texts: None,
         images: None,
-        has_transition: None,
+        has_transition: None
     };
 
     page_data.push_vec_user_input_per_page(&mut single_input_page);
@@ -166,27 +161,9 @@ fn page_data_button_detection_within_bounds()
 {
     let (application_state, mut page_data) = create_state();
 
-    let clickable_button = Button
-    {
-        enabled: true,
-        color: Color::RGB(255, 0, 0),
-        rect: Rect::new(10, 10, 100, 50),
-        radius: 4,
-        id: TestButton::A,
-    };
+    let clickable_button = Button { enabled: true, color: Color::RGB(255, 0, 0), rect: Rect::new(10, 10, 100, 50), radius: 4, id: TestButton::A };
 
-    let page_with_button = Page
-    {
-        has_persistent_elements: None,
-        has_userinput: None,
-        id: TestPage::Home,
-        background_color: None,
-        rects: None,
-        buttons: Some(vec![clickable_button]),
-        texts: None,
-        images: None,
-        has_transition: None,
-    };
+    let page_with_button = Page { has_persistent_elements: None, has_userinput: None, id: TestPage::Home, background_color: None, rects: None, buttons: Some(vec![clickable_button]), texts: None, images: None, has_transition: None };
 
     page_data.page_to_render = Some(page_with_button);
     assert_eq!(page_data.page_button_at(&application_state, 50.0, 30.0), Some(TestButton::A));
@@ -197,27 +174,9 @@ fn page_data_button_detection_out_of_bounds_returns_none()
 {
     let (application_state, mut page_data) = create_state();
 
-    let button = Button
-    {
-        enabled: true,
-        color: Color::RGB(0, 0, 0),
-        rect: Rect::new(10, 10, 40, 40),
-        radius: 0,
-        id: TestButton::A,
-    };
+    let button = Button { enabled: true, color: Color::RGB(0, 0, 0), rect: Rect::new(10, 10, 40, 40), radius: 0, id: TestButton::A };
 
-    let page = Page
-    {
-        has_persistent_elements: None,
-        has_userinput: None,
-        id: TestPage::Home,
-        background_color: None,
-        rects: None,
-        buttons: Some(vec![button]),
-        texts: None,
-        images: None,
-        has_transition: None,
-    };
+    let page = Page { has_persistent_elements: None, has_userinput: None, id: TestPage::Home, background_color: None, rects: None, buttons: Some(vec![button]), texts: None, images: None, has_transition: None };
 
     page_data.page_to_render = Some(page);
     assert_eq!(page_data.page_button_at(&application_state, 300.0, 300.0), None);
@@ -236,9 +195,6 @@ fn page_data_page_history_truncates_to_ten()
 
     assert!(page_data.page_history.0.len() <= 10);
 }
-
-
-
 
 
 //
@@ -368,9 +324,6 @@ fn input_handler_insert_text_respects_cursor_positionition()
 }
 
 
-
-
-
 //
 // ==========================================================
 // Renderer private utilities (button matching)
@@ -380,14 +333,7 @@ fn input_handler_insert_text_respects_cursor_positionition()
 #[test]
 fn renderer_button_matches_returns_correct_boolean()
 {
-    let test_button = Button
-    {
-        enabled: true,
-        color: Color::RGB(255, 255, 255),
-        rect: Rect::new(0, 0, 10, 10),
-        radius: 0,
-        id: TestButton::A,
-    };
+    let test_button = Button { enabled: true, color: Color::RGB(255, 255, 255), rect: Rect::new(0, 0, 10, 10), radius: 0, id: TestButton::A };
 
     assert!(Renderer::<TestPage, TestButton>::button_matches(&test_button, TestButton::A));
     assert!(!Renderer::<TestPage, TestButton>::button_matches(&test_button, TestButton::B));
@@ -436,4 +382,3 @@ fn renderer_type_safety_instantiation_mock()
     // Execute inside a local scope to silence unused warnings
     _compile_renderer_check();
 }
-

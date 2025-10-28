@@ -295,8 +295,7 @@ Suggested Cargo features (example)
 - Fork the repository, create a feature branch, and open a pull request.
 - When opening PRs:
   - Include a short description of the change
-  - Don't run cargo fmt 
-  - Always run cargo clippy
+  - Always run cargo clippy & cargo fmt (nightly)
 - For larger proposals, open an issue first to discuss the design.
 
 ---

@@ -1,6 +1,5 @@
 use std::{env, fs};
 
-
 pub fn setup_build()
 {
     //Move The Image To An Tmp Folder

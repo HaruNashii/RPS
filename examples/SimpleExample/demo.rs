@@ -16,7 +16,6 @@ use std::{env, time::Duration};
 use crate::build::setup_build;
 mod build;
 
-
 //==========================================================================================================================================================================
 //=======================================================================# main function recommended setup #===============================================================
 //==========================================================================================================================================================================
@@ -45,14 +44,7 @@ fn main()
     let mut app_state = AppState::new(PageId::Page1, window_modules.canvas.window().size());
     let mut page_data = PageData::new(&app_state);
 
-    let renderer_config = RendererConfig {
-        canvas: window_modules.canvas,
-        texture_creator: &window_modules.texture_creator,
-        ttf_context: &window_modules.ttf_context,
-        font_path: &window_modules.font_path,
-        decrease_color_when_selected: Some((25, 25, 25)),
-        selection_color: Some((0, 0, 200, 125))
-    };
+    let renderer_config = RendererConfig { canvas: window_modules.canvas, texture_creator: &window_modules.texture_creator, ttf_context: &window_modules.ttf_context, font_path: &window_modules.font_path, decrease_color_when_selected: Some((25, 25, 25)), selection_color: Some((0, 0, 200, 125)) };
     let mut renderer = Renderer::new(renderer_config);
 
     populate_page_data(&mut page_data);
@@ -67,7 +59,6 @@ fn main()
         renderer.render(&page_data, &mut app_state, &input_handler);
     }
 }
-
 
 //==========================================================================================================================================================================
 //===============================================================# can be a different file, like: buttons_actions.rs #======================================================
@@ -96,7 +87,6 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
     }
 }
 
-
 //==========================================================================================================================================================================
 //===============================================================# can be a different file, like: setup_page_data.rs #======================================================
 //==========================================================================================================================================================================
@@ -104,7 +94,6 @@ pub fn populate_page_data(page_data: &mut PageData<PageId, ButtonId>)
 {
     page_data.push_page_link(Some(vec![(PageId::Page1SubPage, subpage_page1)]), Some(vec![(PageId::Page1, page_1)]));
 }
-
 
 //==========================================================================================================================================================================
 //====================================================================# can be a different file, like: style.rs (or not even exist) #=======================================
@@ -117,7 +106,6 @@ pub const PINK_COLOR: Color = Color::RGB(243, 139, 168);
 pub const ORANGE_COLOR: Color = Color::RGB(250, 179, 135);
 pub const BLACK_COLOR: Color = Color::RGB(17, 17, 27);
 pub const RED_COLOR: Color = Color::RGB(255, 0, 0);
-
 
 //==========================================================================================================================================================================
 //===============================================================# can be a different file, like: pages.rs #================================================================
@@ -140,7 +128,6 @@ pub enum ButtonId
     ButtonSubPage,
     ButtonBack
 }
-
 
 // Define Your Pages Here:
 pub fn persistent_elements() -> PersistentElements<PageId, ButtonId>
@@ -165,36 +152,13 @@ pub fn page_1(user_input: &mut Vec<String>) -> Page<PageId, ButtonId>
     let subpage_button_data = get_center((235, 40), (1920, 1080));
 
     //===================== buttons =========================
-    let all_buttons = vec![
-        Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(subpage_button_data.pos_x, 150, subpage_button_data.w, subpage_button_data.h), radius: 20, id: ButtonId::ButtonSubPage },
-        Button {
-            enabled: true,
-            color: PURPLE_COLOR,
-            rect: Rect::new(purple_button_data.pos_x, purple_button_data.pos_y, purple_button_data.w, purple_button_data.h),
-            radius: 5,
-            id: ButtonId::ButtonPurpleInputStartPage1
-        },
-    ];
+    let all_buttons = vec![Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(subpage_button_data.pos_x, 150, subpage_button_data.w, subpage_button_data.h), radius: 20, id: ButtonId::ButtonSubPage }, Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(purple_button_data.pos_x, purple_button_data.pos_y, purple_button_data.w, purple_button_data.h), radius: 5, id: ButtonId::ButtonPurpleInputStartPage1 }];
 
     //===================== texts =========================
-    let all_text = vec![
-        (18.0, (all_buttons[0].rect.x + 10, all_buttons[0].rect.y + 7), "Go To subpage_page1".to_string(), TEXT_COLOR),
-        (18.0, (all_buttons[1].rect.x + 75, all_buttons[1].rect.y - 25), "Click the Button To Start Getting Input".to_string(), SUBTEXT_COLOR),
-        (25.0, (all_buttons[1].rect.x + 15, all_buttons[1].rect.y + 35), user_input.get_or_create(0), BLACK_COLOR),
-    ];
+    let all_text = vec![(18.0, (all_buttons[0].rect.x + 10, all_buttons[0].rect.y + 7), "Go To subpage_page1".to_string(), TEXT_COLOR), (18.0, (all_buttons[1].rect.x + 75, all_buttons[1].rect.y - 25), "Click the Button To Start Getting Input".to_string(), SUBTEXT_COLOR), (25.0, (all_buttons[1].rect.x + 15, all_buttons[1].rect.y + 35), user_input.get_or_create(0), BLACK_COLOR)];
 
     //===================== page creation =========================
-    Page {
-        has_userinput: Some(vec![(PageId::Page1, ButtonId::ButtonPurpleInputStartPage1)]),
-        has_persistent_elements: Some(vec![(PageId::Persistent, persistent_elements)]),
-        has_transition: None,
-        id: PageId::Page1,
-        background_color: Some(BACKGROUND_COLOR),
-        rects: None,
-        buttons: Some(all_buttons),
-        texts: Some(all_text),
-        images: None
-    }
+    Page { has_userinput: Some(vec![(PageId::Page1, ButtonId::ButtonPurpleInputStartPage1)]), has_persistent_elements: Some(vec![(PageId::Persistent, persistent_elements)]), has_transition: None, id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 
 pub fn subpage_page1() -> Page<PageId, ButtonId>
@@ -206,15 +170,5 @@ pub fn subpage_page1() -> Page<PageId, ButtonId>
     let all_text = vec![(18.0, (all_buttons[0].rect.x + 10, all_buttons[0].rect.y + 7), "<-".to_string(), TEXT_COLOR)];
 
     //===================== page creation =========================
-    Page {
-        has_userinput: None,
-        has_persistent_elements: None,
-        has_transition: None,
-        id: PageId::Page1SubPage,
-        background_color: Some(BACKGROUND_COLOR),
-        rects: None,
-        buttons: Some(all_buttons),
-        texts: Some(all_text),
-        images: None
-    }
+    Page { has_userinput: None, has_persistent_elements: None, has_transition: None, id: PageId::Page1SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }

@@ -8,7 +8,6 @@ use sdl3::{
 };
 use std::{fmt::Debug, process::exit};
 
-
 #[derive(Debug, Clone)]
 pub enum InputEvent
 {
@@ -40,7 +39,6 @@ pub struct InputHandler<PageId, ButtonId>
     enable_rollback_pages: bool,
     input_history_stack: Vec<Vec<(PageId, ButtonId, String)>>
 }
-
 
 impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId, ButtonId>
 {
@@ -289,7 +287,6 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
         }
         page_data.update_vec_user_input_string()
     }
-
 
     pub fn copy(&mut self, clipboard_util_option: Option<&mut ClipboardUtil>, app_state: &AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>, is_cut_operation: bool)
     {

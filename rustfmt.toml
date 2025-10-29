@@ -3,7 +3,7 @@
 edition = "2021"
 
 # Keep lines from wrapping so more stays inline
-max_width = 9999
+max_width = 999999
 use_small_heuristics = "Max"
 
 # Aggressively allow single-line constructs
@@ -12,11 +12,11 @@ trailing_comma = "Never"
 match_block_trailing_comma = false
 
 # Prefer everything on one line when it fits
-array_width = 200
-attr_fn_like_width = 200
-fn_call_width = 200
-struct_lit_width = 200
-struct_variant_width = 200
+array_width = 999
+attr_fn_like_width = 999
+fn_call_width = 999
+struct_lit_width = 999
+struct_variant_width = 999
 
 # Braces on the next line (Allman-style)
 brace_style = "AlwaysNextLine"

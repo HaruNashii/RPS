@@ -11,7 +11,6 @@ use rust_page_system::{
 use sdl3::rect::Rect;
 use std::env;
 
-
 // TransitionType::Slide second arg, 0 = Down \ 1 = Up \ 2 = Right \ 3 = Left
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 /// Defines The ID for your Pages
@@ -38,7 +37,6 @@ pub enum ButtonId
     ButtonBack
 }
 
-
 pub fn persistent_elements1() -> PersistentElements<PageId, ButtonId>
 {
     //===================== variables =========================
@@ -49,10 +47,7 @@ pub fn persistent_elements1() -> PersistentElements<PageId, ButtonId>
     let all_rects = vec![(BLACK_COLOR, (Rect::new(0, 0, WINDOW_DEFAULT_SCALE.0, 100), 0))];
 
     //===================== buttons =========================
-    let all_buttons = vec![
-        Button { enabled: true, color: PINK_COLOR, rect: Rect::new(window_center.pos_x - padding_x, 10, window_center.w, window_center.h), radius: 5, id: ButtonId::ButtonPage1 },
-        Button { enabled: true, color: PINK_COLOR, rect: Rect::new(window_center.pos_x + padding_x, 10, window_center.w, window_center.h), radius: 5, id: ButtonId::ButtonPage2 },
-    ];
+    let all_buttons = vec![Button { enabled: true, color: PINK_COLOR, rect: Rect::new(window_center.pos_x - padding_x, 10, window_center.w, window_center.h), radius: 5, id: ButtonId::ButtonPage1 }, Button { enabled: true, color: PINK_COLOR, rect: Rect::new(window_center.pos_x + padding_x, 10, window_center.w, window_center.h), radius: 5, id: ButtonId::ButtonPage2 }];
 
     //===================== texts =========================
     let all_text = vec![
@@ -91,49 +86,16 @@ pub fn page_1(user_input: &mut Vec<String>) -> Page<PageId, ButtonId>
     let purple_button_data = get_center((600, 100), WINDOW_DEFAULT_SCALE);
 
     //===================== rects =========================
-    let all_rects = vec![
-        (RED_COLOR, (Rect::new(red_rect_data.pos_x, red_rect_data.pos_y + (orange_rect_data.h as i32 + padding_y), red_rect_data.w, red_rect_data.h), 100)),
-        (ORANGE_COLOR, (Rect::new(orange_rect_data.pos_x, orange_rect_data.pos_y, orange_rect_data.w, orange_rect_data.h), 0)),
-    ];
+    let all_rects = vec![(RED_COLOR, (Rect::new(red_rect_data.pos_x, red_rect_data.pos_y + (orange_rect_data.h as i32 + padding_y), red_rect_data.w, red_rect_data.h), 100)), (ORANGE_COLOR, (Rect::new(orange_rect_data.pos_x, orange_rect_data.pos_y, orange_rect_data.w, orange_rect_data.h), 0))];
 
     //===================== buttons =========================
-    let all_buttons = vec![
-        Button {
-            enabled: true,
-            color: PURPLE_COLOR,
-            rect: Rect::new(purple_button_data.pos_x, purple_button_data.pos_y - (orange_rect_data.h as i32 - padding_y), purple_button_data.w, purple_button_data.h),
-            radius: 5,
-            id: ButtonId::ButtonPurpleInputStartPage1
-        },
-        Button {
-            enabled: true,
-            color: RED_COLOR,
-            rect: Rect::new(purple_button_data.pos_x, all_rects[0].1.0.y + all_rects[0].1.0.h + padding_y, purple_button_data.w, purple_button_data.h),
-            radius: 20,
-            id: ButtonId::ButtonRedInputStartPage1
-        },
-    ];
+    let all_buttons = vec![Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(purple_button_data.pos_x, purple_button_data.pos_y - (orange_rect_data.h as i32 - padding_y), purple_button_data.w, purple_button_data.h), radius: 5, id: ButtonId::ButtonPurpleInputStartPage1 }, Button { enabled: true, color: RED_COLOR, rect: Rect::new(purple_button_data.pos_x, all_rects[0].1.0.y + all_rects[0].1.0.h + padding_y, purple_button_data.w, purple_button_data.h), radius: 20, id: ButtonId::ButtonRedInputStartPage1 }];
 
     //===================== texts =========================
-    let all_text = vec![
-        (18.0, (all_rects[1].1.0.x + 165, all_rects[1].1.0.y + 86), "Random Orange Rectangle, Because I Can :)".to_string(), SUBTEXT_COLOR),
-        (18.0, (all_buttons[0].rect.x + 75, all_buttons[0].rect.y - 25), "Click the Button To Start Getting Input".to_string(), SUBTEXT_COLOR),
-        (25.0, (all_buttons[0].rect.x + 15, all_buttons[0].rect.y + 35), user_input.get_or_create(0), BLACK_COLOR),
-        (25.0, (all_buttons[1].rect.x + 15, all_buttons[1].rect.y + 35), user_input.get_or_create(1), BLACK_COLOR),
-    ];
+    let all_text = vec![(18.0, (all_rects[1].1.0.x + 165, all_rects[1].1.0.y + 86), "Random Orange Rectangle, Because I Can :)".to_string(), SUBTEXT_COLOR), (18.0, (all_buttons[0].rect.x + 75, all_buttons[0].rect.y - 25), "Click the Button To Start Getting Input".to_string(), SUBTEXT_COLOR), (25.0, (all_buttons[0].rect.x + 15, all_buttons[0].rect.y + 35), user_input.get_or_create(0), BLACK_COLOR), (25.0, (all_buttons[1].rect.x + 15, all_buttons[1].rect.y + 35), user_input.get_or_create(1), BLACK_COLOR)];
 
     //===================== page creation =========================
-    Page {
-        has_userinput: Some(vec![(PageId::Page1, ButtonId::ButtonPurpleInputStartPage1), (PageId::Page1, ButtonId::ButtonRedInputStartPage1)]),
-        has_persistent_elements: Some(vec![(PageId::Persistent1, persistent_elements1)]),
-        has_transition: Some(TransitionType::Slide(0., 2, 5000)),
-        id: PageId::Page1,
-        background_color: Some(BACKGROUND_COLOR),
-        rects: Some(all_rects),
-        buttons: Some(all_buttons),
-        texts: Some(all_text),
-        images: None
-    }
+    Page { has_userinput: Some(vec![(PageId::Page1, ButtonId::ButtonPurpleInputStartPage1), (PageId::Page1, ButtonId::ButtonRedInputStartPage1)]), has_persistent_elements: Some(vec![(PageId::Persistent1, persistent_elements1)]), has_transition: Some(TransitionType::Slide(0., 2, 5000)), id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 
 pub fn page_2(user_input: &mut Vec<String>) -> Page<PageId, ButtonId>
@@ -142,35 +104,13 @@ pub fn page_2(user_input: &mut Vec<String>) -> Page<PageId, ButtonId>
     let get_input_button_data = get_center((500, 100), WINDOW_DEFAULT_SCALE);
 
     //===================== buttons =========================
-    let all_buttons = vec![
-        Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(100, 150, 235, 40), radius: 20, id: ButtonId::ButtonSubPage },
-        Button {
-            enabled: true,
-            color: PURPLE_COLOR,
-            rect: Rect::new(get_input_button_data.pos_x, get_input_button_data.pos_y, get_input_button_data.w as u32, get_input_button_data.h as u32),
-            radius: 20,
-            id: ButtonId::ButtonPurpleInputStartPage2
-        },
-    ];
+    let all_buttons = vec![Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(100, 150, 235, 40), radius: 20, id: ButtonId::ButtonSubPage }, Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(get_input_button_data.pos_x, get_input_button_data.pos_y, get_input_button_data.w as u32, get_input_button_data.h as u32), radius: 20, id: ButtonId::ButtonPurpleInputStartPage2 }];
 
     //===================== texts =========================
-    let all_text = vec![
-        (18.0, (all_buttons[0].rect.x + 10, all_buttons[0].rect.y + 7), "Go To subpage_page2".to_string(), TEXT_COLOR),
-        (18.0, (all_buttons[1].rect.x + 10, all_buttons[1].rect.y + 7), user_input.get_or_create(2), TEXT_COLOR),
-    ];
+    let all_text = vec![(18.0, (all_buttons[0].rect.x + 10, all_buttons[0].rect.y + 7), "Go To subpage_page2".to_string(), TEXT_COLOR), (18.0, (all_buttons[1].rect.x + 10, all_buttons[1].rect.y + 7), user_input.get_or_create(2), TEXT_COLOR)];
 
     //===================== page creation =========================
-    Page {
-        has_userinput: Some(vec![(PageId::Page2, ButtonId::ButtonPurpleInputStartPage2)]),
-        has_persistent_elements: Some(vec![(PageId::Persistent1, persistent_elements1), (PageId::Persistent2, persistent_elements2)]),
-        has_transition: Some(TransitionType::Slide(0., 3, 5000)),
-        id: PageId::Page2,
-        background_color: Some(BACKGROUND_COLOR),
-        rects: None,
-        buttons: Some(all_buttons),
-        texts: Some(all_text),
-        images: None
-    }
+    Page { has_userinput: Some(vec![(PageId::Page2, ButtonId::ButtonPurpleInputStartPage2)]), has_persistent_elements: Some(vec![(PageId::Persistent1, persistent_elements1), (PageId::Persistent2, persistent_elements2)]), has_transition: Some(TransitionType::Slide(0., 3, 5000)), id: PageId::Page2, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 
 pub fn subpage_page2() -> Page<PageId, ButtonId>
@@ -185,15 +125,5 @@ pub fn subpage_page2() -> Page<PageId, ButtonId>
     let all_images = vec![((500, 500), (300, 300), format!("{}/.cache/page_system/example_2.jpg", env::home_dir().unwrap().display()))];
 
     //===================== page creation =========================
-    Page {
-        has_userinput: None,
-        has_persistent_elements: Some(vec![(PageId::Persistent2, persistent_elements2)]),
-        has_transition: Some(TransitionType::Fade(0.1)),
-        id: PageId::Page2SubPage,
-        background_color: Some(BACKGROUND_COLOR),
-        rects: None,
-        buttons: Some(all_buttons),
-        texts: Some(all_text),
-        images: Some(all_images)
-    }
+    Page { has_userinput: None, has_persistent_elements: Some(vec![(PageId::Persistent2, persistent_elements2)]), has_transition: Some(TransitionType::Fade(0.1)), id: PageId::Page2SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
 }

@@ -12,9 +12,7 @@ use sdl3::{
 };
 use std::fs;
 
-
 pub const WINDOW_DEFAULT_SCALE: (u32, u32) = (1920, 1080);
-
 
 pub struct WindowConfig
 {
@@ -39,7 +37,6 @@ pub struct WindowModules
     pub font_path: String,
     pub clipboard_system: ClipboardUtil
 }
-
 
 pub fn create_window(window_config: WindowConfig) -> WindowModules
 {

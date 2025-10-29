@@ -1,6 +1,5 @@
 use std::time::Instant;
 
-
 /// Scene transition effect types.
 #[derive(Debug, Clone, PartialEq)]
 pub enum TransitionType
@@ -23,7 +22,6 @@ pub struct SceneTransition<PageId>
     pub duration_ms: u32,
     pub next_page: Option<PageId>
 }
-
 
 impl<PageId: Copy + Eq> SceneTransition<PageId>
 {

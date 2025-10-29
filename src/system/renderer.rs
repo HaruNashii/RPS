@@ -16,7 +16,6 @@ use sdl3::{
 };
 use std::f64::consts::PI;
 
-
 pub struct Renderer<'a, PageId, ButtonId>
 {
     pub canvas: Canvas<Window>,
@@ -32,7 +31,6 @@ pub struct Renderer<'a, PageId, ButtonId>
     cached_input_handler_ptr: *const InputHandler<PageId, ButtonId>
 }
 
-
 pub struct RendererConfig<'a>
 {
     pub canvas: Canvas<Window>,
@@ -43,29 +41,14 @@ pub struct RendererConfig<'a>
     pub selection_color: Option<(u8, u8, u8, u8)>
 }
 
-
 impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
 {
     pub fn new(render_config: RendererConfig<'a>) -> Self
     {
-        Self {
-            canvas: render_config.canvas,
-            texture_creator: render_config.texture_creator,
-            ttf_context: render_config.ttf_context,
-            font_path: render_config.font_path,
-            decrease_color_when_selected: render_config.decrease_color_when_selected,
-            selection_color: render_config.selection_color,
-
-            cached_outgoing_page: None,
-            cached_page_data_ptr: std::ptr::null(),
-            cached_input_handler_ptr: std::ptr::null()
-        }
+        Self { canvas: render_config.canvas, texture_creator: render_config.texture_creator, ttf_context: render_config.ttf_context, font_path: render_config.font_path, decrease_color_when_selected: render_config.decrease_color_when_selected, selection_color: render_config.selection_color, cached_outgoing_page: None, cached_page_data_ptr: std::ptr::null(), cached_input_handler_ptr: std::ptr::null() }
     }
 
     /// Main render entry point. Draws the current page and applies transition overlay if any.
-    /// Keep calling this every frame with the page you want as the base frame:
-    /// - Normally the "current" page.
-    /// - During slide, we switch current page at the start of the slide stage, so it's drawn underneath.
     pub fn render(&mut self, page_data: &PageData<PageId, ButtonId>, app_state: &mut AppState<PageId, ButtonId>, input_handler: &InputHandler<PageId, ButtonId>)
     {
         let page = &mut page_data.page_to_render.clone().unwrap();
@@ -407,7 +390,6 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
         Ok(())
     }
 
-
     // ===================
     // Minimal utilities
     // ===================
@@ -431,7 +413,6 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
             let _ = self.canvas.draw_line((x + w - r - 1, y + h - r - 1 + oy), (x + w - r - 1 + ox, y + h - r - 1 + oy));
         }
     }
-
 
     pub fn find_active_input_text<'p>(&self, data: &'p PageData<PageId, ButtonId>, app: &AppState<PageId, ButtonId>, button_active: ButtonId) -> Option<&'p str>
     {

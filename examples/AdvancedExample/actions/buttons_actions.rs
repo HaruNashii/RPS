@@ -4,7 +4,6 @@ use crate::ui::pages::{
 };
 use rust_page_system::system::{page_system::PageData, state::AppState};
 
-
 pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &ButtonId, app_data: &mut PageData<PageId, ButtonId>)
 {
     if !app_state.capturing_input.0

@@ -7,7 +7,6 @@ use rust_page_system::system::{
 use sdl3::pixels::Color;
 use sdl3::rect::Rect;
 
-
 //
 // ==========================================================
 // Type scaffolding for tests
@@ -41,7 +40,6 @@ fn create_input_handler() -> InputHandler<TestPage, TestButton>
 {
     InputHandler::new(false)
 }
-
 
 //
 // ==========================================================
@@ -102,7 +100,6 @@ fn app_state_window_size_can_be_updated()
     assert_eq!(application_state.window_size, (1920, 1080));
 }
 
-
 //
 // ==========================================================
 // PageData tests
@@ -124,17 +121,7 @@ fn page_data_adds_unique_user_inputs_without_duplicates()
 {
     let (_application_state, mut page_data) = create_state();
 
-    let mut single_input_page = Page {
-        has_persistent_elements: None,
-        has_userinput: Some(vec![(TestPage::Home, TestButton::A)]),
-        id: TestPage::Home,
-        background_color: None,
-        rects: None,
-        buttons: None,
-        texts: None,
-        images: None,
-        has_transition: None
-    };
+    let mut single_input_page = Page { has_persistent_elements: None, has_userinput: Some(vec![(TestPage::Home, TestButton::A)]), id: TestPage::Home, background_color: None, rects: None, buttons: None, texts: None, images: None, has_transition: None };
 
     page_data.push_vec_user_input_per_page(&mut single_input_page);
     assert_eq!(page_data.vec_user_input.len(), 1);
@@ -195,7 +182,6 @@ fn page_data_page_history_truncates_to_ten()
 
     assert!(page_data.page_history.0.len() <= 10);
 }
-
 
 //
 // ==========================================================
@@ -322,7 +308,6 @@ fn input_handler_insert_text_respects_cursor_positionition()
 
     assert_eq!(page_data.vec_user_input[0].2, "hi there");
 }
-
 
 //
 // ==========================================================

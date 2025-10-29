@@ -9,7 +9,6 @@ pub use crate::{
     }
 };
 
-
 pub mod misc;
 pub mod sdl;
 pub mod system;

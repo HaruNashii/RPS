@@ -12,16 +12,13 @@ use rust_page_system::{
 use sdl3::sys::render::SDL_LOGICAL_PRESENTATION_STRETCH;
 use std::time::Duration;
 
-
 // To Be Ignored, Just An Setup To Configure Some Assets
 use crate::build::setup_build;
 mod build;
 
-
 pub mod actions;
 pub mod system;
 pub mod ui;
-
 
 fn main()
 {
@@ -48,14 +45,7 @@ fn main()
     let mut app_state = AppState::new(PageId::Page1, window_modules.canvas.window().size());
     let mut page_data = PageData::new(&app_state);
 
-    let renderer_config = RendererConfig {
-        canvas: window_modules.canvas,
-        texture_creator: &window_modules.texture_creator,
-        ttf_context: &window_modules.ttf_context,
-        font_path: &window_modules.font_path,
-        decrease_color_when_selected: Some((25, 25, 25)),
-        selection_color: Some((0, 0, 200, 125))
-    };
+    let renderer_config = RendererConfig { canvas: window_modules.canvas, texture_creator: &window_modules.texture_creator, ttf_context: &window_modules.ttf_context, font_path: &window_modules.font_path, decrease_color_when_selected: Some((25, 25, 25)), selection_color: Some((0, 0, 200, 125)) };
     let mut renderer = Renderer::new(renderer_config);
 
     populate_page_data(&mut page_data);

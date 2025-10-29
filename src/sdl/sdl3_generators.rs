@@ -6,8 +6,7 @@ use sdl3::{
     ttf::Sdl3TtfContext,
     video::WindowContext
 };
-use std::fs;
-
+use std::{fs, path::Path};
 
 pub trait GenText
 {
@@ -42,7 +41,6 @@ impl GenText for (&mut Vec<(f64, (i32, i32), String, Color)>, &TextureCreator<Wi
     }
 }
 
-
 pub trait GenImage
 {
     fn generate_image(&mut self) -> Vec<(Texture<'_>, Rect)>;
@@ -54,9 +52,10 @@ impl GenImage for (&mut Vec<((i32, i32), (u32, u32), String)>, &TextureCreator<W
         let mut new_vec = Vec::new();
         for text_infos in &mut *self.0
         {
-            if fs::exists(text_infos.2.clone()).expect("Failed To Check If File Exist")
+            let image_path = Path::new(&text_infos.2);
+            if fs::exists(image_path).expect("Failed To Check If File Exist")
             {
-                let texture = self.1.load_texture(text_infos.2.clone()).expect("Failed To Create Image Texture");
+                let texture = self.1.load_texture(&text_infos.2).expect("Failed To Create Image Texture");
                 let rect = Rect::new(text_infos.0.0, text_infos.0.1, text_infos.1.0, text_infos.1.1);
                 new_vec.push((texture, rect));
             }

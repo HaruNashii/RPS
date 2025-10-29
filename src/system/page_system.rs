@@ -54,15 +54,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
     /// Define Persistant Page
     pub fn new(app_state: &AppState<PageId, ButtonId>) -> Self
     {
-        Self {
-            vec_user_input: Vec::new(),
-            vec_user_input_string: Vec::new(),
-            persistent_elements_to_render: Vec::new(),
-            page_history: (VecDeque::from([app_state.current_page]), 0),
-            page_linked: Vec::new(),
-            page_w_input_linked: Vec::new(),
-            page_to_render: None
-        }
+        Self { vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), persistent_elements_to_render: Vec::new(), page_history: (VecDeque::from([app_state.current_page]), 0), page_linked: Vec::new(), page_w_input_linked: Vec::new(), page_to_render: None }
     }
 
     pub fn push_page_link(&mut self, option_page_linked_received: OptionPageLinked<PageId, ButtonId>, option_page_w_input_linked_received: OptionPageInputLinked<PageId, ButtonId>)
@@ -130,7 +122,6 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
         }
         created_page
     }
-
 
     /// Populate vec_user_input per page
     pub fn push_vec_user_input_per_page(&mut self, page: &mut Page<PageId, ButtonId>)

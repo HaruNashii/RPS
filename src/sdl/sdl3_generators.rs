@@ -8,11 +8,11 @@ use sdl3::{
 };
 use std::{fs, path::Path};
 
-pub trait GenText
+pub trait GenerateText
 {
     fn generate_text(&mut self, font_path: &str) -> Vec<(Texture<'_>, Rect)>;
 }
-impl GenText for (&mut Vec<(f64, (i32, i32), String, Color)>, &TextureCreator<WindowContext>, &Sdl3TtfContext)
+impl GenerateText for (&mut Vec<(f64, (i32, i32), String, Color)>, &TextureCreator<WindowContext>, &Sdl3TtfContext)
 {
     fn generate_text(&mut self, font_path: &str) -> Vec<(Texture<'_>, Rect)>
     {
@@ -41,11 +41,11 @@ impl GenText for (&mut Vec<(f64, (i32, i32), String, Color)>, &TextureCreator<Wi
     }
 }
 
-pub trait GenImage
+pub trait GenerateImage
 {
     fn generate_image(&mut self) -> Vec<(Texture<'_>, Rect)>;
 }
-impl GenImage for (&mut Vec<((i32, i32), (u32, u32), String)>, &TextureCreator<WindowContext>)
+impl GenerateImage for (&mut Vec<((i32, i32), (u32, u32), String)>, &TextureCreator<WindowContext>)
 {
     fn generate_image(&mut self) -> Vec<(Texture<'_>, Rect)>
     {

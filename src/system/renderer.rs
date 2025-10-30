@@ -1,6 +1,6 @@
 use crate::{
     AppState, Button, PersistentElements,
-    sdl::sdl3_generators::{GenImage, GenText},
+    sdl::sdl3_generators::{GenerateImage, GenerateText},
     system::{
         input_handler::InputHandler,
         page_system::{Page, PageData},
@@ -25,7 +25,6 @@ pub struct Renderer<'a, PageId, ButtonId>
     pub decrease_color_when_selected: Option<(u8, u8, u8)>,
     pub selection_color: Option<(u8, u8, u8, u8)>,
 
-    // === Slide overlay cache (no other files modified) ===
     cached_outgoing_page: Option<Page<PageId, ButtonId>>,
     cached_page_data_ptr: *const PageData<PageId, ButtonId>,
     cached_input_handler_ptr: *const InputHandler<PageId, ButtonId>

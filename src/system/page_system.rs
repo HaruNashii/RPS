@@ -51,12 +51,13 @@ pub struct PageData<PageId, ButtonId>
 }
 impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, ButtonId>
 {
-    /// Define Persistant Page
+    /// Define PageData Default  Config
     pub fn new(app_state: &AppState<PageId, ButtonId>) -> Self
     {
         Self { vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), persistent_elements_to_render: Vec::new(), page_history: (VecDeque::from([app_state.current_page]), 0), page_linked: Vec::new(), page_w_input_linked: Vec::new(), page_to_render: None }
     }
 
+    ///Link The Page With Your Determined PageId
     pub fn push_page_link(&mut self, option_page_linked_received: OptionPageLinked<PageId, ButtonId>, option_page_w_input_linked_received: OptionPageInputLinked<PageId, ButtonId>)
     {
         if let Some(page_linked_received) = option_page_linked_received
@@ -69,6 +70,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
         };
     }
 
+    //Create The Page Setted In THe AppState current_page
     pub fn create_current_page(&mut self, app_state: &mut AppState<PageId, ButtonId>)
     {
         while self.page_history.0.len() > 10
@@ -87,6 +89,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
         self.page_to_render = page_to_render;
     }
 
+    /// Create An Page With Your Passed Id, The Page Parsed Needs To Be Already Linked
     pub fn create_page_from_id(&mut self, page_to_create: PageId) -> Option<Page<PageId, ButtonId>>
     {
         let mut created_page = None;
@@ -208,6 +211,7 @@ pub struct Button<ButtonId>
 
 impl<ButtonId: Copy + Eq + Debug> Button<ButtonId>
 {
+    /// See If The Mouse Position Has Some Button In The Same Place, If Not Return None
     pub fn button_at(option_vec_of_buttons: Vec<&Buttons<ButtonId>>, mouse_pos_x: f32, mouse_pos_y: f32, window_size: (u32, u32)) -> Option<ButtonId>
     {
         for result_vec_of_buttons in option_vec_of_buttons.into_iter().flatten()

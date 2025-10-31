@@ -14,6 +14,7 @@ pub trait GenerateText
 }
 impl GenerateText for (&mut Vec<(f64, (i32, i32), String, Color)>, &TextureCreator<WindowContext>, &Sdl3TtfContext)
 {
+    ///Helper Function That Generates The Page Texts
     fn generate_text(&mut self, font_path: &str) -> Vec<(Texture<'_>, Rect)>
     {
         let mut vector_to_send = Vec::new();
@@ -47,6 +48,7 @@ pub trait GenerateImage
 }
 impl GenerateImage for (&mut Vec<((i32, i32), (u32, u32), String)>, &TextureCreator<WindowContext>)
 {
+    ///Helper Function That Generates The Page Images
     fn generate_image(&mut self) -> Vec<(Texture<'_>, Rect)>
     {
         let mut new_vec = Vec::new();

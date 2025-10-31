@@ -16,6 +16,7 @@ use sdl3::{
 };
 use std::f64::consts::PI;
 
+/// Renderer Function That Holds The Necessary Data To Render Pages And Transitions
 pub struct Renderer<'a, PageId, ButtonId>
 {
     pub canvas: Canvas<Window>,
@@ -30,6 +31,8 @@ pub struct Renderer<'a, PageId, ButtonId>
     cached_input_handler_ptr: *const InputHandler<PageId, ButtonId>
 }
 
+/// RendererConfig Holds The Necessary Configs And Modules
+/// To Have The Renderer Working Perfectly
 pub struct RendererConfig<'a>
 {
     pub canvas: Canvas<Window>,
@@ -42,6 +45,7 @@ pub struct RendererConfig<'a>
 
 impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
 {
+    /// Create And Setup The Renderer
     pub fn new(render_config: RendererConfig<'a>) -> Self
     {
         Self { canvas: render_config.canvas, texture_creator: render_config.texture_creator, ttf_context: render_config.ttf_context, font_path: render_config.font_path, decrease_color_when_selected: render_config.decrease_color_when_selected, selection_color: render_config.selection_color, cached_outgoing_page: None, cached_page_data_ptr: std::ptr::null(), cached_input_handler_ptr: std::ptr::null() }
@@ -84,6 +88,7 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
         self.canvas.present();
     }
 
+    /// Render The Page Without Any Transition
     fn render_page_base(&mut self, page: &mut Page<PageId, ButtonId>, app_state: &mut AppState<PageId, ButtonId>, page_data: &PageData<PageId, ButtonId>, persistent_elements: Option<Vec<PersistentElements<PageId, ButtonId>>>, input_handler: &InputHandler<PageId, ButtonId>) -> Result<(), String>
     {
         // RECTS
@@ -253,6 +258,7 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
         Ok(())
     }
 
+    /// Handle Scene Transition Logic
     fn scene_transition_overlay(&mut self, app_state: &mut AppState<PageId, ButtonId>, input_handler: &InputHandler<PageId, ButtonId>) -> Result<(), String>
     {
         if let Some(transition) = &mut app_state.scene_transition
@@ -277,6 +283,7 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
         Ok(())
     }
 
+    /// Draw Transition or call a helper that Draw the Transition
     fn draw_transition_overlay(&mut self, transition: &SceneTransition<PageId>, input_handler: &InputHandler<PageId, ButtonId>) -> Result<(), String>
     {
         match transition.transition_type
@@ -324,7 +331,7 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
         Ok(())
     }
 
-    /// Draw a full page but shifted by `direction_x` pixels on X (used for sliding old page).
+    /// Draw a full page but shifted by `direction_x` pixels on X (used for sliding transition).
     fn render_page_with_x_offset(&mut self, page: &mut Page<PageId, ButtonId>, input_handler: &InputHandler<PageId, ButtonId>, direction_x: i32, direction_y: i32) -> Result<(), String>
     {
         // RECTS
@@ -392,6 +399,7 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
     // ===================
     // Minimal utilities
     // ===================
+    // Draw radius in the border of the rects and buttons
     pub fn draw_rounded_box(&mut self, x: i32, y: i32, w: i32, h: i32, r: i32, color: Color)
     {
         self.canvas.set_draw_color(color);
@@ -413,6 +421,7 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
         }
     }
 
+    /// Find Which Button Is Current Active
     pub fn find_active_input_text<'p>(&self, data: &'p PageData<PageId, ButtonId>, app: &AppState<PageId, ButtonId>, button_active: ButtonId) -> Option<&'p str>
     {
         let current_page = app.current_page;
@@ -426,11 +435,13 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
         None
     }
 
+    /// Check If The Button Matches With Other
     pub fn button_matches<T: Copy + Eq>(button: &Button<T>, a: T) -> bool
     {
         button.id == a
     }
 
+    /// Find The Rect Of The Current Active Button
     fn find_active_button_rect(&self, page: &Page<PageId, ButtonId>, option_persistent_elements: Option<&PersistentElements<PageId, ButtonId>>, active: ButtonId) -> Option<Rect>
     {
         if let Some(vec_of_buttons) = &page.buttons
@@ -457,6 +468,7 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
         None
     }
 
+    /// Draw The Input Box Overlay, like: (Selection, Cursor, Etc...)
     fn draw_input_overlay(&mut self, text_rect: &Rect, text_content: &str, font_px: f32, input_state: &InputHandler<PageId, ButtonId>)
     {
         let horizontal_padding = 0;

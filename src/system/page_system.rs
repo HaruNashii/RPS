@@ -15,7 +15,6 @@ pub struct Page<PageId, ButtonId>
 {
     pub has_persistent_elements: PersistentElementsType<PageId, ButtonId>,
     pub has_userinput: Option<Vec<(PageId, ButtonId)>>,
-    pub has_transition: Option<TransitionType>,
     pub id: PageId,
     pub background_color: Option<Color>,
     pub rects: Rects,
@@ -47,14 +46,14 @@ pub struct PageData<PageId, ButtonId>
     pub page_linked: PageLinked<PageId, ButtonId>,
     pub page_w_input_linked: PageInputLinked<PageId, ButtonId>,
     pub page_to_render: Option<Page<PageId, ButtonId>>,
-    pub persistent_elements_to_render: Vec<PersistentElements<PageId, ButtonId>>
+    pub persistent_elements_to_render: Option<Vec<PersistentElements<PageId, ButtonId>>>
 }
 impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, ButtonId>
 {
     /// Define PageData Default  Config
     pub fn new(app_state: &AppState<PageId, ButtonId>) -> Self
     {
-        Self { vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), persistent_elements_to_render: Vec::new(), page_history: (VecDeque::from([app_state.current_page]), 0), page_linked: Vec::new(), page_w_input_linked: Vec::new(), page_to_render: None }
+        Self { vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), persistent_elements_to_render: None, page_history: (VecDeque::from([app_state.current_page]), 0), page_linked: Vec::new(), page_w_input_linked: Vec::new(), page_to_render: None }
     }
 
     ///Link The Page With Your Determined PageId
@@ -82,8 +81,9 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
         {
             self.push_vec_user_input_per_page(page_to_render);
             if let Some(result) = &page_to_render.has_persistent_elements
+                && self.persistent_elements_to_render.is_some()
             {
-                self.persistent_elements_to_render = result.iter().map(|(_, f)| f()).collect();
+                self.persistent_elements_to_render = Some(result.iter().map(|(_, f)| f()).collect());
             }
         }
         self.page_to_render = page_to_render;
@@ -101,7 +101,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
                 created_page = Some(page);
                 if let Some(persistent_list) = &created_page.as_ref().unwrap().has_persistent_elements
                 {
-                    self.persistent_elements_to_render = persistent_list.iter().map(|(_, make_persistent)| make_persistent()).collect();
+                    self.persistent_elements_to_render = Some(persistent_list.iter().map(|(_, make_persistent)| make_persistent()).collect());
                 }
                 break;
             }
@@ -117,7 +117,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
                     created_page = Some(page);
                     if let Some(persistent_list) = &created_page.as_ref().unwrap().has_persistent_elements
                     {
-                        self.persistent_elements_to_render = persistent_list.iter().map(|(_, make_persistent)| make_persistent()).collect();
+                        self.persistent_elements_to_render = Some(persistent_list.iter().map(|(_, make_persistent)| make_persistent()).collect());
                     }
                     break;
                 }
@@ -188,9 +188,10 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
         let mut buttons_to_be_evaluated = Vec::new();
         buttons_to_be_evaluated.push(page_buttons);
 
-        if !self.persistent_elements_to_render.is_empty()
+        if self.persistent_elements_to_render.is_some()
+            && let Some(p) = &self.persistent_elements_to_render
         {
-            for persistent_element in &self.persistent_elements_to_render
+            for persistent_element in p
             {
                 buttons_to_be_evaluated.push(&persistent_element.buttons)
             }
@@ -206,7 +207,8 @@ pub struct Button<ButtonId>
     pub color: Color,
     pub rect: Rect,
     pub radius: i32,
-    pub id: ButtonId
+    pub id: ButtonId,
+    pub has_transition: Option<TransitionType>
 }
 
 impl<ButtonId: Copy + Eq + Debug> Button<ButtonId>

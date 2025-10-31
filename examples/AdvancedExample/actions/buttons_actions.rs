@@ -10,22 +10,22 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
     {
         if &ButtonId::ButtonPage1 == button_id
         {
-            app_state.change_current_page(app_data, PageId::Page1);
+            app_state.change_current_page(app_data, PageId::Page1, button_id);
             return;
         };
         if &ButtonId::ButtonPage2 == button_id
         {
-            app_state.change_current_page(app_data, PageId::Page2);
+            app_state.change_current_page(app_data, PageId::Page2, button_id);
             return;
         };
         if &ButtonId::ButtonSubPage == button_id
         {
-            app_state.change_current_page(app_data, PageId::Page2SubPage);
+            app_state.change_current_page(app_data, PageId::Page2SubPage, button_id);
             return;
         };
         if &ButtonId::ButtonBack == button_id
         {
-            app_state.change_current_page(app_data, PageId::Page2);
+            app_state.change_current_page(app_data, PageId::Page2, button_id);
             return;
         };
         // Non Handle Buttons Will Be Considered User Input Buttons

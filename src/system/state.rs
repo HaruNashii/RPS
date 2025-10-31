@@ -26,18 +26,37 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> AppState<PageId, Bu
     }
 
     /// Change to a new page, optionally triggering a transition.
-    pub fn change_current_page(&mut self, page_data: &mut PageData<PageId, ButtonId>, next_page: PageId)
+    pub fn change_current_page(&mut self, page_data: &mut PageData<PageId, ButtonId>, next_page: PageId, button_id: &ButtonId)
     {
         if next_page == self.current_page
         {
             return;
         }
-
-        if let Some(page_to_render) = &page_data.page_to_render
-            && let Some(transition_type) = &page_to_render.has_transition
+        if let Some(page_to_render) = page_data.page_to_render.clone()
+            && let Some(vec_of_buttons) = page_to_render.buttons
+            && let Some(received_button) = vec_of_buttons.iter().find(|button| button.id == *button_id && button.has_transition.is_some())
+            && let Some(transition) = received_button.has_transition
         {
             // Start a new SceneTransition
-            self.scene_transition = Some(SceneTransition::new(transition_type.clone(), 500, Some(next_page)));
+            self.scene_transition = Some(SceneTransition::new(transition, 500, Some(next_page)));
+        }
+        else if let Some(vec_persistent_elements_to_render) = page_data.persistent_elements_to_render.clone()
+        {
+            for p in vec_persistent_elements_to_render
+            {
+                if let Some(vec_of_buttons) = p.buttons
+                    && let Some(received_button) = vec_of_buttons.iter().find(|button| button.id == *button_id && button.has_transition.is_some())
+                    && let Some(transition) = received_button.has_transition
+                {
+                    // Start a new SceneTransition
+                    self.scene_transition = Some(SceneTransition::new(transition, 500, Some(next_page)));
+                }
+                else
+                {
+                    // No transition requested → just switch directly.
+                    self.current_page = next_page;
+                }
+            }
         }
         else
         {

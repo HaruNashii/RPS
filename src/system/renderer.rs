@@ -65,9 +65,9 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
         }
         self.canvas.clear();
 
-        if page.has_persistent_elements.is_some()
+        if page.has_persistent_elements.is_some() && page_data.persistent_elements_to_render.is_some()
         {
-            self.render_page_base(page, app_state, page_data, Some(page_data.persistent_elements_to_render.clone()), input_handler).unwrap();
+            self.render_page_base(page, app_state, page_data, Some(page_data.persistent_elements_to_render.clone().unwrap()), input_handler).unwrap();
         }
         else
         {

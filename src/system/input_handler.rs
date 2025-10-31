@@ -199,7 +199,8 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
         }
     }
 
-    pub fn insert_text(&mut self, text_to_insert: &str, app_state: &AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>, is_paste: bool)
+    // To Be Tweaked more, is_paste is giving weird outcome
+    pub fn insert_text(&mut self, text_to_insert: &str, app_state: &AppState<PageId, ButtonId>, page_data: &mut PageData<PageId, ButtonId>, _is_paste: bool)
     {
         if !app_state.capturing_input.0
         {
@@ -238,10 +239,6 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
                     self.cursor_position = insert_index + text_to_insert.len()
                 }
                 break;
-            }
-            if is_paste
-            {
-                self.cursor_position = input_string.len();
             }
         }
         page_data.update_vec_user_input_string()

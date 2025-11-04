@@ -3,14 +3,31 @@ use crate::{
     system::{scene_transition::TransitionType, window::WINDOW_DEFAULT_SCALE}
 };
 use sdl3::{pixels::Color, rect::Rect};
+use std::rc::Rc;
 use std::{collections::VecDeque, fmt::Debug};
 
-type PersistentElementsType<PageId, ButtonId> = Option<Vec<(PageId, fn() -> PersistentElements<PageId, ButtonId>)>>;
+/// Type for optional list of persistent elements factories.
+/// Each entry associates a `PageId` with a boxed closure that constructs
+/// the corresponding `PersistentElements` when invoked. Using boxed
+/// closures instead of plain function pointers allows callers to
+/// capture additional data via the closure, enabling more flexible
+/// APIs.
+// Optionally linked persistent elements.  Removed trailing comma in the tuple type.
+// Optionally linked persistent elements. Removed trailing comma and added space between closing
+// angle brackets to avoid parsing `>>` as a right-shift operator.
+// Optionally linked persistent elements.
+// Each entry associates a `PageId` with a boxed closure that constructs
+// the corresponding `PersistentElements` when invoked. Using boxed closures
+// instead of plain function pointers allows callers to capture additional
+// data via the closure, enabling more flexible APIs.
+type PersistentElementsType<PageId, ButtonId> = Option<Vec<(PageId, Rc<dyn Fn() -> PersistentElements<PageId, ButtonId>>)>>;
 type Rects = Option<Vec<(Color, (Rect, i32))>>;
 type Texts = Option<Vec<(f64, (i32, i32), String, Color)>>;
 pub type Buttons<ButtonId> = Option<Vec<Button<ButtonId>>>;
 type Images = Option<Vec<((i32, i32), (u32, u32), String)>>;
-#[derive(PartialEq, Debug, Clone)]
+// Note: we intentionally avoid deriving `PartialEq`, `Debug`, or `Clone` for `Page` because
+// closures stored in `PersistentElementsType` cannot implement these traits. If needed,
+// custom implementations can be provided for debugging or comparison.
 pub struct Page<PageId, ButtonId>
 {
     pub has_persistent_elements: PersistentElementsType<PageId, ButtonId>,
@@ -22,7 +39,19 @@ pub struct Page<PageId, ButtonId>
     pub texts: Texts,
     pub images: Images
 }
-#[derive(PartialEq, Debug, Clone)]
+
+// We can clone `Page` because all of its fields implement `Clone` when closures are stored
+// in `Rc`. Deriving `Clone` enables cloning of pages for caching and rendering purposes.
+impl<PageId: Clone, ButtonId: Clone> Clone for Page<PageId, ButtonId>
+{
+    fn clone(&self) -> Self
+    {
+        Self { has_persistent_elements: self.has_persistent_elements.clone(), has_userinput: self.has_userinput.clone(), id: self.id.clone(), background_color: self.background_color, rects: self.rects.clone(), buttons: self.buttons.clone(), texts: self.texts.clone(), images: self.images.clone() }
+    }
+}
+// See note above: closures prevent automatic derivation of `PartialEq`, `Debug`, or `Clone`.
+// See note above: closures prevent automatic derivation of `PartialEq`, `Debug`, or `Clone` for
+// `PersistentElements`. Custom implementations can be provided if required.
 pub struct PersistentElements<PageId, ButtonId>
 {
     pub id: PageId,
@@ -33,11 +62,56 @@ pub struct PersistentElements<PageId, ButtonId>
     pub images: Images
 }
 
-type OptionPageInputLinked<PageId, ButtonId> = Option<Vec<(PageId, fn(&mut Vec<String>) -> Page<PageId, ButtonId>)>>;
-type OptionPageLinked<PageId, ButtonId> = Option<Vec<(PageId, fn() -> Page<PageId, ButtonId>)>>;
-type PageInputLinked<PageId, ButtonId> = Vec<(PageId, fn(&mut Vec<String>) -> Page<PageId, ButtonId>)>;
-type PageLinked<PageId, ButtonId> = Vec<(PageId, fn() -> Page<PageId, ButtonId>)>;
-#[derive(PartialEq, Debug, Clone)]
+// Similarly, implement `Clone` for `PersistentElements`.
+impl<PageId: Clone, ButtonId: Clone> Clone for PersistentElements<PageId, ButtonId>
+{
+    fn clone(&self) -> Self
+    {
+        Self { id: self.id.clone(), background_color: self.background_color, rects: self.rects.clone(), buttons: self.buttons.clone(), texts: self.texts.clone(), images: self.images.clone() }
+    }
+}
+
+/// Type for an optional list of pages that require user input. Each entry associates
+/// a `PageId` with a boxed closure that takes a mutable vector of user
+/// input strings and returns a constructed `Page`. Boxed closures are
+/// used so additional arguments or state can be captured and used when
+/// building the page.
+// Optionally linked pages that take user input.
+// Removed trailing comma in the tuple type to avoid compilation errors.
+// Optionally linked pages that take user input.
+// Each entry associates a `PageId` with a boxed closure that takes a mutable
+// vector of user input strings and returns a constructed `Page`. Boxed
+// closures are used so additional arguments or state can be captured and
+// used when building the page.
+type OptionPageInputLinked<PageId, ButtonId> = Option<Vec<(PageId, Rc<dyn Fn(&mut Vec<String>) -> Page<PageId, ButtonId>>)>>;
+
+/// Type for an optional list of pages that do not require user input. Each entry
+/// associates a `PageId` with a boxed closure that constructs the page.
+// Optionally linked pages that do not require user input.
+// Removed trailing comma in the tuple type to avoid compilation errors.
+// Optionally linked pages that do not require user input.
+// Each entry associates a `PageId` with a boxed closure that constructs the page.
+type OptionPageLinked<PageId, ButtonId> = Option<Vec<(PageId, Rc<dyn Fn() -> Page<PageId, ButtonId>>)>>;
+
+/// Type for a list of pages that require user input. Each entry associates a
+/// `PageId` with a boxed closure that constructs the page when given
+/// the user input strings.
+// Linked pages that take user input.
+// Removed trailing comma in the tuple type to avoid compilation errors.
+// Linked pages that take user input.
+// Each entry associates a `PageId` with a boxed closure that constructs the page
+// when given the user input strings.
+type PageInputLinked<PageId, ButtonId> = Vec<(PageId, Rc<dyn Fn(&mut Vec<String>) -> Page<PageId, ButtonId>>)>;
+
+/// Type for a list of pages that do not require user input. Each entry
+/// associates a `PageId` with a boxed closure that constructs the page.
+// Linked pages that do not require user input.
+// Removed trailing comma in the tuple type to avoid compilation errors.
+// Linked pages that do not require user input.
+// Each entry associates a `PageId` with a boxed closure that constructs the page.
+type PageLinked<PageId, ButtonId> = Vec<(PageId, Rc<dyn Fn() -> Page<PageId, ButtonId>>)>;
+// Do not derive `PartialEq`, `Debug`, or `Clone` for `PageData` for the same reason.
+// Do not derive `PartialEq`, `Debug`, or `Clone` for `PageData` for the same reason as above.
 pub struct PageData<PageId, ButtonId>
 {
     pub vec_user_input: Vec<(PageId, ButtonId, String)>,
@@ -47,6 +121,15 @@ pub struct PageData<PageId, ButtonId>
     pub page_w_input_linked: PageInputLinked<PageId, ButtonId>,
     pub page_to_render: Option<Page<PageId, ButtonId>>,
     pub persistent_elements_to_render: Option<Vec<PersistentElements<PageId, ButtonId>>>
+}
+
+// Implement `Clone` for `PageData` as well. This clones the vectors of pages and persistent elements.
+impl<PageId: Clone, ButtonId: Clone> Clone for PageData<PageId, ButtonId>
+{
+    fn clone(&self) -> Self
+    {
+        Self { vec_user_input: self.vec_user_input.clone(), vec_user_input_string: self.vec_user_input_string.clone(), page_history: self.page_history.clone(), page_linked: self.page_linked.clone(), page_w_input_linked: self.page_w_input_linked.clone(), page_to_render: self.page_to_render.clone(), persistent_elements_to_render: self.persistent_elements_to_render.clone() }
+    }
 }
 impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, ButtonId>
 {
@@ -83,6 +166,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
             if let Some(result) = &page_to_render.has_persistent_elements
                 && self.persistent_elements_to_render.is_some()
             {
+                // collect persistent element instances by invoking each closure via deref
                 self.persistent_elements_to_render = Some(result.iter().map(|(_, f)| f()).collect());
             }
         }
@@ -97,6 +181,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
         {
             if *id == page_to_create
             {
+                // call the boxed closure via deref to construct the page
                 let page = create_fn();
                 created_page = Some(page);
                 if let Some(persistent_list) = &created_page.as_ref().unwrap().has_persistent_elements
@@ -113,6 +198,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
             {
                 if *id == page_to_create
                 {
+                    // call the closure to construct the page with the current input
                     let page = create_fn_with_input(&mut self.vec_user_input_string);
                     created_page = Some(page);
                     if let Some(persistent_list) = &created_page.as_ref().unwrap().has_persistent_elements
@@ -149,7 +235,8 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
         let mut changed = false;
         for tuple_page in &self.page_w_input_linked
         {
-            let page = (tuple_page.1)(&mut self.vec_user_input_string);
+            // call the boxed closure via deref to construct the page and inspect its input bindings
+            let page = (*tuple_page.1)(&mut self.vec_user_input_string);
             if let Some(has_userinput) = &page.has_userinput
             {
                 for (pageid, buttonid) in has_userinput

@@ -81,13 +81,20 @@ use rust_page_system::{
     }
 };
 use sdl3::{pixels::Color, rect::Rect, sys::render::SDL_LOGICAL_PRESENTATION_STRETCH};
-use std::{env, time::Duration};
+use std::{env, rc::Rc, time::Duration};
+
+// To Be Ignored, Just An Setup To Configure The Build
+use crate::build::setup_build;
+mod build;
 
 //==========================================================================================================================================================================
 //=======================================================================# main function recommended setup #===============================================================
 //==========================================================================================================================================================================
 fn main()
 {
+    // To Be Ignored, Just An Setup To Configure The Build
+    setup_build();
+
     let window_config = WindowConfig {
         window_title: "SimpleExample".to_string(),
         icon: (false, None),
@@ -103,22 +110,25 @@ fn main()
     };
     let mut window_modules = create_window(window_config);
 
-    //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys") | (true = Page Rollback On), (false = Page Rollback Off)
     let mut input_handler = InputHandler::new(true);
     let mut app_state = AppState::new(PageId::Page1, window_modules.canvas.window().size());
     let mut page_data = PageData::new(&app_state);
-
     let renderer_config = RendererConfig { canvas: window_modules.canvas, texture_creator: &window_modules.texture_creator, ttf_context: &window_modules.ttf_context, font_path: &window_modules.font_path, decrease_color_when_selected: Some((25, 25, 25)), selection_color: Some((0, 0, 200, 125)) };
     let mut renderer = Renderer::new(renderer_config);
 
     populate_page_data(&mut page_data);
+
+    // Wrap the button_action function in a mutable closure so it can capture
+    // additional context if needed. Passing a closure here allows the
+    // button handler API to accept additional arguments beyond the default.
+    let mut button_action_closure = |app_state: &mut AppState<PageId, ButtonId>, button_id: &ButtonId, page_data: &mut PageData<PageId, ButtonId>| button_action(app_state, button_id, page_data);
 
     loop
     {
         //using 900 / your_refresh_rate to a very crispy experience
         std::thread::sleep(Duration::from_millis(900 / get_monitor_refresh_rate()));
         app_state.update_window_size(renderer.canvas.window().size().0, renderer.canvas.window().size().1);
-        input_handler.handle_input(&mut window_modules.event_pump, &mut window_modules.clipboard_system, &mut page_data, &mut app_state, button_action);
+        input_handler.handle_input(&mut window_modules.event_pump, &mut window_modules.clipboard_system, &mut page_data, &mut app_state, &mut button_action_closure);
         page_data.create_current_page(&mut app_state);
         renderer.render(&page_data, &mut app_state, &input_handler);
     }
@@ -156,7 +166,7 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
 //==========================================================================================================================================================================
 pub fn populate_page_data(page_data: &mut PageData<PageId, ButtonId>)
 {
-    page_data.push_page_link(Some(vec![(PageId::Page1SubPage, subpage_page1)]), Some(vec![(PageId::Page1, page_1)]));
+    page_data.push_page_link(Some(vec![(PageId::Page1SubPage, Rc::new(|| subpage_page1()))]), Some(vec![(PageId::Page1, Rc::new(|input: &mut Vec<String>| page_1(input, 13)))]));
 }
 
 //==========================================================================================================================================================================
@@ -194,8 +204,9 @@ pub enum ButtonId
 }
 
 // Define Your Pages Here:
-pub fn persistent_elements() -> PersistentElements<PageId, ButtonId>
+pub fn persistent_elements(string: String) -> PersistentElements<PageId, ButtonId>
 {
+    println!("persistent_elements now can also receive extra args: {}", string);
     //===================== rects =========================
     let all_rects = vec![(BLACK_COLOR, (Rect::new(0, 0, 1920, 100), 0))];
 
@@ -209,8 +220,9 @@ pub fn persistent_elements() -> PersistentElements<PageId, ButtonId>
     PersistentElements { id: PageId::Persistent, background_color: None, rects: Some(all_rects), buttons: None, texts: Some(all_text), images: Some(all_images) }
 }
 
-pub fn page_1(user_input: &mut Vec<String>) -> Page<PageId, ButtonId>
+pub fn page_1(user_input: &mut Vec<String>, int: i32) -> Page<PageId, ButtonId>
 {
+    println!("now i can parse the int: {}, as arg without breaking the system", int);
     //===================== variables =========================
     let purple_button_data = get_center((600, 100), (1920, 1080));
     let subpage_button_data = get_center((235, 40), (1920, 1080));
@@ -222,7 +234,7 @@ pub fn page_1(user_input: &mut Vec<String>) -> Page<PageId, ButtonId>
     let all_text = vec![(18.0, (all_buttons[0].rect.x + 10, all_buttons[0].rect.y + 7), "Go To subpage_page1".to_string(), TEXT_COLOR), (18.0, (all_buttons[1].rect.x + 75, all_buttons[1].rect.y - 25), "Click the Button To Start Getting Input".to_string(), SUBTEXT_COLOR), (25.0, (all_buttons[1].rect.x + 15, all_buttons[1].rect.y + 35), user_input.get_or_create(0), BLACK_COLOR)];
 
     //===================== page creation =========================
-    Page { has_userinput: Some(vec![(PageId::Page1, ButtonId::ButtonPurpleInputStartPage1)]), has_persistent_elements: Some(vec![(PageId::Persistent, persistent_elements)]), id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
+    Page { has_userinput: Some(vec![(PageId::Page1, ButtonId::ButtonPurpleInputStartPage1)]), has_persistent_elements: Some(vec![(PageId::Persistent, Rc::new(|| persistent_elements("a".to_string())))]), id: PageId::Page1, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: None }
 }
 
 pub fn subpage_page1() -> Page<PageId, ButtonId>

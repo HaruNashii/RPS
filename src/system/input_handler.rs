@@ -132,7 +132,8 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
         InputEvent::None
     }
 
-    pub fn handle_input(&mut self, event_pump: &mut EventPump, clipboard_util: &mut ClipboardUtil, page_data: &mut PageData<PageId, ButtonId>, app_state: &mut AppState<PageId, ButtonId>, button_action: fn(&mut AppState<PageId, ButtonId>, &ButtonId, &mut PageData<PageId, ButtonId>))
+    #[allow(clippy::type_complexity)]
+    pub fn handle_input(&mut self, event_pump: &mut EventPump, clipboard_util: &mut ClipboardUtil, page_data: &mut PageData<PageId, ButtonId>, app_state: &mut AppState<PageId, ButtonId>, button_action: &mut dyn Fn(&mut AppState<PageId, ButtonId>, &ButtonId, &mut PageData<PageId, ButtonId>))
     {
         self.button_selected = page_data.page_button_at(app_state, event_pump.mouse_state().x(), event_pump.mouse_state().y());
         if let Some(active_button_id) = app_state.capturing_input.1
@@ -146,7 +147,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
             {
                 if let Some(button_id) = self.button_selected
                 {
-                    button_action(app_state, &button_id, page_data);
+                    (*button_action)(app_state, &button_id, page_data);
                     if app_state.capturing_input.0
                     {
                         self.cursor_position = self.get_current_input_length(app_state, page_data, button_id);

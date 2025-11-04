@@ -4,7 +4,6 @@ use crate::{
 };
 use std::fmt::Debug;
 
-
 /// Global application state that holds page navigation,
 /// transitions, and user input tracking.
 #[derive(Debug, Clone)]

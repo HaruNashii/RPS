@@ -1,3 +1,4 @@
+use crate::ui::pages::ButtonId;
 use crate::{actions::buttons_actions::button_action, system::setup_page_data::populate_page_data, ui::pages::PageId};
 use rust_page_system::{
     Renderer,
@@ -50,11 +51,16 @@ fn main()
 
     populate_page_data(&mut page_data);
 
+    // Wrap the button_action function in a mutable closure so it can capture
+    // additional context if needed. Passing a closure here allows the
+    // button handler API to accept additional arguments beyond the default.
+    let mut button_action_closure = |app_state: &mut AppState<PageId, ButtonId>, button_id: &ButtonId, page_data: &mut PageData<PageId, ButtonId>| button_action(app_state, button_id, page_data);
+
     loop
     {
         //using (900 / your_refresh_rate) to a very crispy experience
         std::thread::sleep(Duration::from_millis(900 / get_monitor_refresh_rate()));
-        input_handler.handle_input(&mut window_modules.event_pump, &mut window_modules.clipboard_system, &mut page_data, &mut app_state, button_action);
+        input_handler.handle_input(&mut window_modules.event_pump, &mut window_modules.clipboard_system, &mut page_data, &mut app_state, &mut button_action_closure);
         app_state.update_window_size(renderer.canvas.window().size().0, renderer.canvas.window().size().1);
         page_data.create_current_page(&mut app_state);
         renderer.render(&mut page_data, &mut app_state, &input_handler);

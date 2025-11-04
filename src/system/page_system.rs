@@ -152,7 +152,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
         };
     }
 
-    //Create The Page Setted In THe AppState current_page
+    /// Create The Page Setted In THe AppState current_page
     pub fn create_current_page(&mut self, app_state: &mut AppState<PageId, ButtonId>)
     {
         while self.page_history.0.len() > 10

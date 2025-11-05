@@ -26,7 +26,7 @@ fn main()
 
     let window_config = WindowConfig {
         window_title: "SimpleExample".to_string(),
-        icon: (false, None),
+        icon: None,
         // Recommended to start with 16:9 aspect ratio
         start_window_size: (800, 450),
         // Recommended to have minimum size with 16:9 aspect ratio
@@ -133,9 +133,10 @@ pub enum ButtonId
 }
 
 // Define Your Pages Here:
-pub fn persistent_elements(string: String) -> PersistentElements<PageId, ButtonId>
+pub fn persistent_elements(_string: String) -> PersistentElements<PageId, ButtonId>
 {
-    println!("persistent_elements now can also receive extra args: {}", string);
+    //"persistent_elements now can also receive extra args without affecting the functionality of the app"
+    // like the parsed = _string
     //===================== rects =========================
     let all_rects = vec![(BLACK_COLOR, (Rect::new(0, 0, 1920, 100), 0))];
 
@@ -149,9 +150,10 @@ pub fn persistent_elements(string: String) -> PersistentElements<PageId, ButtonI
     PersistentElements { id: PageId::Persistent, background_color: None, rects: Some(all_rects), buttons: None, texts: Some(all_text), images: Some(all_images) }
 }
 
-pub fn page_1(user_input: &mut Vec<String>, int: i32) -> Page<PageId, ButtonId>
+pub fn page_1(user_input: &mut Vec<String>, _int: i32) -> Page<PageId, ButtonId>
 {
-    println!("now i can parse the int: {}, as arg without breaking the system", int);
+    //"pages now can also receive extra args without affecting the functionality of the app"
+    // like the parsed = _int
     //===================== variables =========================
     let purple_button_data = get_center((600, 100), (1920, 1080));
     let subpage_button_data = get_center((235, 40), (1920, 1080));

@@ -1,12 +1,15 @@
+use include_dir::{Dir, include_dir};
 use sdl3::{
     image::LoadTexture,
+    iostream::IOStream,
     pixels::Color,
     rect::Rect,
     render::{Texture, TextureCreator},
+    surface::Surface,
     ttf::Sdl3TtfContext,
     video::WindowContext
 };
-use std::{fs, path::Path};
+use std::path::{Path, PathBuf};
 
 pub trait GenerateText
 {
@@ -42,30 +45,75 @@ impl GenerateText for (&mut Vec<(f64, (i32, i32), String, Color)>, &TextureCreat
     }
 }
 
+
+// === Embed your assets folder ===
+pub static ASSETS: Dir = include_dir!("$CARGO_MANIFEST_DIR/assets");
 pub trait GenerateImage
 {
     fn generate_image(&mut self) -> Vec<(Texture<'_>, Rect)>;
 }
 impl GenerateImage for (&mut Vec<((i32, i32), (u32, u32), String)>, &TextureCreator<WindowContext>)
 {
-    ///Helper Function That Generates The Page Images
+    ///All files inside the root/assets will be embedded, but for now sdl3-rust just support
+    ///rendering per BMP files, so only bmp files will be possible to use from embedded
     fn generate_image(&mut self) -> Vec<(Texture<'_>, Rect)>
     {
-        let mut new_vec = Vec::new();
-        for text_infos in &mut *self.0
+        let mut textures = Vec::new();
+
+        for (pos, size, path_str) in &mut *self.0
         {
-            let image_path = Path::new(&text_infos.2);
-            if fs::exists(image_path).expect("Failed To Check If File Exist")
+            // Normalize path (cross-platform)
+            let normalized = {
+                let path = PathBuf::from(&*path_str);
+                path.components().filter_map(|c| c.as_os_str().to_str()).collect::<Vec<_>>().join("/")
+            };
+
+            // === 1️⃣ Try exact embedded path match ===
+            if let Some(file) = ASSETS.get_file(&normalized)
             {
-                let texture = self.1.load_texture(&text_infos.2).expect("Failed To Create Image Texture");
-                let rect = Rect::new(text_infos.0.0, text_infos.0.1, text_infos.1.0, text_infos.1.1);
-                new_vec.push((texture, rect));
+                let mut stream = IOStream::from_bytes(file.contents()).expect("Failed to create IOStream from embedded data");
+                let surface = Surface::load_bmp_rw(&mut stream).unwrap_or_else(|_| panic!("Failed to load embedded BMP '{}'", normalized));
+                let texture = self.1.create_texture_from_surface(&surface).unwrap_or_else(|_| panic!("Failed to create texture for '{}'", normalized));
+                let rect = Rect::new(pos.0, pos.1, size.0, size.1);
+                textures.push((texture, rect));
+                continue;
             }
-            else
+
+            // === 2️⃣ Recursive lookup by filename only ===
+            if let Some(file) = ASSETS.files().find(|f| f.path().file_name() == Path::new(&normalized).file_name())
             {
-                println!("Warning!!!!! Image File '{}' Doesn't Exist", text_infos.2);
+                let mut stream = IOStream::from_bytes(file.contents()).expect("Failed to create IOStream from embedded data (search mode)");
+                let surface = Surface::load_bmp_rw(&mut stream).unwrap_or_else(|_| panic!("Failed to load embedded BMP '{}'", normalized));
+                let texture = self.1.create_texture_from_surface(&surface).unwrap_or_else(|_| panic!("Failed to create texture for '{}'", normalized));
+                let rect = Rect::new(pos.0, pos.1, size.0, size.1);
+                textures.push((texture, rect));
+                continue;
             }
+
+            // === 3️⃣ Fallback: load from disk ===
+            let lower = path_str.to_lowercase();
+            if Path::new(path_str).exists()
+            {
+                if lower.ends_with(".bmp")
+                {
+                    let surface = Surface::load_bmp(Path::new(path_str)).unwrap_or_else(|_| panic!("Failed to load BMP from disk '{}'", path_str));
+                    let texture = self.1.create_texture_from_surface(&surface).unwrap_or_else(|_| panic!("Failed to create texture from disk '{}'", path_str));
+                    let rect = Rect::new(pos.0, pos.1, size.0, size.1);
+                    textures.push((texture, rect));
+                    continue;
+                }
+                if lower.ends_with(".png") || lower.ends_with(".jpg") || lower.ends_with(".jpeg")
+                {
+                    let texture = self.1.load_texture(&mut *path_str).unwrap_or_else(|_| panic!("Failed to load image '{}'", path_str));
+                    let rect = Rect::new(pos.0, pos.1, size.0, size.1);
+                    textures.push((texture, rect));
+                    continue;
+                }
+            }
+
+            eprintln!("⚠️ Warning: Image '{}' not found (not embedded, not on disk)", path_str);
         }
-        new_vec
+
+        textures
     }
 }

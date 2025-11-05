@@ -59,7 +59,9 @@ pub fn persistent_elements1() -> PersistentElements<PageId, ButtonId>
     ];
 
     //===================== images =========================
-    let all_images = vec![((10, 10), (50, 50), format!("{}/.cache/page_system/example_1.jpg", env::home_dir().unwrap().display()))];
+    //this image is embedded, everything that is inside the assets folder inside the project root
+    //is embedded automatically
+    let all_images = vec![((10, 10), (50, 50), "image_example/example_1.bmp".to_string())];
 
     //===================== page creation =========================
     PersistentElements { id: PageId::Persistent1, background_color: None, rects: Some(all_rects), buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }
@@ -134,6 +136,8 @@ pub fn subpage_page2() -> Page<PageId, ButtonId>
     let all_text = vec![(18.0, (950, 400), "Random Text, Because I Can :)".to_string(), SUBTEXT_COLOR), (18.0, (all_buttons[0].rect.x + 10, all_buttons[0].rect.y + 7), "<-".to_string(), TEXT_COLOR)];
 
     //===================== images =========================
+    //this image is local and is not embedded, so if the path provided doesn't have any image, the
+    //image won't be loaded
     let all_images = vec![((500, 500), (300, 300), format!("{}/.cache/page_system/example_2.jpg", env::home_dir().unwrap().display()))];
 
     //===================== page creation =========================

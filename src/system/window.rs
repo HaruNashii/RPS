@@ -17,7 +17,7 @@ pub const WINDOW_DEFAULT_SCALE: (u32, u32) = (1920, 1080);
 pub struct WindowConfig
 {
     pub window_title: String,
-    pub icon: (bool, Option<String>),
+    pub icon: Option<String>,
     pub start_window_size: (u32, u32),
     pub window_minimum_size: (u32, u32),
     pub resizable: bool,
@@ -64,44 +64,34 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
     //if window_config.hint_sdl3_vsync { sdl3::hint::set(sdl3::hint::names::RENDER_VSYNC, "1"); };
     let mut window = window_builder.build().unwrap();
 
-    if window_config.icon.0
+    if let Some(icon_path) = window_config.icon
     {
-        match window_config.icon.1
+        if fs::exists(&icon_path).unwrap()
         {
-            Some(icon_path) =>
+            if let Some((_, after)) = icon_path.rsplit_once('.')
             {
-                if fs::exists(&icon_path).unwrap()
+                if after == "bmp"
                 {
-                    if let Some((_, after)) = icon_path.rsplit_once('.')
-                    {
-                        if after == "bmp"
-                        {
-                            let icon_surface = Surface::load_bmp(icon_path).unwrap();
-                            window.set_icon(&icon_surface);
-                            drop(icon_surface); // Explicitly drop the surface
-                        }
-                        else
-                        {
-                            println!("WARNING!!!! Window is declared to have icon, but the provided icon path doesn't lead to an .bmp file");
-                            println!("Icon Path Provided: {}", icon_path);
-                        }
-                    }
-                    else
-                    {
-                        println!("WARNING!!!! Window is declared to have icon, but the provided icon path doesn't lead to an .bmp file");
-                        println!("Icon Path Provided: {}", icon_path);
-                    }
+                    let icon_surface = Surface::load_bmp(icon_path).unwrap();
+                    window.set_icon(&icon_surface);
+                    drop(icon_surface); // Explicitly drop the surface
                 }
                 else
                 {
-                    println!("WARNING!!!! Window is declared to have icon, but icon path parsed doesn't exist");
+                    println!("WARNING!!!! Window is declared to have icon, but the provided icon path doesn't lead to an .bmp file");
                     println!("Icon Path Provided: {}", icon_path);
                 }
             }
-            None =>
+            else
             {
-                println!("WARNING!!!! Window is declared to have icon, but no icon path was parsed!!!!")
+                println!("WARNING!!!! Window is declared to have icon, but the provided icon path doesn't lead to an .bmp file");
+                println!("Icon Path Provided: {}", icon_path);
             }
+        }
+        else
+        {
+            println!("WARNING!!!! Window is declared to have icon, but icon path parsed doesn't exist");
+            println!("Icon Path Provided: {}", icon_path);
         }
     }
 

@@ -1,5 +1,6 @@
 use crate::ui::pages::ButtonId;
 use crate::{actions::buttons_actions::button_action, system::setup_page_data::populate_page_data, ui::pages::PageId};
+use rust_page_system::list_embedded;
 use rust_page_system::{
     Renderer,
     system::{
@@ -28,7 +29,7 @@ fn main()
 
     let window_config = WindowConfig {
         window_title: "AdvancedExample".to_string(),
-        icon: (false, None),
+        icon: None,
         // Recommended to start with 16:9 aspect ratio
         start_window_size: (800, 450),
         // Recommended to have minimum size with 16:9 aspect ratio
@@ -48,6 +49,8 @@ fn main()
     let renderer_config = RendererConfig { canvas: window_modules.canvas, texture_creator: &window_modules.texture_creator, ttf_context: &window_modules.ttf_context, font_path: &window_modules.font_path, decrease_color_when_selected: Some((25, 25, 25)), selection_color: Some((0, 0, 200, 125)) };
     let mut renderer = Renderer::new(renderer_config);
 
+
+    list_embedded();
     populate_page_data(&mut page_data);
 
     // Wrap the button_action function in a mutable closure so it can capture

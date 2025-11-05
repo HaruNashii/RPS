@@ -1,24 +1,39 @@
-use std::{env, fs};
+use std::{env, fs, path::PathBuf};
 
 pub fn setup_build()
 {
-    //Move The Image To An Tmp Folder
-    let home_path = env::home_dir().unwrap().display().to_string();
-    let target_image_example_dir = format!("{}/.cache/page_system", home_path).replace(" ", "");
+    // ==== Source & destination paths ====
+    let source_dir = PathBuf::from("assets/image_example");
+    let home_dir = env::home_dir().unwrap().display().to_string();
+    let target_dir = PathBuf::from(format!("{}/.cache/page_system/assets", home_dir));
 
-    let image_example_path = ["assets/image_example/example_1.jpg", "assets/image_example/example_2.jpg"];
-    let image_example_dir = [format!("{}/example_1.jpg", target_image_example_dir).replace(" ", ""), format!("{}/example_2.jpg", target_image_example_dir).replace(" ", "")];
+    // ==== Create the destination directory ====
+    fs::create_dir_all(&target_dir).unwrap();
 
-    if !fs::exists(&target_image_example_dir).expect("failed to check target image dir")
+    // ==== Copy all image files recursively ====
+    if source_dir.exists()
     {
-        fs::create_dir_all(&target_image_example_dir).expect("Failed to create image directory");
-    };
-
-    for (index, currently_image_example_path) in image_example_path.iter().enumerate()
-    {
-        if fs::exists(currently_image_example_path).expect("failed to check currently image path") && !fs::exists(image_example_dir[index].clone()).expect("failed to check image path")
+        for entry in fs::read_dir(&source_dir).unwrap()
         {
-            fs::copy(currently_image_example_path, image_example_dir[index].clone()).expect("failed to check image dir and image");
-        };
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.is_file()
+            {
+                if let Some(ext) = path.extension()
+                {
+                    if matches!(ext.to_str(), Some("bmp") | Some("png") | Some("svg") | Some("ico") | Some("jpg") | Some("jpeg")) && !fs::exists(target_dir.join(entry.file_name())).unwrap()
+                    {
+                        let file_name = entry.file_name();
+                        let dest_path = target_dir.join(file_name);
+                        fs::copy(&path, &dest_path).unwrap();
+                        println!("cargo:warning=📦 Copied {:?} → {:?}", path, dest_path);
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        println!("cargo:warning=⚠️ No icons folder found at {:?}", source_dir);
     }
 }

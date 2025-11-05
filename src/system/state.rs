@@ -14,15 +14,16 @@ pub struct AppState<PageId, ButtonId>
     pub current_transition_type: Option<TransitionType>,
     pub window_size: (u32, u32),
     pub capturing_input: (bool, Option<ButtonId>),
-    pub all_events_disable: bool
+    pub all_events_disable: bool,
+    pub stretch_mode_is_on: bool,
 }
 
 impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> AppState<PageId, ButtonId>
 {
     /// Create a new app state with a starting page.
-    pub fn new(start_page: PageId, window_size: (u32, u32)) -> Self
+    pub fn new(start_page: PageId, window_size: (u32, u32), stretch_mode_is_on: bool) -> Self
     {
-        Self { current_page: start_page, scene_transition: None, current_transition_type: None, window_size, capturing_input: (false, None), all_events_disable: false }
+        Self { current_page: start_page, scene_transition: None, current_transition_type: None, window_size, capturing_input: (false, None), all_events_disable: false, stretch_mode_is_on }
     }
 
     /// Change to a new page, optionally triggering a transition.

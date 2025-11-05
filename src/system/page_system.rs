@@ -283,7 +283,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
                 buttons_to_be_evaluated.push(&persistent_element.buttons)
             }
         };
-        Button::button_at(buttons_to_be_evaluated, mouse_pos_x, mouse_pos_y, window_size)
+        Button::button_at(buttons_to_be_evaluated, mouse_pos_x, mouse_pos_y, window_size, app_state.stretch_mode_is_on)
     }
 }
 
@@ -301,12 +301,12 @@ pub struct Button<ButtonId>
 impl<ButtonId: Copy + Eq + Debug> Button<ButtonId>
 {
     /// See If The Mouse Position Has Some Button In The Same Place, If Not Return None
-    pub fn button_at(option_vec_of_buttons: Vec<&Buttons<ButtonId>>, mouse_pos_x: f32, mouse_pos_y: f32, window_size: (u32, u32)) -> Option<ButtonId>
+    pub fn button_at(option_vec_of_buttons: Vec<&Buttons<ButtonId>>, mouse_pos_x: f32, mouse_pos_y: f32, window_size: (u32, u32), stretch_mode_is_on: bool) -> Option<ButtonId>
     {
         for result_vec_of_buttons in option_vec_of_buttons.into_iter().flatten()
         {
-            let x_scaled = mouse_pos_x * (WINDOW_DEFAULT_SCALE.0 as f32 / window_size.0 as f32);
-            let y_scaled = mouse_pos_y * (WINDOW_DEFAULT_SCALE.1 as f32 / window_size.1 as f32);
+            let x_scaled = if stretch_mode_is_on { mouse_pos_x * (WINDOW_DEFAULT_SCALE.0 as f32 / window_size.0 as f32) } else { mouse_pos_x };
+            let y_scaled = if stretch_mode_is_on { mouse_pos_y * (WINDOW_DEFAULT_SCALE.1 as f32 / window_size.1 as f32) } else { mouse_pos_y };
             for button in result_vec_of_buttons
             {
                 if x_scaled >= button.rect.x as f32 && x_scaled <= (button.rect.x + button.rect.w) as f32 && y_scaled >= button.rect.y as f32 && y_scaled <= (button.rect.y + button.rect.h) as f32

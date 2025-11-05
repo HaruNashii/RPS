@@ -145,7 +145,10 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
         {
             InputEvent::Click =>
             {
-                if app_state.all_events_disable { return };
+                if app_state.all_events_disable
+                {
+                    return;
+                };
                 if let Some(button_id) = self.button_selected
                 {
                     (*button_action)(app_state, &button_id, page_data);
@@ -163,84 +166,129 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> InputHandler<PageId
             }
             InputEvent::Text(text_input) =>
             {
-                if app_state.all_events_disable { return };
+                if app_state.all_events_disable
+                {
+                    return;
+                };
                 self.push_state(page_data);
                 self.insert_text(&text_input, app_state, page_data, false)
             }
             InputEvent::Backspace =>
             {
-                if app_state.all_events_disable { return };
+                if app_state.all_events_disable
+                {
+                    return;
+                };
                 self.push_state(page_data);
                 self.backspace(app_state, page_data)
             }
             InputEvent::Paste =>
             {
-                if app_state.all_events_disable { return };
+                if app_state.all_events_disable
+                {
+                    return;
+                };
                 self.push_state(page_data);
                 self.paste(Some(clipboard_util), app_state, page_data)
             }
             InputEvent::Cut =>
             {
-                if app_state.all_events_disable { return };
+                if app_state.all_events_disable
+                {
+                    return;
+                };
                 self.push_state(page_data);
                 self.copy(Some(clipboard_util), app_state, page_data, true)
             }
             InputEvent::DeleteAll =>
             {
-                if app_state.all_events_disable { return };
+                if app_state.all_events_disable
+                {
+                    return;
+                };
                 self.push_state(page_data);
                 self.delete_all(app_state, page_data)
             }
-            InputEvent::Copy => 
+            InputEvent::Copy =>
             {
-                if app_state.all_events_disable { return };
+                if app_state.all_events_disable
+                {
+                    return;
+                };
                 self.copy(Some(clipboard_util), app_state, page_data, false)
-            },
-            InputEvent::SelectAll => 
+            }
+            InputEvent::SelectAll =>
             {
-                if app_state.all_events_disable { return };
+                if app_state.all_events_disable
+                {
+                    return;
+                };
                 self.select_all(app_state, page_data)
-            },
-            InputEvent::Undo => 
-            { 
-                if app_state.all_events_disable { return };
+            }
+            InputEvent::Undo =>
+            {
+                if app_state.all_events_disable
+                {
+                    return;
+                };
                 self.undo(page_data)
-            },
-            InputEvent::CursorLeft(shift_held) => 
+            }
+            InputEvent::CursorLeft(shift_held) =>
             {
-                if app_state.all_events_disable { return };
+                if app_state.all_events_disable
+                {
+                    return;
+                };
                 self.move_cursor(false, shift_held, app_state, page_data)
-            },
-            InputEvent::CursorRight(shift_held) => 
+            }
+            InputEvent::CursorRight(shift_held) =>
             {
-                if app_state.all_events_disable { return };
+                if app_state.all_events_disable
+                {
+                    return;
+                };
                 self.move_cursor(true, shift_held, app_state, page_data)
-            },
-            InputEvent::Submit => 
+            }
+            InputEvent::Submit =>
             {
-                if app_state.all_events_disable { return };
+                if app_state.all_events_disable
+                {
+                    return;
+                };
                 app_state.capturing_input = (false, None)
-            },
+            }
             InputEvent::Front =>
             {
-                if app_state.all_events_disable { return };
+                if app_state.all_events_disable
+                {
+                    return;
+                };
                 self.navigate_history(true, app_state, page_data)
-            },
-            InputEvent::Back => 
+            }
+            InputEvent::Back =>
             {
-                if app_state.all_events_disable { return };
+                if app_state.all_events_disable
+                {
+                    return;
+                };
                 self.navigate_history(false, app_state, page_data)
-            },
-            InputEvent::ExitCapturingInput => 
+            }
+            InputEvent::ExitCapturingInput =>
             {
-                if app_state.all_events_disable { return };
+                if app_state.all_events_disable
+                {
+                    return;
+                };
                 app_state.capturing_input = (false, None)
-            },
-            InputEvent::Quit => 
+            }
+            InputEvent::Quit =>
             {
-                if app_state.all_events_disable { return };
+                if app_state.all_events_disable
+                {
+                    return;
+                };
                 exit(0)
-            },
+            }
             _ =>
             {}
         }

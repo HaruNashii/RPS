@@ -42,8 +42,7 @@ fn main()
     let mut window_modules = create_window(window_config);
     //bool is reffered to the rollback pages system, with "Mouse side buttons" or ("Alt" + "Arrows Keys") | (true = Page Rollback On), (false = Page Rollback Off)
     let mut input_handler = InputHandler::new(true);
-    // TransitionType::Slide second arg, 0 = Down \ 1 = Up \ 2 = Right \ 3 = Left
-    let mut app_state = AppState::new(PageId::Page1, window_modules.canvas.window().size());
+    let mut app_state = AppState::new(PageId::Page1, window_modules.canvas.window().size(), window_modules.stretch_mode_status);
     let mut page_data = PageData::new(&app_state);
 
     let renderer_config = RendererConfig { canvas: window_modules.canvas, texture_creator: &window_modules.texture_creator, ttf_context: &window_modules.ttf_context, font_path: &window_modules.font_path, decrease_color_when_selected: Some((25, 25, 25)), selection_color: Some((0, 0, 200, 125)) };

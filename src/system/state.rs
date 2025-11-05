@@ -15,7 +15,7 @@ pub struct AppState<PageId, ButtonId>
     pub window_size: (u32, u32),
     pub capturing_input: (bool, Option<ButtonId>),
     pub all_events_disable: bool,
-    pub stretch_mode_is_on: bool,
+    pub stretch_mode_is_on: bool
 }
 
 impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> AppState<PageId, ButtonId>

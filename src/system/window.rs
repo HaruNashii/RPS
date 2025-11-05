@@ -36,7 +36,7 @@ pub struct WindowModules
     pub ttf_context: Sdl3TtfContext,
     pub font_path: String,
     pub clipboard_system: ClipboardUtil,
-    pub stretch_mode_status: bool,
+    pub stretch_mode_status: bool
 }
 
 pub fn create_window(window_config: WindowConfig) -> WindowModules
@@ -49,21 +49,7 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
     let font_path = font_info.path.display().to_string();
     let mut window_builder = video_system.window(&window_config.window_title, window_config.start_window_size.0, window_config.start_window_size.1);
 
-    let stretch_mode_status = if let Some(sdl_presentation_mode) = window_config.different_sdl_presentation_mode
-    {
-        if sdl_presentation_mode == SDL_LOGICAL_PRESENTATION_STRETCH
-        {
-            true
-        }
-        else
-        {
-            false
-        }
-    }
-    else
-    {
-        true
-    };
+    let stretch_mode_status = if let Some(sdl_presentation_mode) = window_config.different_sdl_presentation_mode { sdl_presentation_mode == SDL_LOGICAL_PRESENTATION_STRETCH } else { true };
 
     if window_config.resizable
     {

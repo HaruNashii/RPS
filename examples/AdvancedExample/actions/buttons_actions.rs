@@ -10,7 +10,10 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
     {
         if &ButtonId::ButtonPage1 == button_id
         {
+            //this disable all eventpump events, it's just here for demonstration porpuse
+            app_state.all_events_disable = true;
             app_state.change_current_page(app_data, PageId::Page1, button_id);
+            app_state.all_events_disable = false;
             return;
         };
         if &ButtonId::ButtonPage2 == button_id

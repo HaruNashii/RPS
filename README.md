@@ -83,21 +83,18 @@ use rust_page_system::{
 use sdl3::{pixels::Color, rect::Rect, sys::render::SDL_LOGICAL_PRESENTATION_STRETCH};
 use std::{env, rc::Rc, time::Duration};
 
-// To Be Ignored, Just An Setup To Configure The Build
-use crate::build::setup_build;
-mod build;
+// use this is you want to embedded any file, currently for rendering sdl3-rust only supports .bmp file
+//use include_dir::Dir;
+//pub static ASSETS: Dir = include_project_assets!();
 
 //==========================================================================================================================================================================
 //=======================================================================# main function recommended setup #===============================================================
 //==========================================================================================================================================================================
 fn main()
 {
-    // To Be Ignored, Just An Setup To Configure The Build
-    setup_build();
-
     let window_config = WindowConfig {
         window_title: "SimpleExample".to_string(),
-        icon: (false, None),
+        icon: (None, None),
         // Recommended to start with 16:9 aspect ratio
         start_window_size: (800, 450),
         // Recommended to have minimum size with 16:9 aspect ratio
@@ -111,7 +108,7 @@ fn main()
     let mut window_modules = create_window(window_config);
 
     let mut input_handler = InputHandler::new(true);
-    let mut app_state = AppState::new(PageId::Page1, window_modules.canvas.window().size());
+    let mut app_state = AppState::new(PageId::Page1, window_modules.canvas.window().size(), window_modules.stretch_mode_status);
     let mut page_data = PageData::new(&app_state);
     let renderer_config = RendererConfig { canvas: window_modules.canvas, texture_creator: &window_modules.texture_creator, ttf_context: &window_modules.ttf_context, font_path: &window_modules.font_path, decrease_color_when_selected: Some((25, 25, 25)), selection_color: Some((0, 0, 200, 125)) };
     let mut renderer = Renderer::new(renderer_config);
@@ -166,7 +163,7 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
 //==========================================================================================================================================================================
 pub fn populate_page_data(page_data: &mut PageData<PageId, ButtonId>)
 {
-    page_data.push_page_link(Some(vec![(PageId::Page1SubPage, Rc::new(|| subpage_page1()))]), Some(vec![(PageId::Page1, Rc::new(|input: &mut Vec<String>| page_1(input, 13)))]));
+    page_data.push_page_link(Some(vec![(PageId::Page1SubPage, Rc::new(subpage_page1))]), Some(vec![(PageId::Page1, Rc::new(|input: &mut Vec<String>| page_1(input, 13)))]));
 }
 
 //==========================================================================================================================================================================
@@ -204,9 +201,10 @@ pub enum ButtonId
 }
 
 // Define Your Pages Here:
-pub fn persistent_elements(string: String) -> PersistentElements<PageId, ButtonId>
+pub fn persistent_elements(_string: String) -> PersistentElements<PageId, ButtonId>
 {
-    println!("persistent_elements now can also receive extra args: {}", string);
+    //"persistent_elements now can also receive extra args without affecting the functionality of the app"
+    // like the parsed = _string
     //===================== rects =========================
     let all_rects = vec![(BLACK_COLOR, (Rect::new(0, 0, 1920, 100), 0))];
 
@@ -220,9 +218,10 @@ pub fn persistent_elements(string: String) -> PersistentElements<PageId, ButtonI
     PersistentElements { id: PageId::Persistent, background_color: None, rects: Some(all_rects), buttons: None, texts: Some(all_text), images: Some(all_images) }
 }
 
-pub fn page_1(user_input: &mut Vec<String>, int: i32) -> Page<PageId, ButtonId>
+pub fn page_1(user_input: &mut Vec<String>, _int: i32) -> Page<PageId, ButtonId>
 {
-    println!("now i can parse the int: {}, as arg without breaking the system", int);
+    //"pages now can also receive extra args without affecting the functionality of the app"
+    // like the parsed = _int
     //===================== variables =========================
     let purple_button_data = get_center((600, 100), (1920, 1080));
     let subpage_button_data = get_center((235, 40), (1920, 1080));

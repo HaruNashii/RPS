@@ -1,8 +1,8 @@
 use crate::ui::pages::ButtonId;
 use crate::{actions::buttons_actions::button_action, system::setup_page_data::populate_page_data, ui::pages::PageId};
-use rust_page_system::list_embedded;
+use rust_page_system::include_project_assets;
 use rust_page_system::{
-    Renderer,
+    Renderer, list_embedded,
     system::{
         input_handler::InputHandler,
         page_system::PageData,
@@ -11,6 +11,10 @@ use rust_page_system::{
         window::{WindowConfig, create_window, get_monitor_refresh_rate}
     }
 };
+
+use include_dir::Dir;
+pub static ASSETS: Dir = include_project_assets!();
+
 use sdl3::sys::render::SDL_LOGICAL_PRESENTATION_STRETCH;
 use std::time::Duration;
 
@@ -26,11 +30,11 @@ fn main()
 {
     // To Be Ignored, Just An Setup To Configure Some Assets
     setup_build();
-    list_embedded();
+    list_embedded(&ASSETS);
 
     let window_config = WindowConfig {
         window_title: "AdvancedExample".to_string(),
-        icon: Some("image_example/example_2.bmp".to_string()),
+        icon: (Some("image_example/example_2.bmp".to_string()), Some(&ASSETS)),
         // Recommended to start with 16:9 aspect ratio
         start_window_size: (800, 450),
         // Recommended to have minimum size with 16:9 aspect ratio
@@ -65,6 +69,6 @@ fn main()
         input_handler.handle_input(&mut window_modules.event_pump, &mut window_modules.clipboard_system, &mut page_data, &mut app_state, &mut button_action_closure);
         app_state.update_window_size(renderer.canvas.window().size().0, renderer.canvas.window().size().1);
         page_data.create_current_page(&mut app_state);
-        renderer.render(&mut page_data, &mut app_state, &input_handler);
+        renderer.render(&page_data, &mut app_state, &input_handler);
     }
 }

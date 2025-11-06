@@ -11,6 +11,8 @@ use sdl3::{
 };
 use std::path::{Path, PathBuf};
 
+static ASSETS: Dir = include_dir!("$CARGO_MANIFEST_DIR/assets");
+
 pub trait GenerateText
 {
     fn generate_text(&mut self, font_path: &str) -> Vec<(Texture<'_>, Rect)>;
@@ -47,7 +49,6 @@ impl GenerateText for (&mut Vec<(f64, (i32, i32), String, Color)>, &TextureCreat
 
 
 // === Embed your assets folder ===
-pub static ASSETS: Dir = include_dir!("$CARGO_MANIFEST_DIR/assets");
 pub trait GenerateImage
 {
     fn generate_image(&mut self) -> Vec<(Texture<'_>, Rect)>;

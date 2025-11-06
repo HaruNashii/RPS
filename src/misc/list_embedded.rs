@@ -1,9 +1,8 @@
-use crate::sdl::sdl3_generators::ASSETS;
+use include_dir::Dir;
 
-pub fn list_embedded()
+pub fn list_embedded(dir: &Dir)
 {
-    println!("📦 Embedded entries:");
-    for entry in ASSETS.entries()
+    for entry in dir.entries()
     {
         match entry
         {

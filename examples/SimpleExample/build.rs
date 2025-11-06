@@ -18,17 +18,14 @@ pub fn setup_build()
             let entry = entry.unwrap();
             let path = entry.path();
             if path.is_file()
+                && let Some(ext) = path.extension()
+                && matches!(ext.to_str(), Some("bmp") | Some("png") | Some("svg") | Some("ico") | Some("jpg") | Some("jpeg"))
+                && !fs::exists(target_dir.join(entry.file_name())).unwrap()
             {
-                if let Some(ext) = path.extension()
-                {
-                    if matches!(ext.to_str(), Some("bmp") | Some("png") | Some("svg") | Some("ico") | Some("jpg") | Some("jpeg")) && !fs::exists(target_dir.join(entry.file_name())).unwrap()
-                    {
-                        let file_name = entry.file_name();
-                        let dest_path = target_dir.join(file_name);
-                        fs::copy(&path, &dest_path).unwrap();
-                        println!("cargo:warning=📦 Copied {:?} → {:?}", path, dest_path);
-                    }
-                }
+                let file_name = entry.file_name();
+                let dest_path = target_dir.join(file_name);
+                fs::copy(&path, &dest_path).unwrap();
+                println!("cargo:warning=📦 Copied {:?} → {:?}", path, dest_path);
             }
         }
     }

@@ -23,10 +23,9 @@ fn main()
 {
     // To Be Ignored, Just An Setup To Configure The Build
     setup_build();
-
     let window_config = WindowConfig {
         window_title: "SimpleExample".to_string(),
-        icon: None,
+        icon: (None, None),
         // Recommended to start with 16:9 aspect ratio
         start_window_size: (800, 450),
         // Recommended to have minimum size with 16:9 aspect ratio
@@ -95,7 +94,7 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
 //==========================================================================================================================================================================
 pub fn populate_page_data(page_data: &mut PageData<PageId, ButtonId>)
 {
-    page_data.push_page_link(Some(vec![(PageId::Page1SubPage, Rc::new(|| subpage_page1()))]), Some(vec![(PageId::Page1, Rc::new(|input: &mut Vec<String>| page_1(input, 13)))]));
+    page_data.push_page_link(Some(vec![(PageId::Page1SubPage, Rc::new(subpage_page1))]), Some(vec![(PageId::Page1, Rc::new(|input: &mut Vec<String>| page_1(input, 13)))]));
 }
 
 //==========================================================================================================================================================================

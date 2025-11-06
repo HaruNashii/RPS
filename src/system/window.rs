@@ -1,4 +1,3 @@
-use crate::sdl::sdl3_generators::ASSETS;
 use display_info::DisplayInfo;
 use fontconfig::Fontconfig;
 use sdl3::{
@@ -14,12 +13,13 @@ use sdl3::{
 };
 use std::fs;
 
+
 pub const WINDOW_DEFAULT_SCALE: (u32, u32) = (1920, 1080);
 
-pub struct WindowConfig
+pub struct WindowConfig<'a>
 {
     pub window_title: String,
-    pub icon: Option<String>,
+    pub icon: (Option<String>, Option<&'a include_dir::Dir<'a>>),
     pub start_window_size: (u32, u32),
     pub window_minimum_size: (u32, u32),
     pub resizable: bool,
@@ -67,7 +67,7 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
     let mut window = window_builder.build().unwrap();
 
     // === Icon loading: Embedded first, fallback to local ===
-    if let Some(icon_path) = window_config.icon
+    if let Some(icon_path) = window_config.icon.0
     {
         let lower = icon_path.to_lowercase();
         if lower.ends_with(".bmp")
@@ -77,8 +77,8 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
                 let path = std::path::Path::new(&icon_path);
                 path.iter().filter_map(|c| c.to_str()).collect::<Vec<_>>().join("/")
             };
-
-            if let Some(file) = ASSETS.get_file(&normalized)
+            if let Some(assets) = window_config.icon.1
+                && let Some(file) = assets.get_file(&normalized)
             {
                 let mut stream = IOStream::from_bytes(file.contents()).expect("Failed to create IOStream");
                 let icon_surface = Surface::load_bmp_rw(&mut stream).expect("Failed to load embedded icon surface");

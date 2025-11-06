@@ -26,10 +26,11 @@ fn main()
 {
     // To Be Ignored, Just An Setup To Configure Some Assets
     setup_build();
+    list_embedded();
 
     let window_config = WindowConfig {
         window_title: "AdvancedExample".to_string(),
-        icon: None,
+        icon: Some("image_example/example_2.bmp".to_string()),
         // Recommended to start with 16:9 aspect ratio
         start_window_size: (800, 450),
         // Recommended to have minimum size with 16:9 aspect ratio
@@ -50,7 +51,6 @@ fn main()
     let mut renderer = Renderer::new(renderer_config);
 
 
-    list_embedded();
     populate_page_data(&mut page_data);
 
     // Wrap the button_action function in a mutable closure so it can capture

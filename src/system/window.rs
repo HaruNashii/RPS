@@ -1,8 +1,10 @@
+use crate::sdl::sdl3_generators::ASSETS;
 use display_info::DisplayInfo;
 use fontconfig::Fontconfig;
 use sdl3::{
     EventPump, Sdl,
     clipboard::ClipboardUtil,
+    iostream::IOStream,
     rect::Rect,
     render::{Canvas, TextureCreator},
     surface::Surface,
@@ -64,34 +66,41 @@ pub fn create_window(window_config: WindowConfig) -> WindowModules
     //if window_config.hint_sdl3_vsync { sdl3::hint::set(sdl3::hint::names::RENDER_VSYNC, "1"); };
     let mut window = window_builder.build().unwrap();
 
+    // === Icon loading: Embedded first, fallback to local ===
     if let Some(icon_path) = window_config.icon
     {
-        if fs::exists(&icon_path).unwrap()
+        let lower = icon_path.to_lowercase();
+        if lower.ends_with(".bmp")
         {
-            if let Some((_, after)) = icon_path.rsplit_once('.')
+            // Try to find the icon in embedded assets first
+            let normalized = {
+                let path = std::path::Path::new(&icon_path);
+                path.iter().filter_map(|c| c.to_str()).collect::<Vec<_>>().join("/")
+            };
+
+            if let Some(file) = ASSETS.get_file(&normalized)
             {
-                if after == "bmp"
-                {
-                    let icon_surface = Surface::load_bmp(icon_path).unwrap();
-                    window.set_icon(&icon_surface);
-                    drop(icon_surface); // Explicitly drop the surface
-                }
-                else
-                {
-                    println!("WARNING!!!! Window is declared to have icon, but the provided icon path doesn't lead to an .bmp file");
-                    println!("Icon Path Provided: {}", icon_path);
-                }
+                let mut stream = IOStream::from_bytes(file.contents()).expect("Failed to create IOStream");
+                let icon_surface = Surface::load_bmp_rw(&mut stream).expect("Failed to load embedded icon surface");
+                window.set_icon(&icon_surface);
+                println!("✅ Window icon loaded from embedded assets: {}", normalized);
+                drop(icon_surface);
+            }
+            else if fs::exists(&icon_path).unwrap_or(false)
+            {
+                let icon_surface = Surface::load_bmp(icon_path.clone()).expect("Failed to load disk icon");
+                window.set_icon(&icon_surface);
+                println!("💾 Window icon loaded from disk: {}", icon_path);
+                drop(icon_surface);
             }
             else
             {
-                println!("WARNING!!!! Window is declared to have icon, but the provided icon path doesn't lead to an .bmp file");
-                println!("Icon Path Provided: {}", icon_path);
+                eprintln!("⚠️ Icon not found (not embedded, not on disk): {}", icon_path);
             }
         }
         else
         {
-            println!("WARNING!!!! Window is declared to have icon, but icon path parsed doesn't exist");
-            println!("Icon Path Provided: {}", icon_path);
+            eprintln!("⚠️ Icon must be a BMP file: {}", icon_path);
         }
     }
 

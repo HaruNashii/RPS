@@ -68,11 +68,13 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
         }
         self.canvas.clear();
 
+
         //has forced_persistent_elements and page don't have persistent elements
         if let Some(forced_persistent_elements) = &page_data.forced_persistent_elements && page.has_persistent_elements.is_none()
         {
             self.render_page_base(page, app_state, page_data, Some(forced_persistent_elements.to_vec()), input_handler).unwrap();
         }
+
         //has forced_persistent_elements and page have persistent elements
         if let Some(forced_persistent_elements) = &page_data.forced_persistent_elements && page.has_persistent_elements.is_some() && page_data.persistent_elements_to_render.is_some()
         {
@@ -81,15 +83,15 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
         }
         //don't have forced_persistent_elements and have persistent_elements
         if page.has_persistent_elements.is_some() && page_data.persistent_elements_to_render.is_some() && page_data.forced_persistent_elements.is_none()
-            
         {
             self.render_page_base(page, app_state, page_data, Some(page_data.persistent_elements_to_render.clone().unwrap()), input_handler).unwrap();
         }
         //don't have forced_persistent_elements and don't have persistent_elements
-        else
+        else if page_data.forced_persistent_elements.is_none()
         {
             self.render_page_base(page, app_state, page_data, None, input_handler).unwrap();
         }
+
 
         if let Some(transition) = &mut app_state.scene_transition && matches!(transition.transition_type, TransitionType::Slide(_, _, _)) && transition.is_second_stage && !transition.has_switched
         {
@@ -97,14 +99,17 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
             self.cached_page_data_ptr = page_data as *const _;
             self.cached_input_handler_ptr = input_handler as *const _;
         }
-
         let _ = self.scene_transition_overlay(app_state, input_handler);
+
+
         self.canvas.present();
     }
 
     /// Render The Page Without Any Transition
-    fn render_page_base(&mut self, page: &mut Page<PageId, ButtonId>, app_state: &mut AppState<PageId, ButtonId>, page_data: &PageData<PageId, ButtonId>, persistent_elements: Option<Vec<PersistentElements<PageId, ButtonId>>>, input_handler: &InputHandler<PageId, ButtonId>) -> Result<(), String>
+    fn render_page_base(&mut self, page: &mut Page<PageId, ButtonId>, app_state: &mut AppState<PageId, ButtonId>, page_data: &PageData<PageId, ButtonId>, mut persistent_elements: Option<Vec<PersistentElements<PageId, ButtonId>>>, input_handler: &InputHandler<PageId, ButtonId>) -> Result<(), String>
     {
+
+        //NORMAL PAGES
         // RECTS
         if let Some(rects) = &page.rects
         {
@@ -213,10 +218,14 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
             }
         }
 
+
+
+
+
         // PERSISTENT ELEMENTS
-        if let Some(vec_page) = persistent_elements
+        if let Some(vec_page) = &mut persistent_elements
         {
-            for mut page in vec_page
+            for page in vec_page
             {
                 // RECTS
                 if let Some(rects) = &page.rects
@@ -252,7 +261,8 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
                     let mut requisites = (texts, self.texture_creator, self.ttf_context);
                     for tuple in requisites.generate_text(self.font_path)
                     {
-                        self.canvas.copy(&tuple.0, None, tuple.1).unwrap_or_else(|err| {
+                        self.canvas.copy(&tuple.0, None, tuple.1).unwrap_or_else(|err| 
+                        {
                             println!("text creator gives an error \nerror: {}\n", err);
                         });
                     }
@@ -268,6 +278,11 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
                 }
             }
         }
+
+
+
+
+
 
         Ok(())
     }
@@ -348,6 +363,7 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
     /// Draw a full page but shifted by `direction_x` pixels on X (used for sliding transition).
     fn render_page_with_x_offset(&mut self, page: &mut Page<PageId, ButtonId>, input_handler: &InputHandler<PageId, ButtonId>, direction_x: i32, direction_y: i32) -> Result<(), String>
     {
+        // NORMAL PAGES
         // RECTS
         if let Some(rects) = &page.rects
         {

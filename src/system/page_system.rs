@@ -264,27 +264,165 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
     }
 
     /// Returns the button ID under the cursor (if any)
-    pub fn page_button_at(&self, app_state: &AppState<PageId, ButtonId>, mouse_pos_x: f32, mouse_pos_y: f32) -> Option<ButtonId>
+        /// Returns the topmost clickable button under the cursor,
+    /// respecting visual layering (persistent fully blocks below)
+    pub fn page_button_at(&self, app_state: &AppState<PageId, ButtonId>, mouse_x: f32, mouse_y: f32) -> Option<ButtonId>
     {
         let window_size = app_state.window_size;
-        let mut page_buttons = &None;
-        if let Some(page_to_render) = &self.page_to_render
+        let stretch = app_state.stretch_mode_is_on;
+
+        let (mx, my) = if stretch 
         {
-            page_buttons = &page_to_render.buttons;
+            (
+                mouse_x * (WINDOW_DEFAULT_SCALE.0 as f32 / window_size.0 as f32),
+                mouse_y * (WINDOW_DEFAULT_SCALE.1 as f32 / window_size.1 as f32)
+            )
+        } 
+        else 
+        {
+            (mouse_x, mouse_y)
+        };
+
+        let inside = |r: &Rect| -> bool { mx >= r.x as f32 && mx <= (r.x + r.w) as f32 && my >= r.y as f32 && my <= (r.y + r.h) as f32 };
+
+        // 0. forced_persistent_elements in the most top of the stack
+        if let Some(persistents) = &self.forced_persistent_elements
+        {
+            for persistent in persistents.iter().rev()
+            {
+                // Buttons (clickable)
+                if let Some(buttons) = &persistent.buttons
+                {
+                    for button in buttons.iter().rev()
+                    {
+                        if inside(&button.rect) {
+                            // If button enabled, return it
+                            if button.enabled {
+                                return Some(button.id);
+                            } else {
+                                // Disabled button still blocks clicks below
+                                return None;
+                            }
+                        }
+                    }
+                }
+
+                // Rects (block clicks)
+                if let Some(rects) = &persistent.rects
+                {
+                    for (_, (rect, _)) in rects.iter().rev()
+                    {
+                        if inside(rect) {
+                            return None;
+                        }
+                    }
+                }
+
+                // Images (block clicks)
+                if let Some(images) = &persistent.images
+                {
+                    for (pos, size, _) in images.iter().rev()
+                    {
+                        if inside(&Rect::new(pos.0, pos.1, size.0, size.1)) 
+                        {
+                            return None;
+                        }
+                    }
+                }
+            }
         }
 
-        let mut buttons_to_be_evaluated = Vec::new();
-        buttons_to_be_evaluated.push(page_buttons);
 
-        if self.persistent_elements_to_render.is_some()
-            && let Some(p) = &self.persistent_elements_to_render
+        // === 1. Persistent elements (always on top) ===
+        if let Some(persistents) = &self.persistent_elements_to_render
         {
-            for persistent_element in p
+            for persistent in persistents.iter().rev()
             {
-                buttons_to_be_evaluated.push(&persistent_element.buttons)
+                // Buttons (clickable)
+                if let Some(buttons) = &persistent.buttons
+                {
+                    for button in buttons.iter().rev()
+                    {
+                        if inside(&button.rect) {
+                            // If button enabled, return it
+                            if button.enabled {
+                                return Some(button.id);
+                            } else {
+                                // Disabled button still blocks clicks below
+                                return None;
+                            }
+                        }
+                    }
+                }
+
+                // Rects (block clicks)
+                if let Some(rects) = &persistent.rects
+                {
+                    for (_, (rect, _)) in rects.iter().rev()
+                    {
+                        if inside(rect) {
+                            return None;
+                        }
+                    }
+                }
+
+                // Images (block clicks)
+                if let Some(images) = &persistent.images
+                {
+                    for (pos, size, _) in images.iter().rev()
+                    {
+                        if inside(&Rect::new(pos.0, pos.1, size.0, size.1)) 
+                        {
+                            return None;
+                        }
+                    }
+                }
             }
-        };
-        Button::button_at(buttons_to_be_evaluated, mouse_pos_x, mouse_pos_y, window_size, app_state.stretch_mode_is_on)
+        }
+
+        // === 2. Page elements (below persistent) ===
+        if let Some(page) = &self.page_to_render
+        {
+            // Buttons (clickable)
+            if let Some(buttons) = &page.buttons
+            {
+                for button in buttons.iter().rev()
+                {
+                    if inside(&button.rect) {
+                        if button.enabled {
+                            return Some(button.id);
+                        } else {
+                            return None;
+                        }
+                    }
+                }
+            }
+
+            // Rects (block clicks)
+            if let Some(rects) = &page.rects
+            {
+                for (_, (rect, _)) in rects.iter().rev()
+                {
+                    if inside(rect) {
+                        return None;
+                    }
+                }
+            }
+
+            // Images (block clicks)
+            if let Some(images) = &page.images
+            {
+                for (pos, size, _) in images.iter().rev()
+                {
+                    if inside(&Rect::new(pos.0, pos.1, size.0, size.1)) 
+                    {
+                        return None;
+                    }
+                }
+            }
+        }
+
+        None
     }
 }
 
@@ -297,25 +435,4 @@ pub struct Button<ButtonId>
     pub radius: i32,
     pub id: ButtonId,
     pub has_transition: Option<TransitionType>
-}
-
-impl<ButtonId: Copy + Eq + Debug> Button<ButtonId>
-{
-    /// See If The Mouse Position Has Some Button In The Same Place, If Not Return None
-    pub fn button_at(option_vec_of_buttons: Vec<&Buttons<ButtonId>>, mouse_pos_x: f32, mouse_pos_y: f32, window_size: (u32, u32), stretch_mode_is_on: bool) -> Option<ButtonId>
-    {
-        for result_vec_of_buttons in option_vec_of_buttons.into_iter().flatten()
-        {
-            let x_scaled = if stretch_mode_is_on { mouse_pos_x * (WINDOW_DEFAULT_SCALE.0 as f32 / window_size.0 as f32) } else { mouse_pos_x };
-            let y_scaled = if stretch_mode_is_on { mouse_pos_y * (WINDOW_DEFAULT_SCALE.1 as f32 / window_size.1 as f32) } else { mouse_pos_y };
-            for button in result_vec_of_buttons
-            {
-                if x_scaled >= button.rect.x as f32 && x_scaled <= (button.rect.x + button.rect.w) as f32 && y_scaled >= button.rect.y as f32 && y_scaled <= (button.rect.y + button.rect.h) as f32
-                {
-                    return Some(button.id);
-                }
-            }
-        }
-        None
-    }
 }

@@ -89,7 +89,12 @@ pub fn page_1(user_input: &mut Vec<String>) -> Page<PageId, ButtonId>
     let purple_button_data = get_center((600, 100), WINDOW_DEFAULT_SCALE);
 
     //===================== rects =========================
-    let all_rects = vec![(RED_COLOR, (Rect::new(red_rect_data.pos_x, red_rect_data.pos_y + (orange_rect_data.h as i32 + padding_y), red_rect_data.w, red_rect_data.h), 100)), (ORANGE_COLOR, (Rect::new(orange_rect_data.pos_x, orange_rect_data.pos_y, orange_rect_data.w, orange_rect_data.h), 0))];
+    let all_rects = vec!
+    [
+        (RED_COLOR, (Rect::new(red_rect_data.pos_x, red_rect_data.pos_y + (orange_rect_data.h as i32 + padding_y), red_rect_data.w, red_rect_data.h), 100)),
+        (ORANGE_COLOR, (Rect::new(orange_rect_data.pos_x, orange_rect_data.pos_y, orange_rect_data.w, orange_rect_data.h), 0)),
+        (ORANGE_COLOR, (Rect::new(1200, 0, 100, 1080), 0)),
+    ];
 
     //===================== buttons =========================
     let all_buttons = vec![Button { enabled: true, color: PURPLE_COLOR, rect: Rect::new(purple_button_data.pos_x, purple_button_data.pos_y - (orange_rect_data.h as i32 - padding_y), purple_button_data.w, purple_button_data.h), radius: 5, id: ButtonId::ButtonPurpleInputStartPage1, has_transition: None }, Button { enabled: true, color: RED_COLOR, rect: Rect::new(purple_button_data.pos_x, all_rects[0].1.0.y + all_rects[0].1.0.h + padding_y, purple_button_data.w, purple_button_data.h), radius: 20, id: ButtonId::ButtonRedInputStartPage1, has_transition: None }];

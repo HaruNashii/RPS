@@ -1,6 +1,5 @@
 use crate::ui::pages::{
-    ButtonId::{self},
-    PageId
+    persistent_elements2, ButtonId::{self}, PageId
 };
 use rust_page_system::system::{page_system::PageData, state::AppState};
 
@@ -12,6 +11,7 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
         {
             //this disable all eventpump events, it's just here for demonstration porpuse
             app_state.all_events_disable = true;
+            app_data.forced_persistent_elements = Some(vec![persistent_elements2()]);
             app_state.change_current_page(app_data, PageId::Page1, button_id);
             app_state.all_events_disable = false;
             return;

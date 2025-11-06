@@ -1,3 +1,4 @@
+use include_dir::Dir;
 use crate::{
     AppState, Button, PersistentElements,
     sdl::sdl3_generators::{GenerateImage, GenerateText},
@@ -25,6 +26,7 @@ pub struct Renderer<'a, PageId, ButtonId>
     pub font_path: &'a String,
     pub decrease_color_when_selected: Option<(u8, u8, u8)>,
     pub selection_color: Option<(u8, u8, u8, u8)>,
+    pub assets_dir: Option<&'a Dir<'a>>,
 
     cached_outgoing_page: Option<Page<PageId, ButtonId>>,
     cached_page_data_ptr: *const PageData<PageId, ButtonId>,
@@ -40,7 +42,8 @@ pub struct RendererConfig<'a>
     pub ttf_context: &'a Sdl3TtfContext,
     pub font_path: &'a String,
     pub decrease_color_when_selected: Option<(u8, u8, u8)>,
-    pub selection_color: Option<(u8, u8, u8, u8)>
+    pub selection_color: Option<(u8, u8, u8, u8)>,
+    pub assets_dir: Option<&'a Dir<'a>>
 }
 
 impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
@@ -48,7 +51,7 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
     /// Create And Setup The Renderer
     pub fn new(render_config: RendererConfig<'a>) -> Self
     {
-        Self { canvas: render_config.canvas, texture_creator: render_config.texture_creator, ttf_context: render_config.ttf_context, font_path: render_config.font_path, decrease_color_when_selected: render_config.decrease_color_when_selected, selection_color: render_config.selection_color, cached_outgoing_page: None, cached_page_data_ptr: std::ptr::null(), cached_input_handler_ptr: std::ptr::null() }
+        Self { canvas: render_config.canvas, texture_creator: render_config.texture_creator, ttf_context: render_config.ttf_context, font_path: render_config.font_path, decrease_color_when_selected: render_config.decrease_color_when_selected, selection_color: render_config.selection_color, assets_dir: render_config.assets_dir, cached_outgoing_page: None, cached_page_data_ptr: std::ptr::null(), cached_input_handler_ptr: std::ptr::null() }
     }
 
     /// Main render entry point. Draws the current page and applies transition overlay if any.
@@ -193,7 +196,7 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
         if let Some(images) = &mut page.images
         {
             let mut image_data = (images, self.texture_creator);
-            for (image_texture, image_rect) in image_data.generate_image()
+            for (image_texture, image_rect) in image_data.generate_image(self.assets_dir)
             {
                 let _ = self.canvas.copy(&image_texture, None, image_rect);
             }
@@ -247,7 +250,7 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
                 if let Some(images) = &mut page.images
                 {
                     let mut image_data = (images, self.texture_creator);
-                    for (image_texture, image_rect) in image_data.generate_image()
+                    for (image_texture, image_rect) in image_data.generate_image(self.assets_dir)
                     {
                         let _ = self.canvas.copy(&image_texture, None, image_rect);
                     }
@@ -387,7 +390,7 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
                 image.0.1 += direction_y;
             }
             let mut image_data = (images, self.texture_creator);
-            for (image_texture, image_rect) in image_data.generate_image()
+            for (image_texture, image_rect) in image_data.generate_image(self.assets_dir)
             {
                 let _ = self.canvas.copy(&image_texture, None, image_rect);
             }

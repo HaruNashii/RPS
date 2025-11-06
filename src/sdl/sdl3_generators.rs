@@ -1,4 +1,4 @@
-use include_dir::{Dir, include_dir};
+use include_dir::Dir;
 use sdl3::{
     image::LoadTexture,
     iostream::IOStream,
@@ -10,8 +10,6 @@ use sdl3::{
     video::WindowContext
 };
 use std::path::{Path, PathBuf};
-
-static ASSETS: Dir = include_dir!("$CARGO_MANIFEST_DIR/assets");
 
 pub trait GenerateText
 {
@@ -51,44 +49,47 @@ impl GenerateText for (&mut Vec<(f64, (i32, i32), String, Color)>, &TextureCreat
 // === Embed your assets folder ===
 pub trait GenerateImage
 {
-    fn generate_image(&mut self) -> Vec<(Texture<'_>, Rect)>;
+    fn generate_image(&mut self, option_assets: Option<&Dir>) -> Vec<(Texture<'_>, Rect)>;
 }
 impl GenerateImage for (&mut Vec<((i32, i32), (u32, u32), String)>, &TextureCreator<WindowContext>)
 {
     ///All files inside the root/assets will be embedded, but for now sdl3-rust just support
     ///rendering per BMP files, so only bmp files will be possible to use from embedded
-    fn generate_image(&mut self) -> Vec<(Texture<'_>, Rect)>
+    fn generate_image(&mut self, option_assets: Option<&Dir>) -> Vec<(Texture<'_>, Rect)>
     {
         let mut textures = Vec::new();
 
         for (pos, size, path_str) in &mut *self.0
         {
-            // Normalize path (cross-platform)
-            let normalized = {
-                let path = PathBuf::from(&*path_str);
-                path.components().filter_map(|c| c.as_os_str().to_str()).collect::<Vec<_>>().join("/")
-            };
-
-            // === 1️⃣ Try exact embedded path match ===
-            if let Some(file) = ASSETS.get_file(&normalized)
+            if let Some(assets) = option_assets
             {
-                let mut stream = IOStream::from_bytes(file.contents()).expect("Failed to create IOStream from embedded data");
-                let surface = Surface::load_bmp_rw(&mut stream).unwrap_or_else(|_| panic!("Failed to load embedded BMP '{}'", normalized));
-                let texture = self.1.create_texture_from_surface(&surface).unwrap_or_else(|_| panic!("Failed to create texture for '{}'", normalized));
-                let rect = Rect::new(pos.0, pos.1, size.0, size.1);
-                textures.push((texture, rect));
-                continue;
-            }
+                // Normalize path (cross-platform)
+                let normalized = {
+                    let path = PathBuf::from(&*path_str);
+                    path.components().filter_map(|c| c.as_os_str().to_str()).collect::<Vec<_>>().join("/")
+                };
 
-            // === 2️⃣ Recursive lookup by filename only ===
-            if let Some(file) = ASSETS.files().find(|f| f.path().file_name() == Path::new(&normalized).file_name())
-            {
-                let mut stream = IOStream::from_bytes(file.contents()).expect("Failed to create IOStream from embedded data (search mode)");
-                let surface = Surface::load_bmp_rw(&mut stream).unwrap_or_else(|_| panic!("Failed to load embedded BMP '{}'", normalized));
-                let texture = self.1.create_texture_from_surface(&surface).unwrap_or_else(|_| panic!("Failed to create texture for '{}'", normalized));
-                let rect = Rect::new(pos.0, pos.1, size.0, size.1);
-                textures.push((texture, rect));
-                continue;
+                // === 1️⃣ Try exact embedded path match ===
+                if let Some(file) = assets.get_file(&normalized)
+                {
+                    let mut stream = IOStream::from_bytes(file.contents()).expect("Failed to create IOStream from embedded data");
+                    let surface = Surface::load_bmp_rw(&mut stream).unwrap_or_else(|_| panic!("Failed to load embedded BMP '{}'", normalized));
+                    let texture = self.1.create_texture_from_surface(&surface).unwrap_or_else(|_| panic!("Failed to create texture for '{}'", normalized));
+                    let rect = Rect::new(pos.0, pos.1, size.0, size.1);
+                    textures.push((texture, rect));
+                    continue;
+                }
+
+                // === 2️⃣ Recursive lookup by filename only ===
+                if let Some(file) = assets.files().find(|f| f.path().file_name() == Path::new(&normalized).file_name())
+                {
+                    let mut stream = IOStream::from_bytes(file.contents()).expect("Failed to create IOStream from embedded data (search mode)");
+                    let surface = Surface::load_bmp_rw(&mut stream).unwrap_or_else(|_| panic!("Failed to load embedded BMP '{}'", normalized));
+                    let texture = self.1.create_texture_from_surface(&surface).unwrap_or_else(|_| panic!("Failed to create texture for '{}'", normalized));
+                    let rect = Rect::new(pos.0, pos.1, size.0, size.1);
+                    textures.push((texture, rect));
+                    continue;
+                }
             }
 
             // === 3️⃣ Fallback: load from disk ===

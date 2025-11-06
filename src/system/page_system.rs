@@ -120,7 +120,8 @@ pub struct PageData<PageId, ButtonId>
     pub page_linked: PageLinked<PageId, ButtonId>,
     pub page_w_input_linked: PageInputLinked<PageId, ButtonId>,
     pub page_to_render: Option<Page<PageId, ButtonId>>,
-    pub persistent_elements_to_render: Option<Vec<PersistentElements<PageId, ButtonId>>>
+    pub persistent_elements_to_render: Option<Vec<PersistentElements<PageId, ButtonId>>>,
+    pub forced_persistent_elements: Option<Vec<PersistentElements<PageId, ButtonId>>>
 }
 
 // Implement `Clone` for `PageData` as well. This clones the vectors of pages and persistent elements.
@@ -128,7 +129,7 @@ impl<PageId: Clone, ButtonId: Clone> Clone for PageData<PageId, ButtonId>
 {
     fn clone(&self) -> Self
     {
-        Self { vec_user_input: self.vec_user_input.clone(), vec_user_input_string: self.vec_user_input_string.clone(), page_history: self.page_history.clone(), page_linked: self.page_linked.clone(), page_w_input_linked: self.page_w_input_linked.clone(), page_to_render: self.page_to_render.clone(), persistent_elements_to_render: self.persistent_elements_to_render.clone() }
+        Self { vec_user_input: self.vec_user_input.clone(), vec_user_input_string: self.vec_user_input_string.clone(), page_history: self.page_history.clone(), page_linked: self.page_linked.clone(), page_w_input_linked: self.page_w_input_linked.clone(), page_to_render: self.page_to_render.clone(), persistent_elements_to_render: self.persistent_elements_to_render.clone(), forced_persistent_elements: None }
     }
 }
 impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, ButtonId>
@@ -136,7 +137,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
     /// Define PageData Default  Config
     pub fn new(app_state: &AppState<PageId, ButtonId>) -> Self
     {
-        Self { vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), persistent_elements_to_render: None, page_history: (VecDeque::from([app_state.current_page]), 0), page_linked: Vec::new(), page_w_input_linked: Vec::new(), page_to_render: None }
+        Self { vec_user_input: Vec::new(), vec_user_input_string: Vec::new(), persistent_elements_to_render: None, page_history: (VecDeque::from([app_state.current_page]), 0), page_linked: Vec::new(), page_w_input_linked: Vec::new(), page_to_render: None, forced_persistent_elements: None }
     }
 
     ///Link The Page With Your Determined PageId

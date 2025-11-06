@@ -68,19 +68,30 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
         }
         self.canvas.clear();
 
-        if page.has_persistent_elements.is_some() && page_data.persistent_elements_to_render.is_some()
+        //has forced_persistent_elements and page don't have persistent elements
+        if let Some(forced_persistent_elements) = &page_data.forced_persistent_elements && page.has_persistent_elements.is_none()
+        {
+            self.render_page_base(page, app_state, page_data, Some(forced_persistent_elements.to_vec()), input_handler).unwrap();
+        }
+        //has forced_persistent_elements and page have persistent elements
+        if let Some(forced_persistent_elements) = &page_data.forced_persistent_elements && page.has_persistent_elements.is_some() && page_data.persistent_elements_to_render.is_some()
+        {
+            let all_persistent_elements_to_render = [forced_persistent_elements.clone(), page_data.persistent_elements_to_render.clone().unwrap()].concat();
+            self.render_page_base(page, app_state, page_data, Some(all_persistent_elements_to_render), input_handler).unwrap();
+        }
+        //don't have forced_persistent_elements and have persistent_elements
+        if page.has_persistent_elements.is_some() && page_data.persistent_elements_to_render.is_some() && page_data.forced_persistent_elements.is_none()
+            
         {
             self.render_page_base(page, app_state, page_data, Some(page_data.persistent_elements_to_render.clone().unwrap()), input_handler).unwrap();
         }
+        //don't have forced_persistent_elements and don't have persistent_elements
         else
         {
             self.render_page_base(page, app_state, page_data, None, input_handler).unwrap();
         }
 
-        if let Some(transition) = &mut app_state.scene_transition
-            && matches!(transition.transition_type, TransitionType::Slide(_, _, _))
-            && transition.is_second_stage
-            && !transition.has_switched
+        if let Some(transition) = &mut app_state.scene_transition && matches!(transition.transition_type, TransitionType::Slide(_, _, _)) && transition.is_second_stage && !transition.has_switched
         {
             self.cached_outgoing_page = Some(page.clone());
             self.cached_page_data_ptr = page_data as *const _;

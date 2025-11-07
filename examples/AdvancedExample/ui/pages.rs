@@ -9,7 +9,6 @@ use rust_page_system::{
     }
 };
 use sdl3::rect::Rect;
-use std::env;
 use std::rc::Rc;
 
 // TransitionType::Slide second arg, 0 = Down \ 1 = Up \ 2 = Right \ 3 = Left
@@ -143,7 +142,7 @@ pub fn subpage_page2() -> Page<PageId, ButtonId>
     //===================== images =========================
     //this image is local and is not embedded, so if the path provided doesn't have any image, the
     //image won't be loaded
-    let all_images = vec![((500, 500), (300, 300), format!("{}/.cache/page_system/example_2.jpg", env::home_dir().unwrap().display()))];
+    let all_images = vec![((500, 500), (300, 300), "assets/gif_example/cinnamoroll.gif".to_string())];
 
     //===================== page creation =========================
     Page { has_userinput: None, has_persistent_elements: Some(vec![(PageId::Persistent2, Rc::new(persistent_elements2))]), id: PageId::Page2SubPage, background_color: Some(BACKGROUND_COLOR), rects: None, buttons: Some(all_buttons), texts: Some(all_text), images: Some(all_images) }

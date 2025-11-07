@@ -34,5 +34,8 @@ path = "examples/SimpleExample/demo.rs"
 [dependencies]
 display-info = "0.5.7"
 fontconfig = "0.10.0"
+gif = "0.13.3"
+gif-dispose = "5.0.1"
 include_dir = "0.7.4"
+once_cell = "1.21.3"
 sdl3 = { version = "0.16.1", features = ["build-from-source", "ttf", "image"] }

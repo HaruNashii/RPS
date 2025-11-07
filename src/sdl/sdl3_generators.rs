@@ -1,5 +1,7 @@
+use gif::{ColorOutput, DecodeOptions};
 use gif_dispose::Screen;
 use include_dir::Dir;
+use once_cell::sync::Lazy;
 use sdl3::{
     image::LoadTexture,
     iostream::IOStream,
@@ -10,26 +12,90 @@ use sdl3::{
     ttf::Sdl3TtfContext,
     video::WindowContext
 };
-use std::path::{Path, PathBuf};
-use gif::{ColorOutput, DecodeOptions};
-use once_cell::sync::Lazy;
-use std::collections::HashMap;
-use std::sync::Mutex;
-use std::time::Instant;
+use std::{
+    io::Cursor,
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::Mutex,
+    time::Instant
+};
 
 // A struct to hold all frames, delays and timing info for one GIF
-struct GifFrames 
+struct GifFrames
 {
     frames: Vec<Vec<u8>>, // RGBA pixel data for each frame
     delays: Vec<u32>,     // delay per frame in milliseconds
     width: u32,
     height: u32,
     total_duration: u32,
-    start_time: Instant,  // when the animation started playing
+    start_time: Instant // when the animation started playing
 }
 
 // A global cache keyed by file path, protected by a Mutex
 static GIF_CACHE: Lazy<Mutex<HashMap<String, GifFrames>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+
+fn load_gif_texture_from_bytes<'a>(bytes: &[u8], texture_creator: &'a TextureCreator<WindowContext>, cache_key: &str) -> Option<Texture<'a>>
+{
+    // 🔒 Reuse the same global cache
+    let mut cache = GIF_CACHE.lock().expect("GIF cache poisoned");
+
+    let entry = cache.entry(cache_key.to_string()).or_insert_with(|| 
+    {
+        let cursor = Cursor::new(bytes);
+        let mut opts = DecodeOptions::new();
+        opts.set_color_output(ColorOutput::Indexed);
+        let mut decoder = opts.read_info(cursor).unwrap_or_else(|_| panic!("Failed to read embedded GIF info for '{}'", cache_key));
+        let mut screen = Screen::new_decoder(&decoder);
+
+        let width = decoder.width() as u32;
+        let height = decoder.height() as u32;
+        let mut frames = Vec::new();
+        let mut delays = Vec::new();
+
+        while let Some(frame) = decoder.read_next_frame().expect("Error decoding embedded GIF frame")
+        {
+            screen.blit_frame(frame).expect("Error composing embedded GIF frame");
+
+            let (cow_pixels, _, _) = screen.pixels_rgba().to_contiguous_buf();
+            let mut rgba_bytes = Vec::with_capacity(cow_pixels.len() * 4);
+            for px in cow_pixels.iter()
+            {
+                rgba_bytes.extend_from_slice(&[px.r, px.g, px.b, px.a]);
+            }
+            frames.push(rgba_bytes);
+
+            let mut d = (frame.delay as u32) * 10;
+            if d == 0
+            {
+                d = 100;
+            }
+            delays.push(d);
+        }
+
+        let total = delays.iter().sum::<u32>().max(1);
+        GifFrames { frames, delays, width, height, total_duration: total, start_time: Instant::now() }
+    });
+
+    // 🕒 Pick frame based on elapsed time
+    let elapsed_ms = entry.start_time.elapsed().as_millis() as u32;
+    let current = elapsed_ms % entry.total_duration;
+    let mut acc = 0;
+    let mut idx = 0;
+    for (i, delay) in entry.delays.iter().enumerate()
+    {
+        if current < acc + *delay
+        {
+            idx = i;
+            break;
+        }
+        acc += *delay;
+    }
+
+    // 🖼️ Convert current frame to texture
+    let mut pixels = entry.frames[idx].clone();
+    let surface = Surface::from_data(pixels.as_mut_slice(), entry.width, entry.height, entry.width * 4, PixelFormat::ABGR8888).ok()?;
+    texture_creator.create_texture_from_surface(&surface).ok()
+}
 
 fn load_gif_texture<'a>(path: &str, texture_creator: &'a TextureCreator<WindowContext>) -> Option<Texture<'a>> 
 {
@@ -52,7 +118,7 @@ fn load_gif_texture<'a>(path: &str, texture_creator: &'a TextureCreator<WindowCo
 
         while let Some(frame) = decoder.read_next_frame().expect("Error decoding GIF frame") 
         {
-            screen.blit_frame(&frame).expect("Error composing GIF frame");
+            screen.blit_frame(frame).expect("Error composing GIF frame");
         
             // `to_contiguous_buf()` returns (pixels, width, height)
             let (cow_pixels, _w, _h) = screen.pixels_rgba().to_contiguous_buf();
@@ -115,7 +181,6 @@ fn load_gif_texture<'a>(path: &str, texture_creator: &'a TextureCreator<WindowCo
     texture_creator.create_texture_from_surface(&surface).ok()
 }
 
-
 pub trait GenerateText
 {
     fn generate_text(&mut self, font_path: &str) -> Vec<(Texture<'_>, Rect)>;
@@ -177,23 +242,53 @@ impl GenerateImage for (&mut Vec<((i32, i32), (u32, u32), String)>, &TextureCrea
                 // === 1️⃣ Try exact embedded path match ===
                 if let Some(file) = assets.get_file(&normalized)
                 {
-                    let mut stream = IOStream::from_bytes(file.contents()).expect("Failed to create IOStream from embedded data");
-                    let surface = Surface::load_bmp_rw(&mut stream).unwrap_or_else(|_| panic!("Failed to load embedded BMP '{}'", normalized));
-                    let texture = self.1.create_texture_from_surface(&surface).unwrap_or_else(|_| panic!("Failed to create texture for '{}'", normalized));
-                    let rect = Rect::new(pos.0, pos.1, size.0, size.1);
-                    textures.push((texture, rect));
-                    continue;
+                    let data = file.contents();
+                    let lower = normalized.to_lowercase();
+                    if lower.ends_with(".gif")
+                    {
+                        let cache_key = format!("embedded:{}", normalized);
+                        if let Some(tex) = load_gif_texture_from_bytes(data, self.1, &cache_key)
+                        {
+                            let rect = Rect::new(pos.0, pos.1, size.0, size.1);
+                            textures.push((tex, rect));
+                            continue;
+                        }
+                    }
+                    if lower.ends_with(".bmp")
+                    {
+                        let mut stream = IOStream::from_bytes(file.contents()).expect("Failed to create IOStream from embedded data");
+                        let surface = Surface::load_bmp_rw(&mut stream).unwrap_or_else(|_| panic!("Failed to load embedded BMP '{}'", normalized));
+                        let texture = self.1.create_texture_from_surface(&surface).unwrap_or_else(|_| panic!("Failed to create texture for '{}'", normalized));
+                        let rect = Rect::new(pos.0, pos.1, size.0, size.1);
+                        textures.push((texture, rect));
+                        continue;
+                    };
                 }
 
                 // === 2️⃣ Recursive lookup by filename only ===
                 if let Some(file) = assets.files().find(|f| f.path().file_name() == Path::new(&normalized).file_name())
                 {
-                    let mut stream = IOStream::from_bytes(file.contents()).expect("Failed to create IOStream from embedded data (search mode)");
-                    let surface = Surface::load_bmp_rw(&mut stream).unwrap_or_else(|_| panic!("Failed to load embedded BMP '{}'", normalized));
-                    let texture = self.1.create_texture_from_surface(&surface).unwrap_or_else(|_| panic!("Failed to create texture for '{}'", normalized));
-                    let rect = Rect::new(pos.0, pos.1, size.0, size.1);
-                    textures.push((texture, rect));
-                    continue;
+                    let data = file.contents();
+                    let lower = normalized.to_lowercase();
+                    if lower.ends_with(".gif")
+                    {
+                        let cache_key = format!("embedded:{}", normalized);
+                        if let Some(tex) = load_gif_texture_from_bytes(data, self.1, &cache_key)
+                        {
+                            let rect = Rect::new(pos.0, pos.1, size.0, size.1);
+                            textures.push((tex, rect));
+                            continue;
+                        }
+                    }
+                    if lower.ends_with(".bmp")
+                    {
+                        let mut stream = IOStream::from_bytes(file.contents()).expect("Failed to create IOStream from embedded data (search mode)");
+                        let surface = Surface::load_bmp_rw(&mut stream).unwrap_or_else(|_| panic!("Failed to load embedded BMP '{}'", normalized));
+                        let texture = self.1.create_texture_from_surface(&surface).unwrap_or_else(|_| panic!("Failed to create texture for '{}'", normalized));
+                        let rect = Rect::new(pos.0, pos.1, size.0, size.1);
+                        textures.push((texture, rect));
+                        continue;
+                    };
                 }
             }
 
@@ -201,13 +296,10 @@ impl GenerateImage for (&mut Vec<((i32, i32), (u32, u32), String)>, &TextureCrea
             let lower = path_str.to_lowercase();
             if Path::new(path_str).exists()
             {
-                if lower.ends_with(".gif") 
+                if lower.ends_with(".gif") && let Some(tex) = load_gif_texture(path_str, self.1)
                 {
-                    if let Some(tex) = load_gif_texture(path_str, self.1) 
-                    {
-                        textures.push((tex, Rect::new(pos.0, pos.1, size.0, size.1)));
-                        continue;
-                    }
+                    textures.push((tex, Rect::new(pos.0, pos.1, size.0, size.1)));
+                    continue;
                 }
                 if lower.ends_with(".bmp")
                 {

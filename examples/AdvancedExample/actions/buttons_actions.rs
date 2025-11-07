@@ -1,5 +1,6 @@
 use crate::ui::pages::{
-    persistent_elements2, ButtonId::{self}, PageId
+    ButtonId::{self},
+    PageId, persistent_elements2
 };
 use rust_page_system::system::{page_system::PageData, state::AppState};
 

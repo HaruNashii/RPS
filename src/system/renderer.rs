@@ -1,4 +1,3 @@
-use include_dir::Dir;
 use crate::{
     AppState, Button, PersistentElements,
     sdl::sdl3_generators::{GenerateImage, GenerateText},
@@ -8,6 +7,7 @@ use crate::{
         scene_transition::{SceneTransition, TransitionType}
     }
 };
+use include_dir::Dir;
 use sdl3::{
     pixels::Color,
     rect::Rect,
@@ -70,13 +70,16 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
 
 
         //has forced_persistent_elements and page don't have persistent elements
-        if let Some(forced_persistent_elements) = &page_data.forced_persistent_elements && page.has_persistent_elements.is_none()
+        if let Some(forced_persistent_elements) = &page_data.forced_persistent_elements
+            && page.has_persistent_elements.is_none()
         {
             self.render_page_base(page, app_state, page_data, Some(forced_persistent_elements.to_vec()), input_handler).unwrap();
         }
 
         //has forced_persistent_elements and page have persistent elements
-        if let Some(forced_persistent_elements) = &page_data.forced_persistent_elements && page.has_persistent_elements.is_some() && page_data.persistent_elements_to_render.is_some()
+        if let Some(forced_persistent_elements) = &page_data.forced_persistent_elements
+            && page.has_persistent_elements.is_some()
+            && page_data.persistent_elements_to_render.is_some()
         {
             let all_persistent_elements_to_render = [forced_persistent_elements.clone(), page_data.persistent_elements_to_render.clone().unwrap()].concat();
             self.render_page_base(page, app_state, page_data, Some(all_persistent_elements_to_render), input_handler).unwrap();
@@ -93,7 +96,10 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
         }
 
 
-        if let Some(transition) = &mut app_state.scene_transition && matches!(transition.transition_type, TransitionType::Slide(_, _, _)) && transition.is_second_stage && !transition.has_switched
+        if let Some(transition) = &mut app_state.scene_transition
+            && matches!(transition.transition_type, TransitionType::Slide(_, _, _))
+            && transition.is_second_stage
+            && !transition.has_switched
         {
             self.cached_outgoing_page = Some(page.clone());
             self.cached_page_data_ptr = page_data as *const _;
@@ -108,7 +114,6 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
     /// Render The Page Without Any Transition
     fn render_page_base(&mut self, page: &mut Page<PageId, ButtonId>, app_state: &mut AppState<PageId, ButtonId>, page_data: &PageData<PageId, ButtonId>, mut persistent_elements: Option<Vec<PersistentElements<PageId, ButtonId>>>, input_handler: &InputHandler<PageId, ButtonId>) -> Result<(), String>
     {
-
         //NORMAL PAGES
         // RECTS
         if let Some(rects) = &page.rects
@@ -219,9 +224,6 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
         }
 
 
-
-
-
         // PERSISTENT ELEMENTS
         if let Some(vec_page) = &mut persistent_elements
         {
@@ -261,8 +263,7 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
                     let mut requisites = (texts, self.texture_creator, self.ttf_context);
                     for tuple in requisites.generate_text(self.font_path)
                     {
-                        self.canvas.copy(&tuple.0, None, tuple.1).unwrap_or_else(|err| 
-                        {
+                        self.canvas.copy(&tuple.0, None, tuple.1).unwrap_or_else(|err| {
                             println!("text creator gives an error \nerror: {}\n", err);
                         });
                     }
@@ -278,10 +279,6 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
                 }
             }
         }
-
-
-
-
 
 
         Ok(())

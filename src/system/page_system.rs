@@ -164,11 +164,15 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
         if let Some(page_to_render) = &mut page_to_render
         {
             self.push_vec_user_input_per_page(page_to_render);
-            if let Some(result) = &page_to_render.has_persistent_elements
-                && self.persistent_elements_to_render.is_some()
+            if let Some(result) = &page_to_render.has_persistent_elements && self.persistent_elements_to_render.is_some()
             {
                 // collect persistent element instances by invoking each closure via deref
                 self.persistent_elements_to_render = Some(result.iter().map(|(_, f)| f()).collect());
+            }
+            else
+            {
+                // Explicitly clear persistent elements when this page has none
+                self.persistent_elements_to_render = None;
             }
         }
         self.page_to_render = page_to_render;
@@ -264,24 +268,14 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
     }
 
     /// Returns the button ID under the cursor (if any)
-        /// Returns the topmost clickable button under the cursor,
+    /// Returns the topmost clickable button under the cursor,
     /// respecting visual layering (persistent fully blocks below)
     pub fn page_button_at(&self, app_state: &AppState<PageId, ButtonId>, mouse_x: f32, mouse_y: f32) -> Option<ButtonId>
     {
         let window_size = app_state.window_size;
         let stretch = app_state.stretch_mode_is_on;
 
-        let (mx, my) = if stretch 
-        {
-            (
-                mouse_x * (WINDOW_DEFAULT_SCALE.0 as f32 / window_size.0 as f32),
-                mouse_y * (WINDOW_DEFAULT_SCALE.1 as f32 / window_size.1 as f32)
-            )
-        } 
-        else 
-        {
-            (mouse_x, mouse_y)
-        };
+        let (mx, my) = if stretch { (mouse_x * (WINDOW_DEFAULT_SCALE.0 as f32 / window_size.0 as f32), mouse_y * (WINDOW_DEFAULT_SCALE.1 as f32 / window_size.1 as f32)) } else { (mouse_x, mouse_y) };
 
         let inside = |r: &Rect| -> bool { mx >= r.x as f32 && mx <= (r.x + r.w) as f32 && my >= r.y as f32 && my <= (r.y + r.h) as f32 };
 
@@ -295,11 +289,15 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
                 {
                     for button in buttons.iter().rev()
                     {
-                        if inside(&button.rect) {
+                        if inside(&button.rect)
+                        {
                             // If button enabled, return it
-                            if button.enabled {
+                            if button.enabled
+                            {
                                 return Some(button.id);
-                            } else {
+                            }
+                            else
+                            {
                                 // Disabled button still blocks clicks below
                                 return None;
                             }
@@ -312,7 +310,8 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
                 {
                     for (_, (rect, _)) in rects.iter().rev()
                     {
-                        if inside(rect) {
+                        if inside(rect)
+                        {
                             return None;
                         }
                     }
@@ -323,7 +322,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
                 {
                     for (pos, size, _) in images.iter().rev()
                     {
-                        if inside(&Rect::new(pos.0, pos.1, size.0, size.1)) 
+                        if inside(&Rect::new(pos.0, pos.1, size.0, size.1))
                         {
                             return None;
                         }
@@ -343,11 +342,15 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
                 {
                     for button in buttons.iter().rev()
                     {
-                        if inside(&button.rect) {
+                        if inside(&button.rect)
+                        {
                             // If button enabled, return it
-                            if button.enabled {
+                            if button.enabled
+                            {
                                 return Some(button.id);
-                            } else {
+                            }
+                            else
+                            {
                                 // Disabled button still blocks clicks below
                                 return None;
                             }
@@ -360,7 +363,8 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
                 {
                     for (_, (rect, _)) in rects.iter().rev()
                     {
-                        if inside(rect) {
+                        if inside(rect)
+                        {
                             return None;
                         }
                     }
@@ -371,7 +375,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
                 {
                     for (pos, size, _) in images.iter().rev()
                     {
-                        if inside(&Rect::new(pos.0, pos.1, size.0, size.1)) 
+                        if inside(&Rect::new(pos.0, pos.1, size.0, size.1))
                         {
                             return None;
                         }
@@ -388,10 +392,14 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
             {
                 for button in buttons.iter().rev()
                 {
-                    if inside(&button.rect) {
-                        if button.enabled {
+                    if inside(&button.rect)
+                    {
+                        if button.enabled
+                        {
                             return Some(button.id);
-                        } else {
+                        }
+                        else
+                        {
                             return None;
                         }
                     }
@@ -403,7 +411,8 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
             {
                 for (_, (rect, _)) in rects.iter().rev()
                 {
-                    if inside(rect) {
+                    if inside(rect)
+                    {
                         return None;
                     }
                 }
@@ -414,7 +423,7 @@ impl<PageId: Copy + Eq + Debug, ButtonId: Copy + Eq + Debug> PageData<PageId, Bu
             {
                 for (pos, size, _) in images.iter().rev()
                 {
-                    if inside(&Rect::new(pos.0, pos.1, size.0, size.1)) 
+                    if inside(&Rect::new(pos.0, pos.1, size.0, size.1))
                     {
                         return None;
                     }

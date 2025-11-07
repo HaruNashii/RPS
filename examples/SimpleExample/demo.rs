@@ -23,7 +23,8 @@ fn main()
 {
     // To Be Ignored, Just An Setup To Configure The Build
     setup_build();
-    let window_config = WindowConfig {
+    let window_config = WindowConfig 
+    {
         window_title: "SimpleExample".to_string(),
         icon: (None, None),
         // Recommended to start with 16:9 aspect ratio
@@ -36,8 +37,8 @@ fn main()
         different_sdl_presentation_mode: Some(SDL_LOGICAL_PRESENTATION_STRETCH),
         font: ("JetBrainsMono".to_string(), Some("Bold".to_string()))
     };
-    let mut window_modules = create_window(window_config);
 
+    let mut window_modules = create_window(window_config);
     let mut input_handler = InputHandler::new(true);
     let mut app_state = AppState::new(PageId::Page1, window_modules.canvas.window().size(), window_modules.stretch_mode_status);
     let mut page_data = PageData::new(&app_state);
@@ -53,6 +54,7 @@ fn main()
 
     loop
     {
+        println!("{:?}", page_data.persistent_elements_to_render.is_some());
         //using 900 / your_refresh_rate to a very crispy experience
         std::thread::sleep(Duration::from_millis(900 / get_monitor_refresh_rate()));
         app_state.update_window_size(renderer.canvas.window().size().0, renderer.canvas.window().size().1);
@@ -81,6 +83,7 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
         };
         if &ButtonId::ButtonBack == button_id
         {
+            println!("button back clicked");
             app_state.change_current_page(app_data, PageId::Page1, button_id);
             return;
         };
@@ -170,7 +173,7 @@ pub fn page_1(user_input: &mut Vec<String>, _int: i32) -> Page<PageId, ButtonId>
 pub fn subpage_page1() -> Page<PageId, ButtonId>
 {
     //===================== buttons =========================
-    let all_buttons = vec![Button { enabled: true, color: PINK_COLOR, rect: Rect::new(20, 20, 50, 40), radius: 0, id: ButtonId::ButtonBack, has_transition: None }];
+    let all_buttons = vec![Button { enabled: true, color: PINK_COLOR, rect: Rect::new(200, 0, 50, 150), radius: 0, id: ButtonId::ButtonBack, has_transition: None }];
 
     //===================== texts =========================
     let all_text = vec![(18.0, (all_buttons[0].rect.x + 10, all_buttons[0].rect.y + 7), "<-".to_string(), TEXT_COLOR)];

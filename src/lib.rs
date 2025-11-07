@@ -14,10 +14,8 @@ pub mod sdl;
 pub mod system;
 
 #[macro_export]
-macro_rules! include_project_assets 
-{
-    () => 
-    {
+macro_rules! include_project_assets {
+    () => {
         // Expands at the *caller’s* manifest directory
         ::include_dir::include_dir!("$CARGO_MANIFEST_DIR/assets")
     };

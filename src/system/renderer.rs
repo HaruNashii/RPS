@@ -67,8 +67,6 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
             self.canvas.set_draw_color(Color::RGB(0, 0, 0));
         }
         self.canvas.clear();
-
-
         //has forced_persistent_elements and page don't have persistent elements
         if let Some(forced_persistent_elements) = &page_data.forced_persistent_elements
             && page.has_persistent_elements.is_none()
@@ -84,6 +82,8 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
             let all_persistent_elements_to_render = [forced_persistent_elements.clone(), page_data.persistent_elements_to_render.clone().unwrap()].concat();
             self.render_page_base(page, app_state, page_data, Some(all_persistent_elements_to_render), input_handler).unwrap();
         }
+
+
         //don't have forced_persistent_elements and have persistent_elements
         if page.has_persistent_elements.is_some() && page_data.persistent_elements_to_render.is_some() && page_data.forced_persistent_elements.is_none()
         {
@@ -106,6 +106,9 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
             self.cached_input_handler_ptr = input_handler as *const _;
         }
         let _ = self.scene_transition_overlay(app_state, input_handler);
+
+
+
 
 
         self.canvas.present();
@@ -223,6 +226,31 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
             }
         }
 
+        if let Some(pe_vec) = &page_data.persistent_elements_to_render
+        {
+            for vec_of_persistent_elements in pe_vec
+            {
+                if let Some(background_color) = vec_of_persistent_elements.background_color
+                {
+                    let background_rect = Rect::new(0, 0, 20000, 2000);
+                    self.canvas.set_draw_color(background_color);
+                    self.canvas.fill_rect(background_rect).unwrap();
+                };
+            }
+        }
+        if let Some(pe_vec) = &page_data.forced_persistent_elements
+        {
+            for vec_of_persistent_elements in pe_vec
+            {
+                if let Some(background_color) = vec_of_persistent_elements.background_color
+                {
+                    let background_rect = Rect::new(0, 0, 20000, 2000);
+                    self.canvas.set_draw_color(background_color);
+                    self.canvas.fill_rect(background_rect).unwrap();
+                };
+            }
+        }
+
 
         // PERSISTENT ELEMENTS
         if let Some(vec_page) = &mut persistent_elements
@@ -250,7 +278,7 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
                                 && let Some(amount_to_substract) = self.decrease_color_when_selected
                                 && button.id == button_selected
                             {
-                                color = Color::RGB(button.color.r.saturating_sub(amount_to_substract.0), button.color.g.saturating_sub(amount_to_substract.1), button.color.b.saturating_sub(amount_to_substract.2));
+                                color = Color::RGBA(button.color.r.saturating_sub(amount_to_substract.0), button.color.g.saturating_sub(amount_to_substract.1), button.color.b.saturating_sub(amount_to_substract.2), 255);
                             };
                             self.canvas.set_draw_color(color);
                             self.draw_rounded_box(button.rect.x(), button.rect.y(), button.rect.width() as i32, button.rect.height() as i32, button.radius, color);

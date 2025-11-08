@@ -1,9 +1,11 @@
 use crate::{
-    sdl::sdl3_generators::{GenerateImage, GenerateText}, system::{
+    AppState, Button, PersistentElements,
+    sdl::sdl3_generators::{GenerateImage, GenerateText},
+    system::{
         input_handler::InputHandler,
         page_system::{Page, PageData},
         scene_transition::{SceneTransition, SlidePos, TransitionType}
-    }, AppState, Button, PersistentElements
+    }
 };
 use include_dir::Dir;
 use sdl3::{
@@ -104,9 +106,6 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
             self.cached_input_handler_ptr = input_handler as *const _;
         }
         let _ = self.scene_transition_overlay(app_state, input_handler);
-
-
-
 
 
         self.canvas.present();
@@ -355,9 +354,9 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
                 match side
                 {
                     SlidePos::Up => speed_y = speed,
-                    SlidePos::Down  => speed_y = -speed,
-                    SlidePos::Right  => speed_x = speed,
-                    SlidePos::Left  => speed_x = -speed,
+                    SlidePos::Down => speed_y = -speed,
+                    SlidePos::Right => speed_x = speed,
+                    SlidePos::Left => speed_x = -speed
                 }
 
                 let direction_x = (progress_state.clamp(0.0, 1.0) * (speed_x as f32)) as i32;

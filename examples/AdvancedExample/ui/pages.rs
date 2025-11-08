@@ -1,10 +1,12 @@
 use crate::ui::style::{BACKGROUND_COLOR, BLACK_COLOR, ORANGE_COLOR, PINK_COLOR, PURPLE_COLOR, RED_COLOR, SUBTEXT_COLOR, TEXT_COLOR};
 use rust_page_system::{
-    misc::center_elements::get_center, system::{
+    GetOrCreate, PersistentElements,
+    misc::center_elements::get_center,
+    system::{
         page_system::{Button, Page},
         scene_transition::{SlidePos, TransitionType},
         window::WINDOW_DEFAULT_SCALE
-    }, GetOrCreate, PersistentElements
+    }
 };
 use sdl3::rect::Rect;
 use std::rc::Rc;

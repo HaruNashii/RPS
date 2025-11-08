@@ -23,8 +23,7 @@ fn main()
 {
     // To Be Ignored, Just An Setup To Configure The Build
     setup_build();
-    let window_config = WindowConfig 
-    {
+    let window_config = WindowConfig {
         window_title: "SimpleExample".to_string(),
         icon: (None, None),
         // Recommended to start with 16:9 aspect ratio
@@ -54,7 +53,6 @@ fn main()
 
     loop
     {
-        println!("{:?}", page_data.persistent_elements_to_render.is_some());
         //using 900 / your_refresh_rate to a very crispy experience
         std::thread::sleep(Duration::from_millis(900 / get_monitor_refresh_rate()));
         app_state.update_window_size(renderer.canvas.window().size().0, renderer.canvas.window().size().1);
@@ -97,7 +95,7 @@ pub fn button_action(app_state: &mut AppState<PageId, ButtonId>, button_id: &But
 //==========================================================================================================================================================================
 pub fn populate_page_data(page_data: &mut PageData<PageId, ButtonId>)
 {
-    page_data.push_page_link(Some(vec![(PageId::Page1SubPage, Rc::new(subpage_page1))]), Some(vec![(PageId::Page1, Rc::new(|input: &mut Vec<String>| page_1(input, 13)))]));
+    page_data.populate_rps_data(Some(vec![Rc::new(subpage_page1)]), Some(vec![Rc::new(|input: &mut Vec<String>| page_1(input, 13))]));
 }
 
 //==========================================================================================================================================================================

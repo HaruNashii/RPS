@@ -13,8 +13,8 @@ use sdl3::{
     video::WindowContext
 };
 use std::{
-    io::Cursor,
     collections::HashMap,
+    io::Cursor,
     path::{Path, PathBuf},
     sync::Mutex,
     time::Instant
@@ -39,8 +39,7 @@ fn load_gif_texture_from_bytes<'a>(bytes: &[u8], texture_creator: &'a TextureCre
     // 🔒 Reuse the same global cache
     let mut cache = GIF_CACHE.lock().expect("GIF cache poisoned");
 
-    let entry = cache.entry(cache_key.to_string()).or_insert_with(|| 
-    {
+    let entry = cache.entry(cache_key.to_string()).or_insert_with(|| {
         let cursor = Cursor::new(bytes);
         let mut opts = DecodeOptions::new();
         opts.set_color_output(ColorOutput::Indexed);
@@ -97,11 +96,10 @@ fn load_gif_texture_from_bytes<'a>(bytes: &[u8], texture_creator: &'a TextureCre
     texture_creator.create_texture_from_surface(&surface).ok()
 }
 
-fn load_gif_texture<'a>(path: &str, texture_creator: &'a TextureCreator<WindowContext>) -> Option<Texture<'a>> 
+fn load_gif_texture<'a>(path: &str, texture_creator: &'a TextureCreator<WindowContext>) -> Option<Texture<'a>>
 {
     let mut cache = GIF_CACHE.lock().expect("GIF cache poisoned");
-    let entry = cache.entry(path.to_owned()).or_insert_with(|| 
-    {
+    let entry = cache.entry(path.to_owned()).or_insert_with(|| {
         let mut opts = DecodeOptions::new();
         opts.set_color_output(ColorOutput::Indexed);
 
@@ -116,41 +114,36 @@ fn load_gif_texture<'a>(path: &str, texture_creator: &'a TextureCreator<WindowCo
         let mut frames: Vec<Vec<u8>> = Vec::new();
         let mut delays: Vec<u32> = Vec::new();
 
-        while let Some(frame) = decoder.read_next_frame().expect("Error decoding GIF frame") 
+        while let Some(frame) = decoder.read_next_frame().expect("Error decoding GIF frame")
         {
             screen.blit_frame(frame).expect("Error composing GIF frame");
-        
+
             // `to_contiguous_buf()` returns (pixels, width, height)
             let (cow_pixels, _w, _h) = screen.pixels_rgba().to_contiguous_buf();
-        
+
             // Flatten Rgba<u8> pixels into Vec<u8>
             let mut rgba_bytes = Vec::with_capacity(cow_pixels.len() * 4);
-            for px in cow_pixels.iter() 
+            for px in cow_pixels.iter()
             {
                 rgba_bytes.push(px.r);
                 rgba_bytes.push(px.g);
                 rgba_bytes.push(px.b);
                 rgba_bytes.push(px.a);
             }
-        
+
             frames.push(rgba_bytes);
-        
+
             let mut d = (frame.delay as u32) * 10;
-            if d == 0 { d = 100; }
+            if d == 0
+            {
+                d = 100;
+            }
             delays.push(d);
         }
-        
+
 
         let total = delays.iter().sum::<u32>().max(1);
-        GifFrames 
-        {
-            frames,
-            delays,
-            width,
-            height,
-            total_duration: total,
-            start_time: Instant::now(),
-        }
+        GifFrames { frames, delays, width, height, total_duration: total, start_time: Instant::now() }
     });
 
 
@@ -159,9 +152,9 @@ fn load_gif_texture<'a>(path: &str, texture_creator: &'a TextureCreator<WindowCo
     let current = elapsed_ms % entry.total_duration;
     let mut acc = 0;
     let mut idx = 0;
-    for (i, delay) in entry.delays.iter().enumerate() 
+    for (i, delay) in entry.delays.iter().enumerate()
     {
-        if current < acc + *delay 
+        if current < acc + *delay
         {
             idx = i;
             break;
@@ -171,13 +164,7 @@ fn load_gif_texture<'a>(path: &str, texture_creator: &'a TextureCreator<WindowCo
 
 
     let mut pixels = entry.frames[idx].clone();
-    let surface = Surface::from_data(
-        pixels.as_mut_slice(),
-        entry.width,
-        entry.height,
-        entry.width * 4,
-        PixelFormat::ABGR8888,
-    ).ok()?;
+    let surface = Surface::from_data(pixels.as_mut_slice(), entry.width, entry.height, entry.width * 4, PixelFormat::ABGR8888).ok()?;
     texture_creator.create_texture_from_surface(&surface).ok()
 }
 
@@ -296,7 +283,8 @@ impl GenerateImage for (&mut Vec<((i32, i32), (u32, u32), String)>, &TextureCrea
             let lower = path_str.to_lowercase();
             if Path::new(path_str).exists()
             {
-                if lower.ends_with(".gif") && let Some(tex) = load_gif_texture(path_str, self.1)
+                if lower.ends_with(".gif")
+                    && let Some(tex) = load_gif_texture(path_str, self.1)
                 {
                     textures.push((tex, Rect::new(pos.0, pos.1, size.0, size.1)));
                     continue;

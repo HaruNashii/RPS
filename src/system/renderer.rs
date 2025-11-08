@@ -1,11 +1,9 @@
 use crate::{
-    AppState, Button, PersistentElements,
-    sdl::sdl3_generators::{GenerateImage, GenerateText},
-    system::{
+    sdl::sdl3_generators::{GenerateImage, GenerateText}, system::{
         input_handler::InputHandler,
         page_system::{Page, PageData},
-        scene_transition::{SceneTransition, TransitionType}
-    }
+        scene_transition::{SceneTransition, SlidePos, TransitionType}
+    }, AppState, Button, PersistentElements
 };
 use include_dir::Dir;
 use sdl3::{
@@ -356,11 +354,10 @@ impl<'a, PageId: Copy + Eq, ButtonId: Copy + Eq> Renderer<'a, PageId, ButtonId>
                 let mut speed_y = 0;
                 match side
                 {
-                    0 => speed_y = speed,
-                    1 => speed_y = -speed,
-                    2 => speed_x = speed,
-                    3 => speed_x = -speed,
-                    _ => speed_y = speed
+                    SlidePos::Up => speed_y = speed,
+                    SlidePos::Down  => speed_y = -speed,
+                    SlidePos::Right  => speed_x = speed,
+                    SlidePos::Left  => speed_x = -speed,
                 }
 
                 let direction_x = (progress_state.clamp(0.0, 1.0) * (speed_x as f32)) as i32;

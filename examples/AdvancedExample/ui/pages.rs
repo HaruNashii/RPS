@@ -1,12 +1,10 @@
 use crate::ui::style::{BACKGROUND_COLOR, BLACK_COLOR, ORANGE_COLOR, PINK_COLOR, PURPLE_COLOR, RED_COLOR, SUBTEXT_COLOR, TEXT_COLOR};
 use rust_page_system::{
-    GetOrCreate, PersistentElements,
-    misc::center_elements::get_center,
-    system::{
+    misc::center_elements::get_center, system::{
         page_system::{Button, Page},
-        scene_transition::TransitionType,
+        scene_transition::{SlidePos, TransitionType},
         window::WINDOW_DEFAULT_SCALE
-    }
+    }, GetOrCreate, PersistentElements
 };
 use sdl3::rect::Rect;
 use std::rc::Rc;
@@ -47,7 +45,7 @@ pub fn persistent_elements1() -> PersistentElements<PageId, ButtonId>
     let all_rects = vec![(BLACK_COLOR, (Rect::new(0, 0, WINDOW_DEFAULT_SCALE.0, 100), 0))];
 
     //===================== buttons =========================
-    let all_buttons = vec![Button { enabled: true, color: PINK_COLOR, rect: Rect::new(window_center.pos_x - padding_x, 10, window_center.w, window_center.h), radius: 5, id: ButtonId::ButtonPage1, has_transition: Some(TransitionType::Slide(0., 3, 5000)) }, Button { enabled: true, color: PINK_COLOR, rect: Rect::new(window_center.pos_x + padding_x, 10, window_center.w, window_center.h), radius: 5, id: ButtonId::ButtonPage2, has_transition: Some(TransitionType::Slide(0., 2, 5000)) }];
+    let all_buttons = vec![Button { enabled: true, color: PINK_COLOR, rect: Rect::new(window_center.pos_x - padding_x, 10, window_center.w, window_center.h), radius: 5, id: ButtonId::ButtonPage1, has_transition: Some(TransitionType::Slide(0., SlidePos::Right, 5000)) }, Button { enabled: true, color: PINK_COLOR, rect: Rect::new(window_center.pos_x + padding_x, 10, window_center.w, window_center.h), radius: 5, id: ButtonId::ButtonPage2, has_transition: Some(TransitionType::Slide(0., SlidePos::Left, 5000)) }];
 
     //===================== texts =========================
     let all_text = vec![

@@ -1,12 +1,21 @@
 use std::time::Instant;
 
+#[derive(Debug, Clone, PartialEq, Copy)]
+pub enum SlidePos
+{
+    Up,
+    Down,
+    Left,
+    Right
+}
+
 /// Scene transition effect types.
 #[derive(Debug, Clone, PartialEq, Copy)]
 pub enum TransitionType
 {
     None,
     Fade(f32),
-    Slide(f32, u8, i32)
+    Slide(f32, SlidePos, i32)
 }
 
 /// Manages active scene transitions (fade or slide).

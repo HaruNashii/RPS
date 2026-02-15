@@ -10,7 +10,6 @@ repository = "https://github.com/HaruNashii/RPS"
 readme = "README.md"
 description = "RPS - Rust Page System, Is a small, opinionated page/state management system built with Rust and SDL3."
 
-
 [badges]
 maintenance = { status = "experimental" }
 
@@ -30,6 +29,9 @@ path = "examples/AdvancedExample/demo.rs"
 [[example]]
 name = "SimpleExample"
 path = "examples/SimpleExample/demo.rs"
+[[example]]
+name = "DockExample"
+path = "examples/DockExample/demo.rs"
 
 [dependencies]
 display-info = "0.5.7"
@@ -39,3 +41,19 @@ gif-dispose = "5.0.1"
 include_dir = "0.7.4"
 once_cell = "1.21.3"
 sdl3 = { version = "0.16.1", features = ["build-from-source", "ttf", "image"] }
+
+[features]
+default = []
+wayland = [ "wayland-client", "wayland-protocols", "wayland-protocols-wlr" ]
+
+[dependencies.wayland-client]
+version = "0.31"
+optional = true
+
+[dependencies.wayland-protocols]
+version = "0.32"
+optional = true
+
+[dependencies.wayland-protocols-wlr]
+version = "0.3"
+optional = true
